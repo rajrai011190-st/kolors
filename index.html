@@ -41,8 +41,8 @@
       display: flex; align-items: center; justify-content: space-between;
       padding: 0 24px;
     }
-    .nav-logo { font-family: var(--font-serif); font-size: 22px; font-weight: 600; letter-spacing: 0.04em; text-decoration: none; color: var(--black); }
-    .nav-logo span { font-style: italic; color: var(--terracotta); }
+    .nav-logo { text-decoration: none; display: flex; align-items: center; }
+    .nav-logo img { height: 36px; width: auto; display: block; }
     .nav-right { display: flex; align-items: center; gap: 8px; }
     .nav-cart-btn {
       position: relative; background: none; border: 0.5px solid var(--border-dark);
@@ -474,7 +474,7 @@
 
 <!-- TOP NAV -->
 <nav class="top-nav">
-  <a class="nav-logo" href="#" onclick="showPage('gallery');return false;">Kol<span>ours</span></a>
+  <a class="nav-logo" href="#" onclick="showPage('gallery');return false;"><img src="images/logo.png" alt="The Kolours" /></a>
   <div class="nav-right">
     <button class="nav-cart-btn" onclick="openCart()">
       <i class="ti ti-shopping-bag"></i>
@@ -580,7 +580,8 @@
     <div class="login-card">
       <div id="loginView">
         <div class="login-eyebrow">Artist Portal</div>
-        <div class="login-title">Welcome to <em>Kolours</em></div>
+        <div style="margin-bottom:12px"><img src="images/logo.png" alt="The Kolours" style="height:56px;width:auto" /></div>
+        <div class="login-title">Welcome back</div>
         <div class="login-sub">Sign in to manage your listings and reach collectors worldwide.</div>
         <div class="login-error" id="loginError"></div>
         <div class="login-form">
@@ -594,7 +595,8 @@
       </div>
       <div id="signupView" style="display:none">
         <div class="login-eyebrow">Artist Portal</div>
-        <div class="login-title">Join <em>Kolours</em></div>
+        <div style="margin-bottom:12px"><img src="images/logo.png" alt="The Kolours" style="height:56px;width:auto" /></div>
+        <div class="login-title">Join The Kolours</div>
         <div class="login-sub">Create your artist account and start selling your original work.</div>
         <div class="login-error" id="signupError"></div>
         <div class="login-form">
