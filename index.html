@@ -774,7 +774,25 @@ const SEED = [
   { id:9,  title:"Winter Night",         artist:"Raj R",    artistId:"artist-raj",    price:550,  size:"18×24 cm",  medium:"Acrylic",     category:"Landscape",  origin:"Canada", year:2024, available:true,  badge:null,       desc:"A lone tree stands against a star-scattered black sky, a full moon watching over the silent, snow-covered earth below.",                    img:"images/winter-night.jpg" },
 ];
 
-let paintings = [...SEED];
+const PAINTINGS_KEY = "kolours_paintings";
+
+function savePaintings() {
+  // Only persist user-uploaded paintings (not seed) to keep storage lean
+  const uploads = paintings.filter(p => p.id > 100);
+  localStorage.setItem(PAINTINGS_KEY, JSON.stringify(uploads));
+}
+
+function loadPaintings() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(PAINTINGS_KEY) || "[]");
+    // Merge: seed first, then uploads (uploads may override seed edits via id match)
+    const seedIds = new Set(SEED.map(p => p.id));
+    const uploads = stored.filter(p => !seedIds.has(p.id));
+    return [...SEED, ...uploads];
+  } catch(e) { return [...SEED]; }
+}
+
+let paintings = loadPaintings();
 let cart = [];
 let wishlist = new Set();
 let activeCategory = "All";
@@ -1185,6 +1203,7 @@ function submitPainting() {
     paintings.unshift({ id:Date.now(), ...fields, artistId:currentUser?.id||null, available:true, badge:"new", img:uploadedImg||null, colors:["#c0a880","#e0c8a0","#a08060","#604020"] });
     resetForm();
   }
+  savePaintings();
   document.getElementById("successBar").classList.add("show");
   setTimeout(()=>document.getElementById("successBar").classList.remove("show"),4000);
   renderListings(); renderArtists(); renderTabs(); applyFilters();
@@ -1262,6 +1281,7 @@ function renderListings() {
 function deleteListing(id) {
   paintings = paintings.filter(p=>p.id!==id);
   cart = cart.filter(c=>c.id!==id);
+  savePaintings();
   updateCartBadge();
   renderListings();
   applyFilters();
