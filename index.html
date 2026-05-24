@@ -10,19 +10,19 @@
   <title>Kolours — Art Marketplace</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     :root {
-      --black: #1a1a1a;
+      --black: #111111;
       --bg: #ffffff;
-      --bg2: #f5f5f3;
-      --terracotta: #B85C38;
+      --bg2: #f5f5f0;
+      --terracotta: #a26b25;
       --green: #2D6A4F;
-      --border: rgba(0,0,0,0.10);
-      --border-dark: rgba(0,0,0,0.18);
-      --font-serif: 'Cormorant Garamond', Georgia, serif;
+      --border: rgba(0,0,0,0.08);
+      --border-dark: rgba(0,0,0,0.15);
+      --font-serif: 'Montserrat', system-ui, sans-serif;
       --font-sans: 'DM Sans', system-ui, sans-serif;
       --nav-h: 60px;
       --bottom-nav-h: 60px;
@@ -92,8 +92,8 @@
       max-width: 680px;
     }
     .hero-eyebrow { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(0,0,0,0.4); margin-bottom: 14px; }
-    .hero h1 { font-family: var(--font-serif); font-size: clamp(36px, 6vw, 56px); font-weight: 500; line-height: 1.1; margin-bottom: 16px; }
-    .hero h1 em { font-style: italic; color: var(--terracotta); }
+    .hero h1 { font-family: var(--font-serif); font-size: clamp(34px, 5.5vw, 54px); font-weight: 700; line-height: 1.1; margin-bottom: 16px; letter-spacing: -0.02em; }
+    .hero h1 em { font-style: normal; color: var(--terracotta); }
     .hero p { font-size: 15px; color: rgba(0,0,0,0.55); line-height: 1.6; margin-bottom: 28px; max-width: 480px; }
     .hero-ctas { display: flex; gap: 10px; flex-wrap: wrap; }
     .btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; border-radius: 2px; font-family: var(--font-sans); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; text-decoration: none; border: none; }
@@ -184,7 +184,7 @@
     .card-wish.wished { color: var(--terracotta); opacity: 1; }
     .painting-card:hover .card-wish { opacity: 1; }
     .card-body { padding: 12px 14px 14px; }
-    .card-title { font-family: var(--font-serif); font-size: 16px; font-weight: 500; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-title { font-family: var(--font-serif); font-size: 15px; font-weight: 600; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .card-artist { font-size: 12px; color: rgba(0,0,0,0.45); margin-bottom: 8px; }
     .card-footer { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
     .card-price { font-size: 14px; font-weight: 500; }
@@ -206,8 +206,8 @@
 
     /* ARTISTS STRIP */
     .artists-strip { margin-top: 48px; padding-top: 32px; border-top: 0.5px solid var(--border); }
-    .section-heading { font-family: var(--font-serif); font-size: 26px; font-weight: 500; margin-bottom: 20px; }
-    .section-heading em { font-style: italic; color: var(--terracotta); }
+    .section-heading { font-family: var(--font-serif); font-size: 24px; font-weight: 700; margin-bottom: 20px; letter-spacing: -0.01em; }
+    .section-heading em { font-style: normal; color: var(--terracotta); }
     .artists-row { display: flex; gap: 16px; flex-wrap: wrap; }
     .artist-chip {
       display: flex; align-items: center; gap: 10px;
@@ -240,7 +240,7 @@
     .modal-img-wrap canvas, .modal-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
     .modal-content { padding: 20px 24px 32px; }
     .modal-eyebrow { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(0,0,0,0.4); margin-bottom: 6px; }
-    .modal-title { font-family: var(--font-serif); font-size: 28px; font-weight: 500; margin-bottom: 4px; }
+    .modal-title { font-family: var(--font-serif); font-size: 26px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.01em; }
     .modal-artist { font-size: 14px; color: rgba(0,0,0,0.5); margin-bottom: 16px; }
     .modal-price { font-size: 22px; font-weight: 500; margin-bottom: 20px; }
     .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
@@ -398,8 +398,8 @@
       border-radius: 12px; padding: 40px 36px;
     }
     .login-eyebrow { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(0,0,0,0.35); margin-bottom: 10px; }
-    .login-title { font-family: var(--font-serif); font-size: 30px; font-weight: 500; margin-bottom: 6px; }
-    .login-title em { font-style: italic; color: var(--terracotta); }
+    .login-title { font-family: var(--font-serif); font-size: 28px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.01em; }
+    .login-title em { font-style: normal; color: var(--terracotta); }
     .login-sub { font-size: 13px; color: rgba(0,0,0,0.45); margin-bottom: 28px; line-height: 1.5; }
     .login-form { display: flex; flex-direction: column; gap: 14px; }
     .login-field { display: flex; flex-direction: column; gap: 6px; }
@@ -451,6 +451,20 @@
       transition: opacity 0.2s, transform 0.2s;
     }
     .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* SELL BANNER */
+    .sell-banner {
+      background: var(--black); color: #fff;
+      padding: 18px 24px; margin-bottom: 0;
+    }
+    .sell-banner-inner {
+      max-width: 1200px; display: flex; align-items: center;
+      justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    }
+    .sell-banner-title { font-family: var(--font-serif); font-size: 16px; font-weight: 600; margin-bottom: 2px; }
+    .sell-banner-sub { font-size: 13px; color: rgba(255,255,255,0.55); }
+    .sell-banner .btn-gold { background: var(--terracotta); color: #fff; border-color: var(--terracotta); flex-shrink: 0; }
+    .sell-banner .btn-gold:hover { background: #8a5820; border-color: #8a5820; }
 
     /* RESPONSIVE */
     @media (max-width: 768px) {
@@ -510,12 +524,22 @@
 <!-- GALLERY PAGE -->
 <div class="page active" id="pageGallery">
   <div class="hero">
-    <p class="hero-eyebrow">Original paintings, worldwide artists</p>
-    <h1>Discover art that<br/><em>moves you</em></h1>
-    <p>A curated marketplace for original, one-of-a-kind paintings from independent artists around the world.</p>
+    <p class="hero-eyebrow">Handmade Originals · Acrylic · Digital Print · Canadian Artists</p>
+    <h1>Bring <em>Kolours</em><br/>to your life.</h1>
+    <p>Original paintings and prints by independent Canadian artists. Every piece is one of a kind — made by hand, shipped to your door.</p>
     <div class="hero-ctas">
-      <button class="btn btn-primary" onclick="document.querySelector('.category-tabs').scrollIntoView({behavior:'smooth'})"><i class="ti ti-brush"></i>Browse Gallery</button>
-      <button class="btn btn-outline" onclick="showPage('upload')"><i class="ti ti-upload"></i>List Your Art</button>
+      <button class="btn btn-primary" onclick="document.querySelector('.category-tabs').scrollIntoView({behavior:'smooth'})"><i class="ti ti-brush"></i>Shop the Gallery</button>
+      <button class="btn btn-outline" onclick="studioOrLogin()"><i class="ti ti-palette"></i>Join to Sell</button>
+    </div>
+  </div>
+
+  <div class="sell-banner">
+    <div class="sell-banner-inner">
+      <div>
+        <div class="sell-banner-title">Are you an artist?</div>
+        <div class="sell-banner-sub">List your original work on The Kolours and reach collectors across Canada.</div>
+      </div>
+      <button class="btn btn-gold sell-banner-btn" onclick="studioOrLogin()">Join to Sell →</button>
     </div>
   </div>
 
@@ -544,11 +568,9 @@
       </div>
       <div class="sidebar-section">
         <div class="sidebar-title">Origin</div>
+        <label class="filter-option"><input type="checkbox" data-filter="origin" value="Canada"> 🇨🇦 Canada</label>
         <label class="filter-option"><input type="checkbox" data-filter="origin" value="France"> 🇫🇷 France</label>
         <label class="filter-option"><input type="checkbox" data-filter="origin" value="Japan"> 🇯🇵 Japan</label>
-        <label class="filter-option"><input type="checkbox" data-filter="origin" value="Brazil"> 🇧🇷 Brazil</label>
-        <label class="filter-option"><input type="checkbox" data-filter="origin" value="Germany"> 🇩🇪 Germany</label>
-        <label class="filter-option"><input type="checkbox" data-filter="origin" value="Kenya"> 🇰🇪 Kenya</label>
         <label class="filter-option"><input type="checkbox" data-filter="origin" value="UK"> 🇬🇧 UK</label>
       </div>
     </aside>
@@ -590,7 +612,7 @@
           <button class="btn btn-primary login-submit" onclick="doLogin()"><i class="ti ti-login"></i>Sign In</button>
         </div>
         <div class="login-divider"></div>
-        <div class="seed-hint">Try: raj@thekolours.com / kolours123<br/>or ankita@thekolours.com / kolours123</div>
+        <div class="seed-hint">Try: raj@thekolours.com / kolours123<br/>ankita@thekolours.com / kolours123<br/>abhineet@thekolours.com / kolours123</div>
         <div class="login-switch">New artist? <a onclick="switchToSignup()">Create an account</a></div>
       </div>
       <div id="signupView" style="display:none">
@@ -622,7 +644,7 @@
     </div>
   </div>
   <div class="upload-page">
-    <h2>Upload a <em style="font-family:var(--font-serif);font-style:italic;color:var(--terracotta)">Painting</em></h2>
+    <h2>Upload a <em style="font-family:var(--font-serif);font-style:normal;font-weight:700;color:var(--terracotta)">Painting</em></h2>
     <p class="sub">Add your original work to the gallery.</p>
 
     <div class="edit-banner" id="editBanner">
@@ -675,7 +697,7 @@
     <button class="btn btn-primary submit-btn" id="submitBtn" onclick="submitPainting()"><i class="ti ti-check"></i> List Painting</button>
 
     <div class="listings-panel" id="listingsPanel">
-      <div class="section-heading">Your <em style="font-family:var(--font-serif);font-style:italic;color:var(--terracotta)">Listings</em></div>
+      <div class="section-heading">Your <em style="font-family:var(--font-serif);font-style:normal;font-weight:700;color:var(--terracotta)">Listings</em></div>
       <div class="listings-stats" id="listingsStats"></div>
       <div class="listings-list" id="listingsList"></div>
     </div>
@@ -728,12 +750,15 @@ const AUTH = {
   USERS_KEY: "kolours_users",
   SESSION_KEY: "kolours_session",
   seedUsers() {
-    if(localStorage.getItem(this.USERS_KEY)) return;
-    const users = [
-      { id:"artist-raj",    name:"Raj R",    email:"raj@thekolours.com",    password:"kolours123", country:"Canada", joinDate:"2024-01-01" },
-      { id:"artist-ankita", name:"Ankita P", email:"ankita@thekolours.com", password:"kolours123", country:"Canada", joinDate:"2024-01-01" },
+    const existing = this.getUsers();
+    const seeds = [
+      { id:"artist-raj",      name:"Raj R",      email:"raj@thekolours.com",      password:"kolours123", country:"Canada", joinDate:"2024-01-01" },
+      { id:"artist-ankita",   name:"Ankita P",   email:"ankita@thekolours.com",   password:"kolours123", country:"Canada", joinDate:"2024-01-01" },
+      { id:"artist-abhineet", name:"Abhineet G", email:"abhineet@thekolours.com", password:"kolours123", country:"Canada", joinDate:"2024-01-01" },
     ];
-    localStorage.setItem(this.USERS_KEY, JSON.stringify(users));
+    let changed = false;
+    seeds.forEach(s => { if(!existing.find(u=>u.id===s.id)){ existing.push(s); changed=true; } });
+    if(changed || !localStorage.getItem(this.USERS_KEY)) this.saveUsers(existing);
   },
   getUsers() { return JSON.parse(localStorage.getItem(this.USERS_KEY)||"[]"); },
   saveUsers(u) { localStorage.setItem(this.USERS_KEY, JSON.stringify(u)); },
@@ -760,20 +785,24 @@ const AUTH = {
 
 // ─── DATA ───────────────────────────────────────────────────────────────────
 const ARTISTS = [
-  { name:"Raj R",    country:"🇨🇦", hue:["#d4a870","#8c6030"] },
-  { name:"Ankita P", country:"🇨🇦", hue:["#d4a8b4","#8c5c6b"] },
+  { name:"Raj R",      country:"🇨🇦", hue:["#d4a870","#8c6030"] },
+  { name:"Ankita P",   country:"🇨🇦", hue:["#d4a8b4","#8c5c6b"] },
+  { name:"Abhineet G", country:"🇨🇦", hue:["#4a6fa5","#1e3a5f","#7040c0"] },
 ];
 
 const SEED = [
-  { id:1,  title:"Cherry Blossom",       artist:"Raj R",    artistId:"artist-raj",    price:850,  size:"40×50 cm",  medium:"Acrylic",     category:"Landscape",  origin:"Canada", year:2024, available:true,  badge:"featured", desc:"Pink cherry blossoms drift over deep blue mountains — a celebration of spring's fleeting beauty painted in bold, joyful acrylic.",          img:"images/cherry-blossom.jpg" },
-  { id:2,  title:"Night and Day",        artist:"Raj R",    artistId:"artist-raj",    price:1500, size:"60×80 cm",  medium:"Acrylic",     category:"Abstract",   origin:"Canada", year:2024, available:true,  badge:"featured", desc:"A diptych of two trees — one rooted in the cool blues of night, the other blazing in the warmth of day. Two canvases, one story.",          img:"images/night-and-day.jpg" },
-  { id:3,  title:"Meditation",           artist:"Raj R",    artistId:"artist-raj",    price:950,  size:"30×40 cm",  medium:"Acrylic",     category:"Figurative", origin:"Canada", year:2023, available:true,  badge:null,       desc:"A silhouetted figure meditates beneath a canopy of trees, framed by a radiant sunset — stillness made visible.",                            img:"images/meditation.jpg" },
-  { id:4,  title:"Spiritual Goddess",    artist:"Raj R",    artistId:"artist-raj",    price:1200, size:"50×70 cm",  medium:"Mixed media", category:"Figurative", origin:"Canada", year:2023, available:true,  badge:"new",      desc:"A divine feminine figure — vivid reds and greens, adorned with pearls and butterflies — radiates energy and spiritual power.",             img:"images/spiritual-goddess.jpg" },
-  { id:5,  title:"Chakra Portal",        artist:"Raj R",    artistId:"artist-raj",    price:1100, size:"60×80 cm",  medium:"Acrylic",     category:"Abstract",   origin:"Canada", year:2024, available:true,  badge:null,       desc:"Concentric rings of colour spiral inward toward a luminous centre — a visual meditation on energy, focus, and inner radiance.",             img:"images/chakra-portal.jpg" },
-  { id:6,  title:"A Mermaid Worrier",    artist:"Ankita P", artistId:"artist-ankita", price:750,  size:"25×30 cm",  medium:"Acrylic",     category:"Abstract",   origin:"Canada", year:2024, available:true,  badge:"new",      desc:"A gold and amber bloom — layered petals unfurl against a deep burgundy ground, laced with pink blossoms and delicate green leaves.",        img:"images/mermaid-worrier.jpg" },
-  { id:7,  title:"Goddess Face",         artist:"Raj R",    artistId:"artist-raj",    price:1300, size:"60×80 cm",  medium:"Acrylic",     category:"Portrait",   origin:"Canada", year:2023, available:true,  badge:"featured", desc:"A bold portrait of a goddess — sweeping coloured arcs frame a serene face adorned with a third eye, jewellery, and flowing crimson petals.", img:"images/goddess-face.jpg" },
-  { id:8,  title:"Christmas Tree",       artist:"Raj R",    artistId:"artist-raj",    price:650,  size:"20×25 cm",  medium:"Mixed media", category:"Still Life", origin:"Canada", year:2023, available:true,  badge:null,       desc:"A silver tree stands in a midnight snowfall, framed by bursts of red and white snowflakes — a festive, textured mixed-media keepsake.",     img:"images/christmas-tree.jpg" },
-  { id:9,  title:"Winter Night",         artist:"Raj R",    artistId:"artist-raj",    price:550,  size:"18×24 cm",  medium:"Acrylic",     category:"Landscape",  origin:"Canada", year:2024, available:true,  badge:null,       desc:"A lone tree stands against a star-scattered black sky, a full moon watching over the silent, snow-covered earth below.",                    img:"images/winter-night.jpg" },
+  { id:1,  title:"Cherry Blossom",       artist:"Raj R",      artistId:"artist-raj",      price:55.44,  size:"40×50 cm",  medium:"Acrylic",     category:"Landscape",  origin:"Canada", year:2024, available:true,  badge:"featured", desc:"This cherry blossom painting captures the delicate beauty of the iconic flower. The intricate brushwork and rich colour palette create a stunning visual experience, evoking feelings of hope and renewal.", img:"images/cherry-blossom.jpg" },
+  { id:2,  title:"Night and Day",        artist:"Raj R",      artistId:"artist-raj",      price:259.87, size:"60×80 cm",  medium:"Acrylic",     category:"Abstract",   origin:"Canada", year:2024, available:true,  badge:"featured", desc:"Experience the beauty of Night and Day with this exquisite painting. Featuring a stunning representation of day and night in one canvas, it captures the enchanting contrast between light and dark.", img:"images/night-and-day.jpg" },
+  { id:3,  title:"The Still Mind",       artist:"Raj R",      artistId:"artist-raj",      price:45.76,  size:"30×40 cm",  medium:"Acrylic",     category:"Figurative", origin:"Canada", year:2023, available:true,  badge:null,       desc:"Discover the power of a still mind with this painting featuring Buddha under a tree. Channel your determination and find inner peace through the serene imagery of this beautiful acrylic work.", img:"images/meditation.jpg" },
+  { id:4,  title:"Awakening",            artist:"Raj R",      artistId:"artist-raj",      price:149.89, size:"50×70 cm",  medium:"Acrylic",     category:"Figurative", origin:"Canada", year:2023, available:true,  badge:null,       desc:"Increase self-awareness and find inner peace with Awakening. Through meditation, this painting guides you towards awakening your inner self, with a divine feminine figure radiating energy and spiritual power.", img:"images/spiritual-goddess.jpg" },
+  { id:5,  title:"Chakra Portal",        artist:"Raj R",      artistId:"artist-raj",      price:120.00, size:"60×80 cm",  medium:"Acrylic",     category:"Abstract",   origin:"Canada", year:2024, available:true,  badge:null,       desc:"Concentric rings of colour spiral inward toward a luminous centre — a visual meditation on energy, focus, and inner radiance. A striking piece for any contemplative space.", img:"images/chakra-portal.jpg" },
+  { id:6,  title:"A Mermaid Worrier",    artist:"Ankita P",   artistId:"artist-ankita",   price:75.00,  size:"25×30 cm",  medium:"Acrylic",     category:"Abstract",   origin:"Canada", year:2024, available:true,  badge:"new",      desc:"A gold and amber bloom — layered petals unfurl against a deep burgundy ground, laced with pink blossoms and delicate green leaves. A vibrant, joyful original by Ankita P.", img:"images/mermaid-worrier.jpg" },
+  { id:7,  title:"Empowerment",          artist:"Raj R",      artistId:"artist-raj",      price:159.99, size:"60×80 cm",  medium:"Acrylic",     category:"Portrait",   origin:"Canada", year:2023, available:true,  badge:"featured", desc:"Empowerment is a thought-provoking painting that celebrates the strength and resilience of women. Through a bold goddess portrait with sweeping arcs and a radiant third eye, it conveys a powerful sense of dignity.", img:"images/goddess-face.jpg" },
+  { id:8,  title:"Christmas Tree",       artist:"Raj R",      artistId:"artist-raj",      price:59.99,  size:"20×25 cm",  medium:"Mixed media", category:"Still Life", origin:"Canada", year:2023, available:true,  badge:null,       desc:"This Christmas Tree painting features a beautiful snowfall, bringing a festive touch to your home décor. A silver tree stands in midnight snowfall, framed by red and white snowflakes.", img:"images/christmas-tree.jpg" },
+  { id:9,  title:"Winter Night",         artist:"Raj R",      artistId:"artist-raj",      price:55.00,  size:"18×24 cm",  medium:"Acrylic",     category:"Landscape",  origin:"Canada", year:2024, available:true,  badge:null,       desc:"A lone tree stands against a star-scattered black sky, a full moon watching over the silent, snow-covered earth below. Peaceful and evocative.", img:"images/winter-night.jpg" },
+  { id:10, title:"The Birthday Dinner",  artist:"Raj R",      artistId:"artist-raj",      price:87.90,  size:"30×40 cm",  medium:"Acrylic",     category:"Still Life", origin:"Canada", year:2024, available:true,  badge:"new",      desc:"Preserved from a lavish birthday dinner, this painting features intricate brushwork capturing a celebratory still life. A unique conversation piece that commemorates the joy of special occasions.", img:"https://cdn.shopify.com/s/files/1/0647/6988/4314/files/IMG_3522.jpg?v=1728841507" },
+  { id:11, title:"Abstract Floral",      artist:"Raj R",      artistId:"artist-raj",      price:45.78,  size:"20×30 cm",  medium:"Acrylic",     category:"Abstract",   origin:"Canada", year:2024, available:true,  badge:null,       desc:"Expertly crafted with a random abstract floral design, this painting adds a touch of creative charm to any space. Vivid petals and organic forms bloom across the canvas in a dynamic composition.", img:"https://cdn.shopify.com/s/files/1/0647/6988/4314/files/IMG_1141.png?v=1732213497" },
+  { id:12, title:"The Cosmos",           artist:"Abhineet G", artistId:"artist-abhineet", price:249.99, size:"50×70 cm",  medium:"Acrylic",     category:"Abstract",   origin:"Canada", year:2024, available:true,  badge:"featured", desc:"Discover the mysteries of the universe with The Cosmos. This captivating painting depicts the birth and death of stars, with deep indigos and purples swirling with golden starbursts — evoking the infinite wonder of the universe.", img:"https://cdn.shopify.com/s/files/1/0647/6988/4314/files/IMG_8111.jpg?v=1731115222" },
 ];
 
 const PAINTINGS_KEY = "kolours_paintings";
