@@ -10,7 +10,7 @@
   <title>Kolours — Art Marketplace</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -22,6 +22,7 @@
       --green: #2D6A4F;
       --border: rgba(0,0,0,0.08);
       --border-dark: rgba(0,0,0,0.15);
+      --font-display: 'Playfair Display', Georgia, serif;
       --font-serif: 'Montserrat', system-ui, sans-serif;
       --font-sans: 'DM Sans', system-ui, sans-serif;
       --nav-h: 60px;
@@ -88,136 +89,173 @@
 
     /* HERO */
     .hero {
-      padding: 64px 24px 48px;
-      max-width: 680px;
+      padding: 80px 24px 64px;
+      text-align: center;
+      border-bottom: 1px solid #e5e5e5;
     }
-    .hero-eyebrow { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(0,0,0,0.4); margin-bottom: 14px; }
-    .hero h1 { font-family: var(--font-serif); font-size: clamp(34px, 5.5vw, 54px); font-weight: 700; line-height: 1.1; margin-bottom: 16px; letter-spacing: -0.02em; }
-    .hero h1 em { font-style: normal; color: var(--terracotta); }
-    .hero p { font-size: 15px; color: rgba(0,0,0,0.55); line-height: 1.6; margin-bottom: 28px; max-width: 480px; }
-    .hero-ctas { display: flex; gap: 10px; flex-wrap: wrap; }
-    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; border-radius: 2px; font-family: var(--font-sans); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; text-decoration: none; border: none; }
-    .btn-primary { background: var(--black); color: #fff; }
-    .btn-primary:hover { background: #333; }
-    .btn-outline { background: transparent; color: var(--black); border: 0.5px solid var(--border-dark); }
-    .btn-outline:hover { background: var(--bg2); }
+    .hero-eyebrow { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(0,0,0,0.38); margin-bottom: 20px; }
+    .hero h1 { font-family: var(--font-display); font-size: clamp(40px, 6vw, 72px); font-weight: 400; line-height: 1.05; margin-bottom: 20px; letter-spacing: -0.01em; }
+    .hero h1 em { font-style: italic; color: var(--terracotta); }
+    .hero p { font-size: 16px; color: rgba(0,0,0,0.5); line-height: 1.65; margin: 0 auto 32px; max-width: 480px; }
+    .hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 11px 24px; border-radius: 100px; font-family: var(--font-sans); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.18s; text-decoration: none; border: 1px solid transparent; letter-spacing: 0.01em; }
+    .btn-primary { background: var(--black); color: #fff; border-color: var(--black); }
+    .btn-primary:hover { background: #333; border-color: #333; }
+    .btn-outline { background: transparent; color: var(--black); border: 1px solid #c5c5c5; }
+    .btn-outline:hover { border-color: var(--black); }
 
     /* GALLERY LAYOUT */
-    .gallery-layout { display: flex; gap: 0; }
-
-    /* SIDEBAR */
-    .sidebar {
-      width: 220px; flex-shrink: 0;
-      padding: 24px 20px;
-      border-right: 0.5px solid var(--border);
-      position: sticky; top: var(--nav-h); height: calc(100vh - var(--nav-h));
-      overflow-y: auto;
-    }
-    .sidebar-section { margin-bottom: 28px; }
-    .sidebar-title { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(0,0,0,0.35); margin-bottom: 12px; }
-    .filter-option { display: flex; align-items: center; gap: 8px; padding: 5px 0; cursor: pointer; font-size: 13px; color: rgba(0,0,0,0.65); }
-    .filter-option input[type=checkbox] { width: 14px; height: 14px; accent-color: var(--black); cursor: pointer; }
-    .filter-option:hover { color: var(--black); }
-    .price-range { width: 100%; accent-color: var(--black); cursor: pointer; }
-    .price-label { font-size: 12px; color: rgba(0,0,0,0.5); margin-top: 6px; }
-    .radio-group { display: flex; flex-direction: column; gap: 4px; }
-    .radio-opt { display: flex; align-items: center; gap: 8px; padding: 4px 0; cursor: pointer; font-size: 13px; color: rgba(0,0,0,0.65); }
-    .radio-opt input { accent-color: var(--black); cursor: pointer; }
+    .gallery-layout { display: block; }
 
     /* MAIN CONTENT */
-    .gallery-main { flex: 1; min-width: 0; padding: 0 24px 120px; }
+    .gallery-main { padding: 0 32px 120px; max-width: 1400px; margin: 0 auto; }
 
-    /* CATEGORY TABS */
-    .category-tabs { display: flex; gap: 4px; flex-wrap: wrap; padding: 20px 0 16px; border-bottom: 0.5px solid var(--border); margin-bottom: 20px; }
-    .tab-btn {
-      padding: 6px 14px; border-radius: 100px; border: 0.5px solid transparent;
-      font-family: var(--font-sans); font-size: 13px; cursor: pointer;
-      background: none; color: rgba(0,0,0,0.5);
-      transition: all 0.15s;
+    /* FILTER BAR — Artsy-style horizontal */
+    .filter-bar {
+      padding: 24px 0 0;
+      border-bottom: 1px solid #e5e5e5;
+      margin-bottom: 32px;
     }
-    .tab-btn:hover { color: var(--black); border-color: var(--border-dark); }
-    .tab-btn.active { background: var(--black); color: #fff; border-color: var(--black); }
-    .gallery-count { font-size: 12px; color: rgba(0,0,0,0.35); margin-bottom: 16px; }
-
-    /* SORT */
-    .gallery-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .category-tabs { display: flex; gap: 0; flex-wrap: wrap; margin-bottom: 0; }
+    .tab-btn {
+      padding: 10px 18px; border-radius: 0; border: none; border-bottom: 2px solid transparent;
+      font-family: var(--font-sans); font-size: 13px; cursor: pointer;
+      background: none; color: rgba(0,0,0,0.45); font-weight: 500;
+      transition: color 0.15s, border-color 0.15s;
+      margin-bottom: -1px;
+    }
+    .tab-btn:hover { color: var(--black); }
+    .tab-btn.active { color: var(--black); border-bottom-color: var(--black); }
+    .filter-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 0 14px; flex-wrap: wrap;
+    }
+    .filter-select {
+      font-family: var(--font-sans); font-size: 13px; color: var(--black);
+      background: #fff; border: 1px solid #c5c5c5;
+      border-radius: 100px; padding: 6px 14px; cursor: pointer;
+      appearance: none; -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23666'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 10px center;
+      padding-right: 28px; transition: border-color 0.15s;
+    }
+    .filter-select:focus { outline: none; border-color: var(--black); }
+    .filter-select.active-filter { border-color: var(--black); background-color: var(--black); color: #fff;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23fff'/%3E%3C/svg%3E");
+    }
+    .filter-divider { width: 1px; height: 20px; background: #ddd; flex-shrink: 0; }
+    .gallery-count { font-size: 12px; color: rgba(0,0,0,0.4); flex: 1; text-align: right; }
     .sort-select {
       font-family: var(--font-sans); font-size: 13px; color: var(--black);
-      background: none; border: 0.5px solid var(--border-dark);
-      border-radius: 2px; padding: 5px 10px; cursor: pointer;
+      background: none; border: none; cursor: pointer; font-weight: 500;
+      padding: 6px 4px; appearance: none; -webkit-appearance: none;
+      border-bottom: 1px solid transparent; transition: border-color 0.15s;
     }
+    .sort-select:focus { outline: none; }
 
     /* PAINTING GRID */
     .painting-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 40px 28px;
     }
 
-    /* PAINTING CARD */
-    .painting-card {
-      cursor: pointer; border-radius: 8px;
-      border: 0.5px solid var(--border);
-      overflow: hidden; background: var(--bg);
-      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    /* PAINTING CARD — Artsy-style: no border, hover save pill */
+    .painting-card { cursor: pointer; background: transparent; }
+    .painting-card:active { opacity: 0.85; }
+    .card-img-wrap {
+      position: relative; aspect-ratio: 4/5; overflow: hidden;
+      background: #ebebeb;
     }
-    .painting-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); border-color: var(--border-dark); }
-    .painting-card:active { transform: scale(0.98); }
-    .card-img-wrap { position: relative; aspect-ratio: 4/5; overflow: hidden; background: var(--bg2); }
-    .card-img-wrap canvas, .card-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .card-img-wrap canvas, .card-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.4s ease; }
+    .painting-card:hover .card-img-wrap img,
+    .painting-card:hover .card-img-wrap canvas { transform: scale(1.03); }
+
+    /* Image dim overlay on hover */
+    .card-img-wrap::after {
+      content: ''; position: absolute; inset: 0;
+      background: rgba(0,0,0,0); transition: background 0.25s;
+      pointer-events: none;
+    }
+    .painting-card:hover .card-img-wrap::after { background: rgba(0,0,0,0.18); }
+
+    /* Badge */
     .card-badge {
-      position: absolute; top: 10px; left: 10px;
-      font-size: 10px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase;
-      padding: 3px 8px; border-radius: 100px;
+      position: absolute; top: 12px; left: 12px; z-index: 2;
+      font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 4px 10px; border-radius: 100px;
     }
-    .badge-featured { background: rgba(0,0,0,0.75); color: #fff; }
+    .badge-featured { background: rgba(255,255,255,0.92); color: #111; backdrop-filter: blur(4px); }
     .badge-new { background: var(--black); color: #fff; }
-    .badge-sold { background: var(--terracotta); color: #fff; }
-    .card-wish {
-      position: absolute; top: 8px; right: 8px;
-      width: 32px; height: 32px; border-radius: 50%;
-      background: rgba(255,255,255,0.88); backdrop-filter: blur(4px);
-      border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
-      opacity: 0; transition: opacity 0.15s, color 0.15s;
-      font-size: 16px; color: rgba(0,0,0,0.4);
+    .badge-sold { background: rgba(0,0,0,0.7); color: rgba(255,255,255,0.8); }
+
+    /* Artsy-style Save pill — appears on hover at bottom-left of image */
+    .card-save-pill {
+      position: absolute; bottom: 12px; left: 12px; z-index: 3;
+      display: flex; align-items: center; gap: 5px;
+      background: rgba(255,255,255,0.95); backdrop-filter: blur(6px);
+      border: none; border-radius: 100px; padding: 6px 14px;
+      font-family: var(--font-sans); font-size: 12px; font-weight: 500; color: #111;
+      cursor: pointer;
+      opacity: 0; transform: translateY(6px);
+      transition: opacity 0.2s, transform 0.2s;
     }
-    .card-wish.wished { color: var(--terracotta); opacity: 1; }
-    .painting-card:hover .card-wish { opacity: 1; }
-    .card-body { padding: 12px 14px 14px; }
-    .card-title { font-family: var(--font-serif); font-size: 15px; font-weight: 600; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .card-artist { font-size: 12px; color: rgba(0,0,0,0.45); margin-bottom: 8px; }
-    .card-footer { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
-    .card-price { font-size: 14px; font-weight: 500; }
+    .card-save-pill.wished { opacity: 1; transform: translateY(0); background: #111; color: #fff; }
+    .painting-card:hover .card-save-pill { opacity: 1; transform: translateY(0); }
+    .card-save-pill i { font-size: 13px; }
+
+    /* Card body — clean, no padding-box */
+    .card-body { padding: 12px 0 0; }
+    .card-title { font-family: var(--font-sans); font-size: 14px; font-weight: 500; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--black); }
+    .card-artist { font-size: 13px; color: rgba(0,0,0,0.5); margin-bottom: 8px; }
+    .card-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .card-price { font-size: 14px; font-weight: 600; color: var(--black); }
     .card-size { font-size: 11px; color: rgba(0,0,0,0.35); }
     .card-add-btn {
-      font-family: var(--font-sans); font-size: 11px; font-weight: 500;
-      padding: 5px 10px; border-radius: 2px; border: 0.5px solid var(--border-dark);
+      font-family: var(--font-sans); font-size: 12px; font-weight: 500;
+      padding: 6px 14px; border-radius: 100px; border: 1px solid #c5c5c5;
       background: none; cursor: pointer; white-space: nowrap;
       transition: all 0.15s; color: var(--black);
     }
-    .card-add-btn:hover { background: var(--black); color: #fff; border-color: var(--black); }
+    .card-add-btn:hover { border-color: var(--black); background: var(--black); color: #fff; }
     .card-add-btn.in-cart { background: var(--green); color: #fff; border-color: var(--green); }
-    .card-add-btn.sold-btn { background: none; color: rgba(0,0,0,0.3); border-color: rgba(0,0,0,0.1); cursor: default; }
+    .card-add-btn.sold-btn { color: rgba(0,0,0,0.3); border-color: rgba(0,0,0,0.12); cursor: default; }
     .card-add-btn.buy-btn { background: var(--terracotta); color: #fff; border-color: var(--terracotta); }
-    .card-add-btn.buy-btn:hover { background: #a04828; border-color: #a04828; }
+    .card-add-btn.buy-btn:hover { background: #8a5820; border-color: #8a5820; }
     .stripe-badge { display:inline-flex; align-items:center; gap:4px; font-size:10px; color:rgba(0,0,0,0.3); margin-top:4px; }
     .cart-item-buy { display:inline-flex; align-items:center; gap:5px; margin-top:6px; padding:5px 10px; border-radius:2px; background:var(--terracotta); color:#fff; font-size:11px; font-weight:500; text-decoration:none; transition:background 0.15s; }
     .cart-item-buy:hover { background:#a04828; }
 
-    /* ARTISTS STRIP */
-    .artists-strip { margin-top: 48px; padding-top: 32px; border-top: 0.5px solid var(--border); }
-    .section-heading { font-family: var(--font-serif); font-size: 24px; font-weight: 700; margin-bottom: 20px; letter-spacing: -0.01em; }
-    .section-heading em { font-style: normal; color: var(--terracotta); }
-    .artists-row { display: flex; gap: 16px; flex-wrap: wrap; }
-    .artist-chip {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 14px; border-radius: 8px;
-      border: 0.5px solid var(--border);
-      background: var(--bg2);
+    /* ARTISTS SECTION — Institution-card style (Artsy-inspired) */
+    .artists-strip { margin-top: 72px; padding-top: 40px; border-top: 1px solid #e5e5e5; }
+    .section-heading {
+      font-family: var(--font-display); font-size: 30px; font-weight: 400;
+      margin-bottom: 32px; letter-spacing: -0.01em; color: var(--black);
     }
-    .artist-avatar { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; }
-    .artist-chip-name { font-size: 13px; font-weight: 500; }
-    .artist-chip-meta { font-size: 11px; color: rgba(0,0,0,0.4); }
+    .section-heading em { font-style: italic; color: inherit; }
+    .artists-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 24px; }
+    .artist-card {
+      cursor: pointer; position: relative;
+      transition: opacity 0.2s;
+    }
+    .artist-card:hover { opacity: 0.85; }
+    .artist-cover {
+      aspect-ratio: 1/1; overflow: hidden; background: #ebebeb; margin-bottom: 12px;
+      position: relative;
+    }
+    .artist-cover canvas { width: 100%; height: 100%; display: block; }
+    /* Follow pill on hover */
+    .artist-follow-pill {
+      position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%) translateY(4px);
+      background: rgba(255,255,255,0.95); backdrop-filter: blur(6px);
+      border: none; border-radius: 100px; padding: 6px 18px;
+      font-family: var(--font-sans); font-size: 12px; font-weight: 500; color: #111;
+      cursor: pointer; white-space: nowrap;
+      opacity: 0; transition: opacity 0.2s, transform 0.2s;
+    }
+    .artist-card:hover .artist-follow-pill { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .artist-card-name { font-size: 14px; font-weight: 600; color: var(--black); margin-bottom: 2px; }
+    .artist-card-meta { font-size: 13px; color: rgba(0,0,0,0.45); }
 
     /* DETAIL MODAL */
     .modal-overlay {
@@ -240,7 +278,7 @@
     .modal-img-wrap canvas, .modal-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
     .modal-content { padding: 20px 24px 32px; }
     .modal-eyebrow { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(0,0,0,0.4); margin-bottom: 6px; }
-    .modal-title { font-family: var(--font-serif); font-size: 26px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.01em; }
+    .modal-title { font-family: var(--font-display); font-size: 28px; font-weight: 400; margin-bottom: 4px; letter-spacing: -0.01em; }
     .modal-artist { font-size: 14px; color: rgba(0,0,0,0.5); margin-bottom: 16px; }
     .modal-price { font-size: 22px; font-weight: 500; margin-bottom: 20px; }
     .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
@@ -288,7 +326,7 @@
 
     /* UPLOAD PAGE */
     .upload-page { max-width: 720px; margin: 0 auto; padding: 32px 24px 120px; }
-    .upload-page h2 { font-family: var(--font-serif); font-size: 30px; font-weight: 500; margin-bottom: 6px; }
+    .upload-page h2 { font-family: var(--font-display); font-size: 32px; font-weight: 400; margin-bottom: 6px; }
     .upload-page .sub { font-size: 14px; color: rgba(0,0,0,0.45); margin-bottom: 32px; }
     .dropzone {
       border: 1.5px dashed rgba(0,0,0,0.15); border-radius: 12px;
@@ -468,16 +506,18 @@
 
     /* RESPONSIVE */
     @media (max-width: 768px) {
-      .sidebar { display: none; }
       .bottom-nav { display: flex; }
-      .gallery-main { padding: 0 12px calc(var(--bottom-nav-h) + var(--safe-b) + 32px); }
-      .hero { padding: 40px 16px 32px; }
-      .painting-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+      .gallery-main { padding: 0 16px calc(var(--bottom-nav-h) + var(--safe-b) + 32px); }
+      .hero { padding: 48px 16px 40px; }
+      .painting-grid { grid-template-columns: repeat(2, 1fr); gap: 24px 14px; }
       .top-nav { padding: 0 16px; }
       .nav-cart-btn span { display: none; }
       .modal-overlay { align-items: flex-end; }
       .modal-sheet { max-width: 100%; border-radius: 20px 20px 0 0; }
       .form-grid { grid-template-columns: 1fr; }
+      .artists-row { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+      .filter-row { gap: 6px; }
+      .filter-select { font-size: 12px; padding: 5px 24px 5px 10px; }
     }
     @media (min-width: 769px) {
       .bottom-nav { display: none; }
@@ -544,52 +584,46 @@
   </div>
 
   <div class="gallery-layout">
-    <aside class="sidebar">
-      <div class="sidebar-section">
-        <div class="sidebar-title">Medium</div>
-        <label class="filter-option"><input type="checkbox" data-filter="medium" value="Oil"> Oil on canvas</label>
-        <label class="filter-option"><input type="checkbox" data-filter="medium" value="Acrylic"> Acrylic</label>
-        <label class="filter-option"><input type="checkbox" data-filter="medium" value="Watercolour"> Watercolour</label>
-        <label class="filter-option"><input type="checkbox" data-filter="medium" value="Mixed media"> Mixed media</label>
-        <label class="filter-option"><input type="checkbox" data-filter="medium" value="Gouache"> Gouache</label>
-      </div>
-      <div class="sidebar-section">
-        <div class="sidebar-title">Price (CAD)</div>
-        <input type="range" class="price-range" id="priceRange" min="0" max="5000" value="5000" step="100" oninput="updatePrice(this.value)" />
-        <div class="price-label">Up to <strong id="priceLabel">$5,000</strong></div>
-      </div>
-      <div class="sidebar-section">
-        <div class="sidebar-title">Availability</div>
-        <div class="radio-group">
-          <label class="radio-opt"><input type="radio" name="avail" value="all" checked onchange="applyFilters()"> All works</label>
-          <label class="radio-opt"><input type="radio" name="avail" value="available" onchange="applyFilters()"> Available only</label>
-          <label class="radio-opt"><input type="radio" name="avail" value="sold" onchange="applyFilters()"> Sold</label>
+    <div class="gallery-main">
+      <!-- Artsy-style filter bar: category tabs + inline filter dropdowns -->
+      <div class="filter-bar">
+        <div class="category-tabs" id="categoryTabs"></div>
+        <div class="filter-row">
+          <select class="filter-select" id="filterMedium" onchange="applyFilters()">
+            <option value="">Medium</option>
+            <option value="Acrylic">Acrylic</option>
+            <option value="Oil">Oil</option>
+            <option value="Watercolour">Watercolour</option>
+            <option value="Mixed media">Mixed media</option>
+            <option value="Gouache">Gouache</option>
+          </select>
+          <select class="filter-select" id="filterPrice" onchange="applyFilters()">
+            <option value="">Price</option>
+            <option value="0-75">Under $75</option>
+            <option value="75-150">$75 – $150</option>
+            <option value="150-260">$150 – $260</option>
+            <option value="260-9999">$260+</option>
+          </select>
+          <select class="filter-select" id="filterAvail" onchange="applyFilters()">
+            <option value="all">Availability</option>
+            <option value="available">Available</option>
+            <option value="sold">Sold</option>
+          </select>
+          <div class="filter-divider"></div>
+          <div class="gallery-count" id="galleryCount"></div>
+          <select class="sort-select" id="sortSelect" onchange="applyFilters()">
+            <option value="featured">Sort: Featured</option>
+            <option value="price-asc">Price: Low → High</option>
+            <option value="price-desc">Price: High → Low</option>
+            <option value="newest">Newest</option>
+          </select>
         </div>
       </div>
-      <div class="sidebar-section">
-        <div class="sidebar-title">Origin</div>
-        <label class="filter-option"><input type="checkbox" data-filter="origin" value="Canada"> 🇨🇦 Canada</label>
-        <label class="filter-option"><input type="checkbox" data-filter="origin" value="France"> 🇫🇷 France</label>
-        <label class="filter-option"><input type="checkbox" data-filter="origin" value="Japan"> 🇯🇵 Japan</label>
-        <label class="filter-option"><input type="checkbox" data-filter="origin" value="UK"> 🇬🇧 UK</label>
-      </div>
-    </aside>
 
-    <div class="gallery-main">
-      <div class="category-tabs" id="categoryTabs"></div>
-      <div class="gallery-toolbar">
-        <div class="gallery-count" id="galleryCount"></div>
-        <select class="sort-select" id="sortSelect" onchange="applyFilters()">
-          <option value="featured">Featured</option>
-          <option value="price-asc">Price: Low → High</option>
-          <option value="price-desc">Price: High → Low</option>
-          <option value="newest">Newest</option>
-        </select>
-      </div>
       <div class="painting-grid" id="paintingGrid"></div>
 
       <div class="artists-strip">
-        <div class="section-heading">Featured <em>Artists</em></div>
+        <div class="section-heading">Our <em>Artists</em></div>
         <div class="artists-row" id="artistsRow"></div>
       </div>
     </div>
@@ -980,32 +1014,34 @@ function setCategory(c) {
 }
 
 // ─── FILTERS & SORT ───────────────────────────────────────────────────────────
-function updatePrice(val) {
-  document.getElementById("priceLabel").textContent = val>=5000 ? "$5,000+" : "$"+Number(val).toLocaleString();
-  applyFilters();
-}
-
 function applyFilters() {
-  const priceMax = parseInt(document.getElementById("priceRange").value);
-  const avail = document.querySelector('input[name="avail"]:checked').value;
-  const mediums = [...document.querySelectorAll('[data-filter=medium]:checked')].map(i=>i.value);
-  const origins = [...document.querySelectorAll('[data-filter=origin]:checked')].map(i=>i.value);
-  const sort = document.getElementById("sortSelect").value;
+  const mediumFilter = document.getElementById("filterMedium").value;
+  const priceFilter  = document.getElementById("filterPrice").value;
+  const avail        = document.getElementById("filterAvail").value;
+  const sort         = document.getElementById("sortSelect").value;
+
+  // Mark active filters
+  ["filterMedium","filterPrice","filterAvail"].forEach(id => {
+    const el = document.getElementById(id);
+    el.classList.toggle("active-filter", el.value !== "" && el.value !== "all");
+  });
 
   let list = paintings.filter(p => {
     if(activeCategory !== "All" && p.category !== activeCategory) return false;
-    if(priceMax < 5000 && p.price > priceMax) return false;
+    if(mediumFilter && !p.medium.includes(mediumFilter)) return false;
     if(avail === "available" && !p.available) return false;
     if(avail === "sold" && p.available) return false;
-    if(mediums.length && !mediums.some(m=>p.medium.includes(m))) return false;
-    if(origins.length && !origins.includes(p.origin)) return false;
+    if(priceFilter) {
+      const [min, max] = priceFilter.split("-").map(Number);
+      if(p.price < min || p.price > max) return false;
+    }
     return true;
   });
 
   if(sort==="price-asc") list.sort((a,b)=>a.price-b.price);
   else if(sort==="price-desc") list.sort((a,b)=>b.price-a.price);
   else if(sort==="newest") list.sort((a,b)=>b.id-a.id);
-  else list.sort((a,b)=>(a.badge?"featured"===a.badge?0:1:2)-(b.badge?"featured"===b.badge?0:1:2));
+  else list.sort((a,b)=>(a.badge==="featured"?0:a.badge?1:2)-(b.badge==="featured"?0:b.badge?1:2));
 
   renderGrid(list);
   document.getElementById("galleryCount").textContent = `${list.length} work${list.length!==1?"s":""}`;
@@ -1014,16 +1050,18 @@ function applyFilters() {
 // ─── GRID ────────────────────────────────────────────────────────────────────
 function renderGrid(list) {
   const grid = document.getElementById("paintingGrid");
-  if(!list.length) { grid.innerHTML='<p style="color:rgba(0,0,0,0.35);font-size:14px;padding:40px 0">No works match your filters.</p>'; return; }
+  if(!list.length) { grid.innerHTML='<p style="color:rgba(0,0,0,0.35);font-size:14px;padding:60px 0">No works match your filters.</p>'; return; }
   grid.innerHTML = "";
   list.forEach(p => {
+    const wished = wishlist.has(p.id);
+    const inCart = cart.find(c=>c.id===p.id);
     const card = document.createElement("div");
     card.className = "painting-card";
     card.innerHTML = `
       <div class="card-img-wrap" id="cimg-${p.id}">
-        ${p.badge?`<span class="card-badge badge-${p.badge}">${p.badge}</span>`:""}
-        <button class="card-wish${wishlist.has(p.id)?" wished":""}" onclick="toggleWish(event,${p.id})" title="Save to wishlist">
-          <i class="ti ti-heart${wishlist.has(p.id)?"-filled":""}"></i>
+        ${p.badge ? `<span class="card-badge badge-${p.badge}">${p.badge==="featured"?"Featured":p.badge==="new"?"New":"Sold"}</span>` : ""}
+        <button class="card-save-pill${wished?" wished":""}" onclick="toggleWish(event,${p.id})">
+          <i class="ti ti-heart${wished?"-filled":""}"></i>${wished?"Saved":"Save"}
         </button>
       </div>
       <div class="card-body">
@@ -1031,13 +1069,13 @@ function renderGrid(list) {
         <div class="card-artist">${p.artist} · ${p.origin}</div>
         <div class="card-footer">
           <div>
-            <div class="card-price">$${p.price.toLocaleString()}</div>
+            <div class="card-price">${p.available ? "$"+p.price.toLocaleString("en-CA",{minimumFractionDigits:2,maximumFractionDigits:2})+" CAD" : "Sold"}</div>
             <div class="card-size">${p.size}</div>
           </div>
           ${p.available
             ? p.stripeLink
               ? `<a class="card-add-btn buy-btn" href="${p.stripeLink}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Buy Now</a>`
-              : `<button class="card-add-btn${cart.find(c=>c.id===p.id)?" in-cart":""}" id="addbtn-${p.id}" onclick="addToCart(event,${p.id})">${cart.find(c=>c.id===p.id)?"In cart ✓":"Add"}</button>`
+              : `<button class="card-add-btn${inCart?" in-cart":""}" id="addbtn-${p.id}" onclick="addToCart(event,${p.id})">${inCart?"In cart ✓":"Add"}</button>`
             : `<button class="card-add-btn sold-btn" disabled>Sold</button>`
           }
         </div>
@@ -1054,19 +1092,21 @@ function renderGrid(list) {
 // ─── ARTISTS STRIP ───────────────────────────────────────────────────────────
 function renderArtists() {
   const allArtists = [...ARTISTS];
-  paintings.filter(p=>!ARTISTS.find(a=>a.name===p.artist)).forEach(p=>{
+  paintings.forEach(p=>{
     if(!allArtists.find(a=>a.name===p.artist))
-      allArtists.push({name:p.artist,works:paintings.filter(x=>x.artist===p.artist).length,country:"",hue:["#e0e0e0","#c0c0c0"]});
+      allArtists.push({name:p.artist, country:"", hue:["#e0e0e0","#c0c0c0"]});
   });
   document.getElementById("artistsRow").innerHTML = allArtists.map(a=>{
-    const c = genCanvas(a.hue,72,72,a.name.length*7);
+    const workCount = paintings.filter(p=>p.artist===a.name).length;
+    const c = genCanvas(a.hue, 360, 360, a.name.length*7);
     const dataUrl = c.toDataURL();
-    return `<div class="artist-chip">
-      <img class="artist-avatar" src="${dataUrl}" alt="${a.name}" />
-      <div>
-        <div class="artist-chip-name">${a.name} ${a.country}</div>
-        <div class="artist-chip-meta">${paintings.filter(p=>p.artist===a.name).length} works</div>
+    return `<div class="artist-card">
+      <div class="artist-cover">
+        <img src="${dataUrl}" alt="${a.name}" style="width:100%;height:100%;object-fit:cover;display:block" />
+        <button class="artist-follow-pill" onclick="event.stopPropagation()">Follow</button>
       </div>
+      <div class="artist-card-name">${a.name} ${a.country}</div>
+      <div class="artist-card-meta">${workCount} work${workCount!==1?"s":""} · Canada</div>
     </div>`;
   }).join("");
 }
