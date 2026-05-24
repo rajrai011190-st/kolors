@@ -343,6 +343,88 @@
     .listing-del:hover { color: var(--terracotta); }
     .listing-edit { background: none; border: none; cursor: pointer; color: rgba(0,0,0,0.25); font-size: 16px; padding: 4px; transition: color 0.15s; }
     .listing-edit:hover { color: var(--black); }
+
+    /* NAV AUTH */
+    .nav-artist-chip {
+      display: flex; align-items: center; gap: 8px;
+      padding: 5px 10px 5px 5px; border-radius: 100px;
+      border: 0.5px solid var(--border-dark); cursor: pointer;
+      background: none; font-family: var(--font-sans); font-size: 13px;
+      color: var(--black); position: relative;
+      transition: background 0.15s;
+    }
+    .nav-artist-chip:hover { background: var(--bg2); }
+    .nav-artist-avatar { width: 26px; height: 26px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
+    .nav-artist-avatar canvas { width: 100%; height: 100%; }
+    .nav-dropdown {
+      position: absolute; top: calc(100% + 8px); right: 0;
+      background: var(--bg); border: 0.5px solid var(--border-dark);
+      border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      min-width: 160px; z-index: 200; overflow: hidden;
+      display: none;
+    }
+    .nav-dropdown.open { display: block; }
+    .dropdown-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 14px; font-size: 13px; cursor: pointer;
+      color: var(--black); transition: background 0.1s;
+    }
+    .dropdown-item:hover { background: var(--bg2); }
+    .dropdown-item.danger { color: var(--terracotta); }
+    .dropdown-divider { height: 0.5px; background: var(--border); margin: 4px 0; }
+    .nav-login-btn {
+      font-family: var(--font-sans); font-size: 13px; font-weight: 500;
+      padding: 6px 14px; border-radius: 2px;
+      border: 0.5px solid var(--border-dark);
+      background: none; cursor: pointer; color: var(--black);
+      transition: all 0.15s;
+    }
+    .nav-login-btn:hover { background: var(--black); color: #fff; border-color: var(--black); }
+
+    /* LOGIN PAGE */
+    .login-page {
+      min-height: calc(100dvh - var(--nav-h));
+      display: flex; align-items: center; justify-content: center;
+      padding: 40px 24px calc(var(--bottom-nav-h) + 40px);
+    }
+    .login-card {
+      width: 100%; max-width: 400px;
+      background: var(--bg); border: 0.5px solid var(--border-dark);
+      border-radius: 12px; padding: 40px 36px;
+    }
+    .login-eyebrow { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(0,0,0,0.35); margin-bottom: 10px; }
+    .login-title { font-family: var(--font-serif); font-size: 30px; font-weight: 500; margin-bottom: 6px; }
+    .login-title em { font-style: italic; color: var(--terracotta); }
+    .login-sub { font-size: 13px; color: rgba(0,0,0,0.45); margin-bottom: 28px; line-height: 1.5; }
+    .login-form { display: flex; flex-direction: column; gap: 14px; }
+    .login-field { display: flex; flex-direction: column; gap: 6px; }
+    .login-field label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(0,0,0,0.4); }
+    .login-field input {
+      font-family: var(--font-sans); font-size: 14px; color: var(--black);
+      background: var(--bg); border: 0.5px solid var(--border-dark);
+      border-radius: 4px; padding: 10px 12px; outline: none;
+      transition: border-color 0.15s;
+    }
+    .login-field input:focus { border-color: var(--black); }
+    .login-submit { margin-top: 6px; padding: 12px; font-size: 14px; justify-content: center; }
+    .login-error { font-size: 13px; color: var(--terracotta); padding: 8px 12px; background: rgba(184,92,56,0.08); border-radius: 4px; display: none; }
+    .login-error.show { display: block; }
+    .login-switch { text-align: center; margin-top: 20px; font-size: 13px; color: rgba(0,0,0,0.45); }
+    .login-switch a { color: var(--black); font-weight: 500; cursor: pointer; text-decoration: underline; }
+    .login-divider { height: 0.5px; background: var(--border); margin: 20px 0; }
+    .seed-hint { font-size: 12px; color: rgba(0,0,0,0.35); text-align: center; line-height: 1.6; }
+
+    /* ARTIST PROFILE BANNER */
+    .studio-header {
+      display: flex; align-items: center; gap: 16px;
+      padding: 28px 24px 20px; border-bottom: 0.5px solid var(--border);
+      margin-bottom: 0;
+    }
+    .studio-avatar { width: 52px; height: 52px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
+    .studio-avatar canvas { width: 100%; height: 100%; }
+    .studio-name { font-family: var(--font-serif); font-size: 22px; font-weight: 500; }
+    .studio-meta { font-size: 13px; color: rgba(0,0,0,0.4); margin-top: 2px; }
+
     .edit-banner {
       display: none; align-items: center; justify-content: space-between;
       background: #f0ede8; border: 0.5px solid rgba(184,92,56,0.3);
@@ -394,6 +476,19 @@
       <span>Cart</span>
       <span class="cart-badge" id="cartBadge">0</span>
     </button>
+    <button class="nav-login-btn" id="navLoginBtn" onclick="showPage('login')">Join / Login</button>
+    <div style="position:relative;display:none" id="navArtistWrap">
+      <button class="nav-artist-chip" id="navArtistChip" onclick="toggleDropdown()">
+        <div class="nav-artist-avatar" id="navArtistAvatar"></div>
+        <span id="navArtistName"></span>
+        <i class="ti ti-chevron-down" style="font-size:12px;opacity:0.5"></i>
+      </button>
+      <div class="nav-dropdown" id="navDropdown">
+        <div class="dropdown-item" onclick="showPage('studio');toggleDropdown()"><i class="ti ti-palette"></i>My Studio</div>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-item danger" onclick="logout()"><i class="ti ti-logout"></i>Log out</div>
+      </div>
+    </div>
   </div>
 </nav>
 
@@ -402,8 +497,8 @@
   <button class="bottom-nav-btn active" id="bnGallery" onclick="showPage('gallery')">
     <i class="ti ti-layout-grid"></i>Gallery
   </button>
-  <button class="bottom-nav-btn" id="bnUpload" onclick="showPage('upload')">
-    <i class="ti ti-upload"></i>List Art
+  <button class="bottom-nav-btn" id="bnStudio" onclick="studioOrLogin()">
+    <i class="ti ti-palette"></i>My Studio
   </button>
 </nav>
 
@@ -474,11 +569,54 @@
   </div>
 </div>
 
-<!-- UPLOAD PAGE -->
-<div class="page" id="pageUpload">
+<!-- LOGIN PAGE -->
+<div class="page" id="pageLogin">
+  <div class="login-page">
+    <div class="login-card">
+      <div id="loginView">
+        <div class="login-eyebrow">Artist Portal</div>
+        <div class="login-title">Welcome to <em>Kolours</em></div>
+        <div class="login-sub">Sign in to manage your listings and reach collectors worldwide.</div>
+        <div class="login-error" id="loginError"></div>
+        <div class="login-form">
+          <div class="login-field"><label>Email</label><input id="loginEmail" type="email" placeholder="you@example.com" /></div>
+          <div class="login-field"><label>Password</label><input id="loginPassword" type="password" placeholder="••••••••" /></div>
+          <button class="btn btn-primary login-submit" onclick="doLogin()"><i class="ti ti-login"></i>Sign In</button>
+        </div>
+        <div class="login-divider"></div>
+        <div class="seed-hint">Try: raj@thekolours.com / kolours123<br/>or ankita@thekolours.com / kolours123</div>
+        <div class="login-switch">New artist? <a onclick="switchToSignup()">Create an account</a></div>
+      </div>
+      <div id="signupView" style="display:none">
+        <div class="login-eyebrow">Artist Portal</div>
+        <div class="login-title">Join <em>Kolours</em></div>
+        <div class="login-sub">Create your artist account and start selling your original work.</div>
+        <div class="login-error" id="signupError"></div>
+        <div class="login-form">
+          <div class="login-field"><label>Full Name *</label><input id="signupName" type="text" placeholder="Your artist name" /></div>
+          <div class="login-field"><label>Email *</label><input id="signupEmail" type="email" placeholder="you@example.com" /></div>
+          <div class="login-field"><label>Password *</label><input id="signupPassword" type="password" placeholder="Min 6 characters" /></div>
+          <div class="login-field"><label>Country</label><input id="signupCountry" type="text" placeholder="e.g. Canada" /></div>
+          <button class="btn btn-primary login-submit" onclick="doSignup()"><i class="ti ti-user-plus"></i>Create Account</button>
+        </div>
+        <div class="login-switch">Already have an account? <a onclick="switchToLogin()">Sign in</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STUDIO PAGE -->
+<div class="page" id="pageStudio">
+  <div class="studio-header">
+    <div class="studio-avatar" id="studioAvatar"></div>
+    <div>
+      <div class="studio-name" id="studioName"></div>
+      <div class="studio-meta" id="studioMeta"></div>
+    </div>
+  </div>
   <div class="upload-page">
-    <h2>List Your <em style="font-family:var(--font-serif);font-style:italic;color:var(--terracotta)">Painting</em></h2>
-    <p class="sub">Upload your original work and reach collectors worldwide.</p>
+    <h2>Upload a <em style="font-family:var(--font-serif);font-style:italic;color:var(--terracotta)">Painting</em></h2>
+    <p class="sub">Add your original work to the gallery.</p>
 
     <div class="edit-banner" id="editBanner">
       <span>Editing: <strong id="editBannerTitle"></strong></span>
@@ -574,6 +712,41 @@
 <div class="toast-container" id="toastContainer"></div>
 
 <script>
+// ─── AUTH ────────────────────────────────────────────────────────────────────
+const AUTH = {
+  USERS_KEY: "kolours_users",
+  SESSION_KEY: "kolours_session",
+  seedUsers() {
+    if(localStorage.getItem(this.USERS_KEY)) return;
+    const users = [
+      { id:"artist-raj",    name:"Raj R",    email:"raj@thekolours.com",    password:"kolours123", country:"Canada", joinDate:"2024-01-01" },
+      { id:"artist-ankita", name:"Ankita P", email:"ankita@thekolours.com", password:"kolours123", country:"Canada", joinDate:"2024-01-01" },
+    ];
+    localStorage.setItem(this.USERS_KEY, JSON.stringify(users));
+  },
+  getUsers() { return JSON.parse(localStorage.getItem(this.USERS_KEY)||"[]"); },
+  saveUsers(u) { localStorage.setItem(this.USERS_KEY, JSON.stringify(u)); },
+  login(email, password) {
+    const u = this.getUsers().find(u=>u.email===email.toLowerCase()&&u.password===password);
+    if(!u) return null;
+    localStorage.setItem(this.SESSION_KEY, u.id);
+    return u;
+  },
+  signup(name, email, password, country) {
+    const users = this.getUsers();
+    if(users.find(u=>u.email===email.toLowerCase())) return null;
+    const u = { id:"artist-"+Date.now(), name, email:email.toLowerCase(), password, country, joinDate:new Date().toISOString().split("T")[0] };
+    users.push(u); this.saveUsers(users);
+    localStorage.setItem(this.SESSION_KEY, u.id);
+    return u;
+  },
+  logout() { localStorage.removeItem(this.SESSION_KEY); },
+  currentUser() {
+    const id = localStorage.getItem(this.SESSION_KEY);
+    return id ? this.getUsers().find(u=>u.id===id)||null : null;
+  },
+};
+
 // ─── DATA ───────────────────────────────────────────────────────────────────
 const ARTISTS = [
   { name:"Raj R",    country:"🇨🇦", hue:["#d4a870","#8c6030"] },
@@ -581,15 +754,15 @@ const ARTISTS = [
 ];
 
 const SEED = [
-  { id:1,  title:"Cherry Blossom",       artist:"Raj R",        price:850,  size:"40×50 cm",  medium:"Acrylic",     category:"Landscape",  origin:"Canada", year:2024, available:true,  badge:"featured", desc:"Pink cherry blossoms drift over deep blue mountains — a celebration of spring's fleeting beauty painted in bold, joyful acrylic.",          img:"images/cherry-blossom.jpg" },
-  { id:2,  title:"Night and Day",        artist:"Raj R",        price:1500, size:"60×80 cm",  medium:"Acrylic",     category:"Abstract",   origin:"Canada", year:2024, available:true,  badge:"featured", desc:"A diptych of two trees — one rooted in the cool blues of night, the other blazing in the warmth of day. Two canvases, one story.",          img:"images/night-and-day.jpg" },
-  { id:3,  title:"Meditation",           artist:"Raj R",        price:950,  size:"30×40 cm",  medium:"Acrylic",     category:"Figurative", origin:"Canada", year:2023, available:true,  badge:null,       desc:"A silhouetted figure meditates beneath a canopy of trees, framed by a radiant sunset — stillness made visible.",                            img:"images/meditation.jpg" },
-  { id:4,  title:"Spiritual Goddess",    artist:"Raj R",        price:1200, size:"50×70 cm",  medium:"Mixed media", category:"Figurative", origin:"Canada", year:2023, available:true,  badge:"new",      desc:"A divine feminine figure — vivid reds and greens, adorned with pearls and butterflies — radiates energy and spiritual power.",             img:"images/spiritual-goddess.jpg" },
-  { id:5,  title:"Chakra Portal",        artist:"Raj R",        price:1100, size:"60×80 cm",  medium:"Acrylic",     category:"Abstract",   origin:"Canada", year:2024, available:true,  badge:null,       desc:"Concentric rings of colour spiral inward toward a luminous centre — a visual meditation on energy, focus, and inner radiance.",             img:"images/chakra-portal.jpg" },
-  { id:6,  title:"A Mermaid Worrier",    artist:"Ankita P",     price:750,  size:"25×30 cm",  medium:"Acrylic",     category:"Abstract",   origin:"Canada", year:2024, available:true,  badge:"new",      desc:"A gold and amber bloom — layered petals unfurl against a deep burgundy ground, laced with pink blossoms and delicate green leaves.",        img:"images/mermaid-worrier.jpg" },
-  { id:7,  title:"Goddess Face",         artist:"Raj R",        price:1300, size:"60×80 cm",  medium:"Acrylic",     category:"Portrait",   origin:"Canada", year:2023, available:true,  badge:"featured", desc:"A bold portrait of a goddess — sweeping coloured arcs frame a serene face adorned with a third eye, jewellery, and flowing crimson petals.", img:"images/goddess-face.jpg" },
-  { id:8,  title:"Christmas Tree",       artist:"Raj R",        price:650,  size:"20×25 cm",  medium:"Mixed media", category:"Still Life", origin:"Canada", year:2023, available:true,  badge:null,       desc:"A silver tree stands in a midnight snowfall, framed by bursts of red and white snowflakes — a festive, textured mixed-media keepsake.",     img:"images/christmas-tree.jpg" },
-  { id:9,  title:"Winter Night",         artist:"Raj R",        price:550,  size:"18×24 cm",  medium:"Acrylic",     category:"Landscape",  origin:"Canada", year:2024, available:true,  badge:null,       desc:"A lone tree stands against a star-scattered black sky, a full moon watching over the silent, snow-covered earth below.",                    img:"images/winter-night.jpg" },
+  { id:1,  title:"Cherry Blossom",       artist:"Raj R",    artistId:"artist-raj",    price:850,  size:"40×50 cm",  medium:"Acrylic",     category:"Landscape",  origin:"Canada", year:2024, available:true,  badge:"featured", desc:"Pink cherry blossoms drift over deep blue mountains — a celebration of spring's fleeting beauty painted in bold, joyful acrylic.",          img:"images/cherry-blossom.jpg" },
+  { id:2,  title:"Night and Day",        artist:"Raj R",    artistId:"artist-raj",    price:1500, size:"60×80 cm",  medium:"Acrylic",     category:"Abstract",   origin:"Canada", year:2024, available:true,  badge:"featured", desc:"A diptych of two trees — one rooted in the cool blues of night, the other blazing in the warmth of day. Two canvases, one story.",          img:"images/night-and-day.jpg" },
+  { id:3,  title:"Meditation",           artist:"Raj R",    artistId:"artist-raj",    price:950,  size:"30×40 cm",  medium:"Acrylic",     category:"Figurative", origin:"Canada", year:2023, available:true,  badge:null,       desc:"A silhouetted figure meditates beneath a canopy of trees, framed by a radiant sunset — stillness made visible.",                            img:"images/meditation.jpg" },
+  { id:4,  title:"Spiritual Goddess",    artist:"Raj R",    artistId:"artist-raj",    price:1200, size:"50×70 cm",  medium:"Mixed media", category:"Figurative", origin:"Canada", year:2023, available:true,  badge:"new",      desc:"A divine feminine figure — vivid reds and greens, adorned with pearls and butterflies — radiates energy and spiritual power.",             img:"images/spiritual-goddess.jpg" },
+  { id:5,  title:"Chakra Portal",        artist:"Raj R",    artistId:"artist-raj",    price:1100, size:"60×80 cm",  medium:"Acrylic",     category:"Abstract",   origin:"Canada", year:2024, available:true,  badge:null,       desc:"Concentric rings of colour spiral inward toward a luminous centre — a visual meditation on energy, focus, and inner radiance.",             img:"images/chakra-portal.jpg" },
+  { id:6,  title:"A Mermaid Worrier",    artist:"Ankita P", artistId:"artist-ankita", price:750,  size:"25×30 cm",  medium:"Acrylic",     category:"Abstract",   origin:"Canada", year:2024, available:true,  badge:"new",      desc:"A gold and amber bloom — layered petals unfurl against a deep burgundy ground, laced with pink blossoms and delicate green leaves.",        img:"images/mermaid-worrier.jpg" },
+  { id:7,  title:"Goddess Face",         artist:"Raj R",    artistId:"artist-raj",    price:1300, size:"60×80 cm",  medium:"Acrylic",     category:"Portrait",   origin:"Canada", year:2023, available:true,  badge:"featured", desc:"A bold portrait of a goddess — sweeping coloured arcs frame a serene face adorned with a third eye, jewellery, and flowing crimson petals.", img:"images/goddess-face.jpg" },
+  { id:8,  title:"Christmas Tree",       artist:"Raj R",    artistId:"artist-raj",    price:650,  size:"20×25 cm",  medium:"Mixed media", category:"Still Life", origin:"Canada", year:2023, available:true,  badge:null,       desc:"A silver tree stands in a midnight snowfall, framed by bursts of red and white snowflakes — a festive, textured mixed-media keepsake.",     img:"images/christmas-tree.jpg" },
+  { id:9,  title:"Winter Night",         artist:"Raj R",    artistId:"artist-raj",    price:550,  size:"18×24 cm",  medium:"Acrylic",     category:"Landscape",  origin:"Canada", year:2024, available:true,  badge:null,       desc:"A lone tree stands against a star-scattered black sky, a full moon watching over the silent, snow-covered earth below.",                    img:"images/winter-night.jpg" },
 ];
 
 let paintings = [...SEED];
@@ -599,6 +772,7 @@ let activeCategory = "All";
 let currentPainting = null;
 let uploadedImg = null;
 let editingId = null;
+let currentUser = null;
 
 // ─── GENERATIVE CANVAS ───────────────────────────────────────────────────────
 function genCanvas(colors, w, h, seed) {
@@ -632,10 +806,104 @@ function paintingMediaEl(p, w, h) {
 // ─── PAGES ───────────────────────────────────────────────────────────────────
 function showPage(name) {
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-  document.getElementById(name==="gallery"?"pageGallery":"pageUpload").classList.add("active");
+  const pageMap = { gallery:"pageGallery", studio:"pageStudio", login:"pageLogin" };
+  document.getElementById(pageMap[name]||"pageGallery").classList.add("active");
   document.getElementById("bnGallery").classList.toggle("active", name==="gallery");
-  document.getElementById("bnUpload").classList.toggle("active", name==="upload");
-  if(name==="upload") renderListings();
+  document.getElementById("bnStudio").classList.toggle("active", name==="studio");
+  if(name==="studio") { renderStudioHeader(); renderListings(); }
+  if(name==="login") { clearLoginForms(); }
+}
+
+function studioOrLogin() {
+  showPage(currentUser ? "studio" : "login");
+}
+
+// ─── AUTH UI ─────────────────────────────────────────────────────────────────
+function updateNavAuth() {
+  currentUser = AUTH.currentUser();
+  const loginBtn = document.getElementById("navLoginBtn");
+  const artistWrap = document.getElementById("navArtistWrap");
+  if(currentUser) {
+    loginBtn.style.display = "none";
+    artistWrap.style.display = "block";
+    document.getElementById("navArtistName").textContent = currentUser.name;
+    const avatarEl = document.getElementById("navArtistAvatar");
+    avatarEl.innerHTML = "";
+    const hue = artistHue(currentUser.name);
+    avatarEl.appendChild(genCanvas(hue, 26, 26, currentUser.name.length*7));
+  } else {
+    loginBtn.style.display = "";
+    artistWrap.style.display = "none";
+  }
+}
+
+function artistHue(name) {
+  const a = ARTISTS.find(x=>x.name===name);
+  return a ? a.hue : ["#c0b0a0","#806050"];
+}
+
+function toggleDropdown() {
+  document.getElementById("navDropdown").classList.toggle("open");
+}
+document.addEventListener("click", e=>{
+  if(!e.target.closest("#navArtistWrap")) document.getElementById("navDropdown")?.classList.remove("open");
+});
+
+function doLogin() {
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value;
+  const err = document.getElementById("loginError");
+  if(!email||!password){ showErr(err,"Please enter email and password."); return; }
+  const user = AUTH.login(email, password);
+  if(!user){ showErr(err,"Incorrect email or password."); return; }
+  err.classList.remove("show");
+  currentUser = user;
+  updateNavAuth();
+  showPage("studio");
+}
+
+function doSignup() {
+  const name = document.getElementById("signupName").value.trim();
+  const email = document.getElementById("signupEmail").value.trim();
+  const password = document.getElementById("signupPassword").value;
+  const country = document.getElementById("signupCountry").value.trim();
+  const err = document.getElementById("signupError");
+  if(!name||!email||!password){ showErr(err,"Name, email and password are required."); return; }
+  if(password.length<6){ showErr(err,"Password must be at least 6 characters."); return; }
+  const user = AUTH.signup(name, email, password, country);
+  if(!user){ showErr(err,"An account with that email already exists."); return; }
+  err.classList.remove("show");
+  currentUser = user;
+  updateNavAuth();
+  showPage("studio");
+}
+
+function logout() {
+  AUTH.logout();
+  currentUser = null;
+  updateNavAuth();
+  showPage("gallery");
+  toast("Logged out.");
+}
+
+function showErr(el, msg) { el.textContent=msg; el.classList.add("show"); }
+function switchToSignup() { document.getElementById("loginView").style.display="none"; document.getElementById("signupView").style.display=""; }
+function switchToLogin() { document.getElementById("signupView").style.display="none"; document.getElementById("loginView").style.display=""; }
+function clearLoginForms() {
+  ["loginEmail","loginPassword","signupName","signupEmail","signupPassword","signupCountry"].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=""; });
+  ["loginError","signupError"].forEach(id=>document.getElementById(id)?.classList.remove("show"));
+  switchToLogin();
+}
+
+function renderStudioHeader() {
+  if(!currentUser) return;
+  const hue = artistHue(currentUser.name);
+  const avatarEl = document.getElementById("studioAvatar");
+  avatarEl.innerHTML = "";
+  avatarEl.appendChild(genCanvas(hue, 52, 52, currentUser.name.length*7));
+  document.getElementById("studioName").textContent = currentUser.name;
+  const myCount = paintings.filter(p=>p.artistId===currentUser.id).length;
+  document.getElementById("studioMeta").textContent = `${currentUser.country||""}  ·  ${myCount} painting${myCount!==1?"s":""}`;
 }
 
 // ─── CATEGORY TABS ───────────────────────────────────────────────────────────
@@ -899,7 +1167,7 @@ function submitPainting() {
     }
     cancelEdit();
   } else {
-    paintings.unshift({ id:Date.now(), ...fields, available:true, badge:"new", img:uploadedImg||null, colors:["#c0a880","#e0c8a0","#a08060","#604020"] });
+    paintings.unshift({ id:Date.now(), ...fields, artistId:currentUser?.id||null, available:true, badge:"new", img:uploadedImg||null, colors:["#c0a880","#e0c8a0","#a08060","#604020"] });
     resetForm();
   }
   document.getElementById("successBar").classList.add("show");
@@ -946,7 +1214,7 @@ function cancelEdit() {
 }
 
 function renderListings() {
-  const listed = paintings;
+  const listed = currentUser ? paintings.filter(p=>p.artistId===currentUser.id) : paintings;
   const totalVal = listed.reduce((s,p)=>s+p.price,0);
   const cats = [...new Set(listed.map(p=>p.category))];
   document.getElementById("listingsStats").innerHTML = `
@@ -993,6 +1261,9 @@ function toast(msg) {
 }
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
+AUTH.seedUsers();
+currentUser = AUTH.currentUser();
+updateNavAuth();
 renderTabs();
 applyFilters();
 renderArtists();
