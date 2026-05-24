@@ -198,6 +198,11 @@
     .card-add-btn:hover { background: var(--black); color: #fff; border-color: var(--black); }
     .card-add-btn.in-cart { background: var(--green); color: #fff; border-color: var(--green); }
     .card-add-btn.sold-btn { background: none; color: rgba(0,0,0,0.3); border-color: rgba(0,0,0,0.1); cursor: default; }
+    .card-add-btn.buy-btn { background: var(--terracotta); color: #fff; border-color: var(--terracotta); }
+    .card-add-btn.buy-btn:hover { background: #a04828; border-color: #a04828; }
+    .stripe-badge { display:inline-flex; align-items:center; gap:4px; font-size:10px; color:rgba(0,0,0,0.3); margin-top:4px; }
+    .cart-item-buy { display:inline-flex; align-items:center; gap:5px; margin-top:6px; padding:5px 10px; border-radius:2px; background:var(--terracotta); color:#fff; font-size:11px; font-weight:500; text-decoration:none; transition:background 0.15s; }
+    .cart-item-buy:hover { background:#a04828; }
 
     /* ARTISTS STRIP */
     .artists-strip { margin-top: 48px; padding-top: 32px; border-top: 0.5px solid var(--border); }
@@ -660,6 +665,10 @@
       <div class="form-field"><label>Dimensions (cm)</label><input id="fSize" type="text" placeholder="e.g. 60×80 cm" /></div>
       <div class="form-field"><label>Year</label><input id="fYear" type="number" placeholder="2024" /></div>
       <div class="form-field full"><label>Description</label><textarea id="fDesc" placeholder="Tell the story of this work…"></textarea></div>
+      <div class="form-field full">
+        <label>Stripe Payment Link <span style="font-size:10px;color:rgba(0,0,0,0.35);text-transform:none;letter-spacing:0">(optional — paste from stripe.com/payment-links)</span></label>
+        <input id="fStripeLink" type="url" placeholder="https://buy.stripe.com/…" />
+      </div>
     </div>
     <button class="btn btn-primary submit-btn" id="submitBtn" onclick="submitPainting()"><i class="ti ti-check"></i> List Painting</button>
 
@@ -703,7 +712,7 @@
         <span class="cart-total-label">Total</span>
         <span class="cart-total-val" id="cartTotal">$0</span>
       </div>
-      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="toast('Checkout coming soon!')">Proceed to Checkout</button>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="cartCheckout()"><i class="ti ti-brand-stripe"></i>Proceed to Checkout</button>
     </div>
   </div>
 </div>
@@ -977,8 +986,9 @@ function renderGrid(list) {
             <div class="card-size">${p.size}</div>
           </div>
           ${p.available
-            ? `<button class="card-add-btn${cart.find(c=>c.id===p.id)?" in-cart":""}" id="addbtn-${p.id}" onclick="addToCart(event,${p.id})">
-                ${cart.find(c=>c.id===p.id)?"In cart ✓":"Add"}</button>`
+            ? p.stripeLink
+              ? `<a class="card-add-btn buy-btn" href="${p.stripeLink}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Buy Now</a>`
+              : `<button class="card-add-btn${cart.find(c=>c.id===p.id)?" in-cart":""}" id="addbtn-${p.id}" onclick="addToCart(event,${p.id})">${cart.find(c=>c.id===p.id)?"In cart ✓":"Add"}</button>`
             : `<button class="card-add-btn sold-btn" disabled>Sold</button>`
           }
         </div>
@@ -1069,6 +1079,7 @@ function renderCart() {
           <div class="cart-item-title">${p.title}</div>
           <div class="cart-item-artist">${p.artist}</div>
           <div class="cart-item-price">$${p.price.toLocaleString()}</div>
+          ${p.stripeLink ? `<a class="cart-item-buy" href="${p.stripeLink}" target="_blank" rel="noopener"><i class="ti ti-brand-stripe"></i>Purchase via Stripe</a>` : ""}
         </div>
         <button class="cart-item-remove" onclick="removeFromCart(${p.id})"><i class="ti ti-x"></i></button>
       </div>
@@ -1100,8 +1111,11 @@ function openModal(id) {
   `;
   const inCart = cart.find(c=>c.id===p.id);
   document.getElementById("modalActions").innerHTML = p.available
-    ? `<button class="btn btn-primary" id="modalAddBtn" onclick="modalAddCart()">${inCart?"In cart ✓":"Add to Cart"}</button>
-       <button class="btn btn-outline" onclick="toggleWish(event,${p.id})">${wishlist.has(p.id)?"Saved ♥":"Save"}</button>`
+    ? p.stripeLink
+      ? `<a class="btn btn-primary" href="${p.stripeLink}" target="_blank" rel="noopener" style="flex:2;justify-content:center"><i class="ti ti-brand-stripe"></i>Buy Now — $${p.price.toLocaleString()}</a>
+         <button class="btn btn-outline" onclick="toggleWish(event,${p.id})">${wishlist.has(p.id)?"Saved ♥":"Save"}</button>`
+      : `<button class="btn btn-primary" id="modalAddBtn" onclick="modalAddCart()">${inCart?"In cart ✓":"Add to Cart"}</button>
+         <button class="btn btn-outline" onclick="toggleWish(event,${p.id})">${wishlist.has(p.id)?"Saved ♥":"Save"}</button>`
     : `<button class="btn btn-outline" style="flex:1;justify-content:center" disabled>Sold — Not Available</button>`;
   const wrap = document.getElementById("modalImgWrap");
   wrap.innerHTML = "";
@@ -1158,6 +1172,7 @@ function submitPainting() {
     size: document.getElementById("fSize").value.trim()||"—",
     year: parseInt(document.getElementById("fYear").value)||new Date().getFullYear(),
     desc: document.getElementById("fDesc").value.trim()||"Original painting.",
+    stripeLink: document.getElementById("fStripeLink").value.trim()||null,
   };
   if(editingId !== null) {
     const idx = paintings.findIndex(p=>p.id===editingId);
@@ -1176,7 +1191,7 @@ function submitPainting() {
 }
 
 function resetForm() {
-  ["fTitle","fPrice","fArtist","fOrigin","fSize","fYear","fDesc"].forEach(id=>document.getElementById(id).value="");
+  ["fTitle","fPrice","fArtist","fOrigin","fSize","fYear","fDesc","fStripeLink"].forEach(id=>document.getElementById(id).value="");
   document.getElementById("fCategory").selectedIndex=0;
   document.getElementById("fMedium").selectedIndex=0;
   document.getElementById("previewWrap").style.display="none";
@@ -1196,6 +1211,7 @@ function editListing(id) {
   document.getElementById("fDesc").value = p.desc||"";
   document.getElementById("fCategory").value = p.category||"Abstract";
   document.getElementById("fMedium").value = p.medium||"Oil";
+  document.getElementById("fStripeLink").value = p.stripeLink||"";
   if(p.img && !p.img.startsWith("images/")) {
     document.getElementById("previewImg").src = p.img;
     document.getElementById("previewWrap").style.display = "block";
@@ -1250,6 +1266,25 @@ function deleteListing(id) {
   renderListings();
   applyFilters();
   toast("Listing removed.");
+}
+
+// ─── CHECKOUT ────────────────────────────────────────────────────────────────
+function cartCheckout() {
+  const withLinks = cart.filter(p=>p.stripeLink);
+  const withoutLinks = cart.filter(p=>!p.stripeLink);
+  if(!cart.length) { toast("Your cart is empty."); return; }
+  if(withLinks.length === 1 && !withoutLinks.length) {
+    window.open(withLinks[0].stripeLink, "_blank");
+    return;
+  }
+  if(withLinks.length > 0) {
+    closeCart();
+    toast(`Opening ${withLinks.length} Stripe checkout${withLinks.length>1?"s":""}…`);
+    withLinks.forEach((p,i)=>setTimeout(()=>window.open(p.stripeLink,"_blank"),i*400));
+    if(withoutLinks.length) toast(`${withoutLinks.length} item${withoutLinks.length>1?"s":""} have no payment link yet.`);
+  } else {
+    toast("No Stripe links added yet — paste links in My Studio.");
+  }
 }
 
 // ─── TOAST ───────────────────────────────────────────────────────────────────
