@@ -490,6 +490,63 @@
     }
     .toast.show { opacity: 1; transform: translateY(0); }
 
+    /* NAV LINK (About) */
+    .nav-link {
+      font-family: var(--font-sans); font-size: 13px; font-weight: 500;
+      color: rgba(0,0,0,0.55); background: none; border: none; cursor: pointer;
+      padding: 6px 4px; transition: color 0.15s; letter-spacing: 0.01em;
+    }
+    .nav-link:hover, .nav-link.active { color: var(--black); }
+
+    /* ABOUT PAGE */
+    .about-page { max-width: 860px; margin: 0 auto; padding: 72px 32px 120px; }
+    .about-hero { text-align: center; margin-bottom: 72px; }
+    .about-eyebrow { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(0,0,0,0.38); margin-bottom: 20px; }
+    .about-hero h1 { font-family: var(--font-display); font-size: clamp(36px,5vw,56px); font-weight: 400; line-height: 1.1; margin-bottom: 24px; }
+    .about-hero h1 em { font-style: italic; color: var(--terracotta); }
+    .about-hero p { font-size: 17px; color: rgba(0,0,0,0.55); line-height: 1.75; max-width: 580px; margin: 0 auto; }
+
+    .about-divider { height: 1px; background: #e5e5e5; margin: 64px 0; }
+
+    .about-section-label { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(0,0,0,0.35); margin-bottom: 20px; }
+    .about-story { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+    .about-story-heading { font-family: var(--font-display); font-size: 32px; font-weight: 400; line-height: 1.2; margin-bottom: 20px; }
+    .about-story-heading em { font-style: italic; }
+    .about-story-body { font-size: 15px; color: rgba(0,0,0,0.6); line-height: 1.8; }
+    .about-story-body p + p { margin-top: 16px; }
+
+    .about-values { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 8px; }
+    .about-value-num { font-family: var(--font-display); font-size: 40px; font-weight: 400; color: var(--terracotta); margin-bottom: 8px; line-height: 1; }
+    .about-value-title { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+    .about-value-desc { font-size: 13px; color: rgba(0,0,0,0.5); line-height: 1.65; }
+
+    .about-artists { }
+    .about-artist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 32px; margin-top: 4px; }
+    .about-artist-card { }
+    .about-artist-img { aspect-ratio: 1/1; overflow: hidden; background: #ebebeb; margin-bottom: 16px; }
+    .about-artist-img canvas { width: 100%; height: 100%; display: block; }
+    .about-artist-name { font-family: var(--font-display); font-size: 20px; font-weight: 400; margin-bottom: 4px; }
+    .about-artist-role { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(0,0,0,0.4); margin-bottom: 12px; }
+    .about-artist-bio { font-size: 14px; color: rgba(0,0,0,0.55); line-height: 1.7; }
+
+    .about-contact { background: var(--black); color: #fff; border-radius: 12px; padding: 48px; text-align: center; }
+    .about-contact h2 { font-family: var(--font-display); font-size: 28px; font-weight: 400; margin-bottom: 12px; }
+    .about-contact h2 em { font-style: italic; color: var(--terracotta); }
+    .about-contact p { font-size: 14px; color: rgba(255,255,255,0.55); margin-bottom: 28px; line-height: 1.65; }
+    .about-contact-links { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .about-contact-link { display: inline-flex; align-items: center; gap: 8px; padding: 10px 22px; border-radius: 100px; font-size: 13px; font-weight: 500; font-family: var(--font-sans); text-decoration: none; cursor: pointer; border: none; transition: all 0.15s; }
+    .about-contact-link.primary { background: #fff; color: #111; }
+    .about-contact-link.primary:hover { background: #e5e5e5; }
+    .about-contact-link.outline { background: transparent; color: rgba(255,255,255,0.8); border: 1px solid rgba(255,255,255,0.3); }
+    .about-contact-link.outline:hover { border-color: #fff; color: #fff; }
+
+    @media (max-width: 768px) {
+      .about-page { padding: 48px 16px calc(var(--bottom-nav-h) + var(--safe-b) + 40px); }
+      .about-story { grid-template-columns: 1fr; gap: 24px; }
+      .about-values { grid-template-columns: 1fr 1fr; gap: 20px; }
+      .about-contact { padding: 32px 20px; }
+    }
+
     /* SELL BANNER */
     .sell-banner {
       background: var(--black); color: #fff;
@@ -530,6 +587,7 @@
 <nav class="top-nav">
   <a class="nav-logo" href="#" onclick="showPage('gallery');return false;"><img src="images/logo.png" alt="The Kolours" /></a>
   <div class="nav-right">
+    <button class="nav-link" id="navAboutLink" onclick="showPage('about')">About</button>
     <button class="nav-cart-btn" onclick="openCart()">
       <i class="ti ti-shopping-bag"></i>
       <span>Cart</span>
@@ -555,6 +613,9 @@
 <nav class="bottom-nav">
   <button class="bottom-nav-btn active" id="bnGallery" onclick="showPage('gallery')">
     <i class="ti ti-layout-grid"></i>Gallery
+  </button>
+  <button class="bottom-nav-btn" id="bnAbout" onclick="showPage('about')">
+    <i class="ti ti-info-circle"></i>About
   </button>
   <button class="bottom-nav-btn" id="bnStudio" onclick="studioOrLogin()">
     <i class="ti ti-palette"></i>My Studio
@@ -627,6 +688,75 @@
         <div class="artists-row" id="artistsRow"></div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ABOUT PAGE -->
+<div class="page" id="pageAbout">
+  <div class="about-page">
+
+    <!-- Hero -->
+    <div class="about-hero">
+      <p class="about-eyebrow">The Kolours · Est. 2024 · Canada</p>
+      <h1>Art that brings<br/><em>colour</em> to your world.</h1>
+      <p>We're a small collective of Canadian artists on a mission to make original, handmade art accessible to everyone. Every painting on this site was made by hand — no prints, no reproductions.</p>
+    </div>
+
+    <div class="about-divider"></div>
+
+    <!-- Story -->
+    <div style="margin-bottom:8px" class="about-section-label">Our Story</div>
+    <div class="about-story">
+      <div>
+        <div class="about-story-heading">From a kitchen table<br/><em>to your walls.</em></div>
+      </div>
+      <div class="about-story-body">
+        <p>The Kolours started with Raj painting late into the night — acrylic on canvas, music on, no plan to sell. A few Instagram posts later, friends started asking to buy. That question — "is it for sale?" — became the seed of this marketplace.</p>
+        <p>We built The Kolours so that artists like Raj, Ankita, and Abhineet could list their original work without the overhead of a gallery or the noise of a massive platform. Every artist keeps most of what they earn. Every buyer gets a one-of-a-kind original, not a mass-produced print.</p>
+        <p>Based in Canada. Shipping Canada-wide.</p>
+      </div>
+    </div>
+
+    <div class="about-divider"></div>
+
+    <!-- Stats -->
+    <div style="margin-bottom:28px" class="about-section-label">By the numbers</div>
+    <div class="about-values">
+      <div>
+        <div class="about-value-num" id="aboutWorkCount">12</div>
+        <div class="about-value-title">Original works</div>
+        <div class="about-value-desc">Every painting is one of a kind — no prints, no reproductions.</div>
+      </div>
+      <div>
+        <div class="about-value-num">3</div>
+        <div class="about-value-title">Artists</div>
+        <div class="about-value-desc">Raj R, Ankita P, and Abhineet G — all based in Canada.</div>
+      </div>
+      <div>
+        <div class="about-value-num">100%</div>
+        <div class="about-value-title">Handmade</div>
+        <div class="about-value-desc">Acrylic on canvas, mixed media, and digital originals — crafted by the artist's hand.</div>
+      </div>
+    </div>
+
+    <div class="about-divider"></div>
+
+    <!-- Artists -->
+    <div style="margin-bottom:28px" class="about-section-label">Meet the Artists</div>
+    <div class="about-artist-grid" id="aboutArtistGrid"></div>
+
+    <div class="about-divider"></div>
+
+    <!-- Contact -->
+    <div class="about-contact">
+      <h2>Want to sell on<br/><em>The Kolours?</em></h2>
+      <p>We're always looking for talented Canadian artists. Create a free account, upload your work, and start selling today. No commission fees for the first year.</p>
+      <div class="about-contact-links">
+        <button class="about-contact-link primary" onclick="studioOrLogin()"><i class="ti ti-palette"></i>Join as an Artist</button>
+        <a class="about-contact-link outline" href="mailto:hello@thekolours.com"><i class="ti ti-mail"></i>hello@thekolours.com</a>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -898,12 +1028,16 @@ function paintingMediaEl(p, w, h) {
 // ─── PAGES ───────────────────────────────────────────────────────────────────
 function showPage(name) {
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-  const pageMap = { gallery:"pageGallery", studio:"pageStudio", login:"pageLogin" };
+  const pageMap = { gallery:"pageGallery", studio:"pageStudio", login:"pageLogin", about:"pageAbout" };
   document.getElementById(pageMap[name]||"pageGallery").classList.add("active");
   document.getElementById("bnGallery").classList.toggle("active", name==="gallery");
+  document.getElementById("bnAbout").classList.toggle("active", name==="about");
   document.getElementById("bnStudio").classList.toggle("active", name==="studio");
+  document.getElementById("navAboutLink").classList.toggle("active", name==="about");
   if(name==="studio") { renderStudioHeader(); renderListings(); }
   if(name==="login") { clearLoginForms(); }
+  if(name==="about") { renderAboutArtists(); }
+  window.scrollTo(0,0);
 }
 
 function studioOrLogin() {
@@ -1109,6 +1243,50 @@ function renderArtists() {
       <div class="artist-card-meta">${workCount} work${workCount!==1?"s":""} · Canada</div>
     </div>`;
   }).join("");
+}
+
+// ─── ABOUT ARTISTS ───────────────────────────────────────────────────────────
+const ARTIST_BIOS = {
+  "Raj R": {
+    role: "Founder & Artist",
+    bio: "Raj is the founder of The Kolours and the heart of the collection. A self-taught acrylic painter based in Canada, his work spans portraiture, spiritual imagery, and vivid landscapes — each piece painted with bold colour and quiet intention.",
+  },
+  "Ankita P": {
+    role: "Artist",
+    bio: "Ankita's paintings are full of warmth and life. Working primarily in acrylic, she creates abstract florals and figurative works that feel both joyful and deeply personal. Her pieces sell quickly — originals only.",
+  },
+  "Abhineet G": {
+    role: "Artist",
+    bio: "Abhineet brings a cosmic perspective to the canvas. His signature work, The Cosmos, captures the birth and death of stars in deep indigos and golds. He paints the universe the way it feels — vast, mysterious, and alive.",
+  },
+};
+
+function renderAboutArtists() {
+  const grid = document.getElementById("aboutArtistGrid");
+  if(!grid) return;
+  const allArtists = [...ARTISTS];
+  paintings.forEach(p=>{
+    if(!allArtists.find(a=>a.name===p.artist))
+      allArtists.push({name:p.artist, country:"🇨🇦", hue:["#e0e0e0","#c0c0c0"]});
+  });
+  grid.innerHTML = allArtists.map(a => {
+    const bio = ARTIST_BIOS[a.name] || { role:"Artist", bio:"Original works available in the gallery." };
+    const c = genCanvas(a.hue, 480, 480, a.name.length*7);
+    const dataUrl = c.toDataURL();
+    const workCount = paintings.filter(p=>p.artist===a.name).length;
+    return `<div class="about-artist-card">
+      <div class="about-artist-img">
+        <canvas style="display:none"></canvas>
+        <img src="${dataUrl}" alt="${a.name}" style="width:100%;height:100%;object-fit:cover;display:block"/>
+      </div>
+      <div class="about-artist-name">${a.name} ${a.country}</div>
+      <div class="about-artist-role">${bio.role} · ${workCount} work${workCount!==1?"s":""}</div>
+      <div class="about-artist-bio">${bio.bio}</div>
+    </div>`;
+  }).join("");
+  // live work count
+  const countEl = document.getElementById("aboutWorkCount");
+  if(countEl) countEl.textContent = paintings.filter(p=>p.available).length;
 }
 
 // ─── WISHLIST ────────────────────────────────────────────────────────────────
