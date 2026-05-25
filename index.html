@@ -980,9 +980,15 @@ function savePaintings() {
 function loadPaintings() {
   try {
     const stored = JSON.parse(localStorage.getItem(PAINTINGS_KEY) || "[]");
-    // Merge: seed first, then uploads (uploads may override seed edits via id match)
     const seedIds = new Set(SEED.map(p => p.id));
-    const uploads = stored.filter(p => !seedIds.has(p.id));
+    // Exclude uploads whose id matches a seed id, AND uploads whose title+artist
+    // matches a seed painting (handles old duplicates from before seed data existed)
+    const seedKeys = new Set(SEED.map(p => p.title.toLowerCase() + "|" + p.artist.toLowerCase()));
+    const uploads = stored.filter(p => !seedIds.has(p.id) && !seedKeys.has(p.title?.toLowerCase() + "|" + p.artist?.toLowerCase()));
+    // Persist the cleaned list back so the duplicate is gone permanently
+    if(uploads.length !== stored.filter(p => !seedIds.has(p.id)).length) {
+      localStorage.setItem(PAINTINGS_KEY, JSON.stringify(uploads));
+    }
     return [...SEED, ...uploads];
   } catch(e) { return [...SEED]; }
 }
