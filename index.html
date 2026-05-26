@@ -382,15 +382,19 @@
       background: #fff; cursor: pointer; color: var(--black);
     }
     .avail-toggle {
-      font-family: var(--font-sans); font-size: 10px; font-weight: 600;
-      letter-spacing: 0.05em; text-transform: uppercase;
-      padding: 4px 10px; border-radius: 100px; cursor: pointer; border: 1px solid;
-      transition: all 0.15s; white-space: nowrap;
+      font-family: var(--font-sans); font-size: 12px; font-weight: 500;
+      padding: 5px 14px; border-radius: 100px; cursor: pointer; border: 1px solid;
+      transition: all 0.18s; white-space: nowrap; display: inline-flex; align-items: center; gap: 5px;
     }
-    .avail-live { background: rgba(45,106,79,0.1); color: var(--green); border-color: rgba(45,106,79,0.35); }
-    .avail-live:hover { background: rgba(45,106,79,0.2); }
-    .avail-sold { background: rgba(162,107,37,0.1); color: var(--terracotta); border-color: rgba(162,107,37,0.35); }
-    .avail-sold:hover { background: rgba(162,107,37,0.2); }
+    /* When live, button offers to mark sold (amber) */
+    .avail-live { background: #fff; color: rgba(0,0,0,0.55); border-color: #d0d0d0; }
+    .avail-live:hover { background: rgba(162,107,37,0.08); color: var(--terracotta); border-color: rgba(162,107,37,0.4); }
+    /* When sold, button offers to restore (green) */
+    .avail-sold { background: rgba(162,107,37,0.08); color: var(--terracotta); border-color: rgba(162,107,37,0.35); }
+    .avail-sold:hover { background: rgba(45,106,79,0.08); color: var(--green); border-color: rgba(45,106,79,0.35); }
+    .listing-status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .dot-live { background: var(--green); }
+    .dot-sold { background: var(--terracotta); }
 
     /* LISTINGS PANEL */
     .listings-panel { margin-top: 40px; padding-top: 32px; border-top: 0.5px solid var(--border); }
@@ -1609,8 +1613,9 @@ function renderListings(artistFilter) {
         <div class="listing-meta">${p.artist}${isAdmin?"":" · "+p.category+" · "+p.medium}</div>
       </div>
       <div class="listing-price">$${p.price.toLocaleString("en-CA",{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
-      <button class="avail-toggle ${p.available?"avail-live":"avail-sold"}" onclick="toggleAvailability(${p.id})" title="Toggle availability">
-        ${p.available?"● Live":"○ Sold"}
+      <button class="avail-toggle ${p.available?"avail-live":"avail-sold"}" onclick="toggleAvailability(${p.id})" title="${p.available?'Mark as sold out':'Mark as available'}">
+        <span class="listing-status-dot ${p.available?"dot-live":"dot-sold"}"></span>
+        ${p.available?"Mark as Sold":"Mark as Available"}
       </button>
       ${canEdit ? `<button class="listing-edit" onclick="editListing(${p.id})" title="Edit"><i class="ti ti-pencil"></i></button>` : ""}
       ${canEdit ? `<button class="listing-del" onclick="deleteListing(${p.id})" title="Delete"><i class="ti ti-trash"></i></button>` : ""}
