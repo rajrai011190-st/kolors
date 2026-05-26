@@ -404,6 +404,15 @@
     }
     .card-admin-label { font-size: 11px; color: rgba(0,0,0,0.38); display: flex; align-items: center; gap: 4px; }
     .card-admin-label .listing-status-dot { width: 6px; height: 6px; }
+    .card-avail-btn {
+      width: 100%; padding: 6px 10px; border-radius: 4px; border: none;
+      font-family: var(--font-sans); font-size: 12px; font-weight: 600;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;
+      transition: opacity 0.15s;
+    }
+    .card-avail-btn:hover { opacity: 0.8; }
+    .btn-mark-sold { background: #fdf0eb; color: var(--terracotta); }
+    .btn-mark-live { background: #edf7f1; color: #2D6A4F; }
     .card-status-select {
       font-family: var(--font-sans); font-size: 11px; font-weight: 500;
       border-radius: 4px; border: 1px solid rgba(0,0,0,0.12);
@@ -1296,11 +1305,9 @@ function renderGrid(list) {
         </div>
         ${currentUser?.isAdmin ? `
         <div class="card-admin-bar" onclick="event.stopPropagation()">
-          <span class="card-admin-label"><i class="ti ti-shield-check" style="font-size:11px;color:var(--terracotta)"></i> Status</span>
-          <select class="card-status-select ${p.available?"status-live":"status-sold"}" onchange="setAvailability(${p.id}, this.value)">
-            <option value="1" ${p.available?"selected":""}>● Available</option>
-            <option value="0" ${!p.available?"selected":""}>○ Sold Out</option>
-          </select>
+          <button class="card-avail-btn ${p.available?"btn-mark-sold":"btn-mark-live"}" onclick="toggleAvailability(${p.id})">
+            ${p.available ? '<i class="ti ti-circle-x"></i> Mark Sold' : '<i class="ti ti-circle-check"></i> Mark Available'}
+          </button>
         </div>` : ""}
       </div>
     `;
