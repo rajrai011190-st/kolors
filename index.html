@@ -353,6 +353,7 @@
     .form-field textarea { resize: vertical; min-height: 80px; }
     .form-field.full { grid-column: 1 / -1; }
     .submit-btn { width: 100%; padding: 12px; font-size: 14px; font-weight: 500; }
+    .submit-btn.editing-mode { background: #2D6A4F; font-size: 15px; padding: 14px; }
     .success-bar {
       background: var(--green); color: #fff;
       padding: 12px 16px; border-radius: 6px;
@@ -901,7 +902,7 @@
       <span>Editing: <strong id="editBannerTitle"></strong></span>
       <button class="cancel-edit-btn" onclick="cancelEdit()">Cancel</button>
     </div>
-    <div class="success-bar" id="successBar"><i class="ti ti-circle-check"></i> Painting saved successfully!</div>
+    <div class="success-bar" id="successBar"><i class="ti ti-circle-check"></i> <span id="successMsg">Painting saved successfully!</span> <button onclick="showPage('gallery')" style="background:none;border:none;color:inherit;font-family:inherit;font-size:inherit;font-weight:700;cursor:pointer;text-decoration:underline;padding:0;margin-left:8px">View in Gallery →</button></div>
 
     <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
       <i class="ti ti-photo-up"></i>
@@ -1582,6 +1583,8 @@ function submitPainting() {
       if(isSeed) saveSeedEdit(paintings[idx]); else savePaintings();
     }
     cancelEdit();
+    document.getElementById("successMsg").textContent = `"${fields.title}" updated — live in the gallery.`;
+    setTimeout(()=>showPage("gallery"), 1800);
   } else {
     paintings.unshift({ id:Date.now(), ...fields, artistId:currentUser?.id||null, badge:"new", img:uploadedImg||null, colors:["#c0a880","#e0c8a0","#a08060","#604020"] });
     resetForm();
@@ -1623,6 +1626,7 @@ function editListing(id) {
   document.getElementById("editBannerTitle").textContent = p.title;
   document.getElementById("editBanner").classList.add("show");
   document.getElementById("submitBtn").innerHTML = '<i class="ti ti-device-floppy"></i> Save Changes';
+  document.getElementById("submitBtn").classList.add("editing-mode");
   document.querySelector(".upload-page").scrollIntoView({behavior:"smooth"});
 }
 
@@ -1630,6 +1634,7 @@ function cancelEdit() {
   editingId = null;
   document.getElementById("editBanner").classList.remove("show");
   document.getElementById("submitBtn").innerHTML = '<i class="ti ti-check"></i> List Painting';
+  document.getElementById("submitBtn").classList.remove("editing-mode");
   resetForm();
 }
 
