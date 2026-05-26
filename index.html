@@ -361,6 +361,37 @@
     }
     .success-bar.show { display: flex; }
 
+    /* ADMIN */
+    .admin-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: var(--terracotta); color: #fff;
+      font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; padding: 3px 10px; border-radius: 100px;
+      margin-left: 8px; vertical-align: middle;
+    }
+    .admin-banner {
+      background: #faf7f2; border: 1px solid rgba(162,107,37,0.25);
+      border-radius: 8px; padding: 12px 16px; margin-bottom: 20px;
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      font-size: 13px; color: var(--black);
+    }
+    .admin-banner i { color: var(--terracotta); font-size: 16px; flex-shrink: 0; }
+    .admin-artist-filter {
+      margin-left: auto; font-family: var(--font-sans); font-size: 12px;
+      border: 1px solid #c5c5c5; border-radius: 100px; padding: 4px 12px;
+      background: #fff; cursor: pointer; color: var(--black);
+    }
+    .avail-toggle {
+      font-family: var(--font-sans); font-size: 10px; font-weight: 600;
+      letter-spacing: 0.05em; text-transform: uppercase;
+      padding: 4px 10px; border-radius: 100px; cursor: pointer; border: 1px solid;
+      transition: all 0.15s; white-space: nowrap;
+    }
+    .avail-live { background: rgba(45,106,79,0.1); color: var(--green); border-color: rgba(45,106,79,0.35); }
+    .avail-live:hover { background: rgba(45,106,79,0.2); }
+    .avail-sold { background: rgba(162,107,37,0.1); color: var(--terracotta); border-color: rgba(162,107,37,0.35); }
+    .avail-sold:hover { background: rgba(162,107,37,0.2); }
+
     /* LISTINGS PANEL */
     .listings-panel { margin-top: 40px; padding-top: 32px; border-top: 0.5px solid var(--border); }
     .listings-stats { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
@@ -853,15 +884,23 @@
       <div class="form-field"><label>Dimensions (cm)</label><input id="fSize" type="text" placeholder="e.g. 60×80 cm" /></div>
       <div class="form-field"><label>Year</label><input id="fYear" type="number" placeholder="2024" /></div>
       <div class="form-field full"><label>Description</label><textarea id="fDesc" placeholder="Tell the story of this work…"></textarea></div>
-      <div class="form-field full">
-        <label>Stripe Payment Link <span style="font-size:10px;color:rgba(0,0,0,0.35);text-transform:none;letter-spacing:0">(optional — paste from stripe.com/payment-links)</span></label>
+      <div class="form-field">
+        <label>Status</label>
+        <select id="fAvailable">
+          <option value="1">Available — Live in gallery</option>
+          <option value="0">Sold — Hidden from sale</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Stripe Payment Link <span style="font-size:10px;color:rgba(0,0,0,0.35);text-transform:none;letter-spacing:0">(optional)</span></label>
         <input id="fStripeLink" type="url" placeholder="https://buy.stripe.com/…" />
       </div>
     </div>
     <button class="btn btn-primary submit-btn" id="submitBtn" onclick="submitPainting()"><i class="ti ti-check"></i> List Painting</button>
 
     <div class="listings-panel" id="listingsPanel">
-      <div class="section-heading">Your <em style="font-family:var(--font-serif);font-style:normal;font-weight:700;color:var(--terracotta)">Listings</em></div>
+      <div class="section-heading" id="listingsHeading">Your <em style="font-style:normal;font-weight:700;color:var(--terracotta)">Listings</em></div>
+      <div id="adminBanner" style="display:none"></div>
       <div class="listings-stats" id="listingsStats"></div>
       <div class="listings-list" id="listingsList"></div>
     </div>
@@ -916,12 +955,16 @@ const AUTH = {
   seedUsers() {
     const existing = this.getUsers();
     const seeds = [
-      { id:"artist-raj",      name:"Raj R",      email:"raj@thekolours.com",      password:"kolours123", country:"Canada", joinDate:"2024-01-01" },
+      { id:"artist-raj",      name:"Raj R",      email:"raj@thekolours.com",      password:"kolours123", country:"Canada", joinDate:"2024-01-01", isAdmin:true },
       { id:"artist-ankita",   name:"Ankita P",   email:"ankita@thekolours.com",   password:"kolours123", country:"Canada", joinDate:"2024-01-01" },
       { id:"artist-abhineet", name:"Abhineet G", email:"abhineet@thekolours.com", password:"kolours123", country:"Canada", joinDate:"2024-01-01" },
     ];
     let changed = false;
-    seeds.forEach(s => { if(!existing.find(u=>u.id===s.id)){ existing.push(s); changed=true; } });
+    seeds.forEach(s => {
+      const ex = existing.find(u=>u.id===s.id);
+      if(!ex){ existing.push(s); changed=true; }
+      else if(s.isAdmin && !ex.isAdmin){ ex.isAdmin=true; changed=true; } // patch existing admin
+    });
     if(changed || !localStorage.getItem(this.USERS_KEY)) this.saveUsers(existing);
   },
   getUsers() { return JSON.parse(localStorage.getItem(this.USERS_KEY)||"[]"); },
@@ -970,26 +1013,33 @@ const SEED = [
 ];
 
 const PAINTINGS_KEY = "kolours_paintings";
+const SEED_EDITS_KEY = "kolours_seed_edits";
 
 function savePaintings() {
-  // Only persist user-uploaded paintings (not seed) to keep storage lean
   const uploads = paintings.filter(p => p.id > 100);
   localStorage.setItem(PAINTINGS_KEY, JSON.stringify(uploads));
 }
 
+function saveSeedEdit(painting) {
+  const edits = JSON.parse(localStorage.getItem(SEED_EDITS_KEY)||"[]");
+  const idx = edits.findIndex(e=>e.id===painting.id);
+  if(idx !== -1) edits[idx] = painting; else edits.push(painting);
+  localStorage.setItem(SEED_EDITS_KEY, JSON.stringify(edits));
+}
+
 function loadPaintings() {
   try {
-    const stored = JSON.parse(localStorage.getItem(PAINTINGS_KEY) || "[]");
+    const stored  = JSON.parse(localStorage.getItem(PAINTINGS_KEY) || "[]");
+    const edits   = JSON.parse(localStorage.getItem(SEED_EDITS_KEY) || "[]");
+    const editMap = Object.fromEntries(edits.map(e=>[e.id, e]));
     const seedIds = new Set(SEED.map(p => p.id));
-    // Exclude uploads whose id matches a seed id, AND uploads whose title+artist
-    // matches a seed painting (handles old duplicates from before seed data existed)
-    const seedKeys = new Set(SEED.map(p => p.title.toLowerCase() + "|" + p.artist.toLowerCase()));
-    const uploads = stored.filter(p => !seedIds.has(p.id) && !seedKeys.has(p.title?.toLowerCase() + "|" + p.artist?.toLowerCase()));
-    // Persist the cleaned list back so the duplicate is gone permanently
-    if(uploads.length !== stored.filter(p => !seedIds.has(p.id)).length) {
+    const seedKeys = new Set(SEED.map(p => p.title.toLowerCase()+"|"+p.artist.toLowerCase()));
+    const uploads = stored.filter(p => !seedIds.has(p.id) && !seedKeys.has(p.title?.toLowerCase()+"|"+p.artist?.toLowerCase()));
+    if(uploads.length !== stored.filter(p=>!seedIds.has(p.id)).length)
       localStorage.setItem(PAINTINGS_KEY, JSON.stringify(uploads));
-    }
-    return [...SEED, ...uploads];
+    const seeds = SEED.map(p => editMap[p.id] ? {...p, ...editMap[p.id]} : p)
+                      .filter(p => !p._deleted);
+    return [...seeds, ...uploads];
   } catch(e) { return [...SEED]; }
 }
 
@@ -1133,9 +1183,10 @@ function renderStudioHeader() {
   const avatarEl = document.getElementById("studioAvatar");
   avatarEl.innerHTML = "";
   avatarEl.appendChild(genCanvas(hue, 52, 52, currentUser.name.length*7));
-  document.getElementById("studioName").textContent = currentUser.name;
-  const myCount = paintings.filter(p=>p.artistId===currentUser.id).length;
-  document.getElementById("studioMeta").textContent = `${currentUser.country||""}  ·  ${myCount} painting${myCount!==1?"s":""}`;
+  const badge = currentUser.isAdmin ? `<span class="admin-badge"><i class="ti ti-shield-check" style="font-size:10px"></i> Admin</span>` : "";
+  document.getElementById("studioName").innerHTML = currentUser.name + badge;
+  const myCount = currentUser.isAdmin ? paintings.length : paintings.filter(p=>p.artistId===currentUser.id).length;
+  document.getElementById("studioMeta").textContent = `${currentUser.country||""}  ·  ${myCount} listing${myCount!==1?"s":""}`;
 }
 
 // ─── CATEGORY TABS ───────────────────────────────────────────────────────────
@@ -1446,19 +1497,22 @@ function submitPainting() {
     year: parseInt(document.getElementById("fYear").value)||new Date().getFullYear(),
     desc: document.getElementById("fDesc").value.trim()||"Original painting.",
     stripeLink: document.getElementById("fStripeLink").value.trim()||null,
+    available: document.getElementById("fAvailable").value === "1",
   };
   if(editingId !== null) {
     const idx = paintings.findIndex(p=>p.id===editingId);
     if(idx !== -1) {
       paintings[idx] = { ...paintings[idx], ...fields };
       if(uploadedImg) paintings[idx].img = uploadedImg;
+      const isSeed = SEED.find(s=>s.id===editingId);
+      if(isSeed) saveSeedEdit(paintings[idx]); else savePaintings();
     }
     cancelEdit();
   } else {
-    paintings.unshift({ id:Date.now(), ...fields, artistId:currentUser?.id||null, available:true, badge:"new", img:uploadedImg||null, colors:["#c0a880","#e0c8a0","#a08060","#604020"] });
+    paintings.unshift({ id:Date.now(), ...fields, artistId:currentUser?.id||null, badge:"new", img:uploadedImg||null, colors:["#c0a880","#e0c8a0","#a08060","#604020"] });
     resetForm();
+    savePaintings();
   }
-  savePaintings();
   document.getElementById("successBar").classList.add("show");
   setTimeout(()=>document.getElementById("successBar").classList.remove("show"),4000);
   renderListings(); renderArtists(); renderTabs(); applyFilters();
@@ -1468,6 +1522,7 @@ function resetForm() {
   ["fTitle","fPrice","fArtist","fOrigin","fSize","fYear","fDesc","fStripeLink"].forEach(id=>document.getElementById(id).value="");
   document.getElementById("fCategory").selectedIndex=0;
   document.getElementById("fMedium").selectedIndex=0;
+  document.getElementById("fAvailable").value="1";
   document.getElementById("previewWrap").style.display="none";
   uploadedImg=null; document.getElementById("fileInput").value="";
 }
@@ -1486,6 +1541,7 @@ function editListing(id) {
   document.getElementById("fCategory").value = p.category||"Abstract";
   document.getElementById("fMedium").value = p.medium||"Oil";
   document.getElementById("fStripeLink").value = p.stripeLink||"";
+  document.getElementById("fAvailable").value = p.available ? "1" : "0";
   if(p.img && !p.img.startsWith("images/")) {
     document.getElementById("previewImg").src = p.img;
     document.getElementById("previewWrap").style.display = "block";
@@ -1503,29 +1559,61 @@ function cancelEdit() {
   resetForm();
 }
 
-function renderListings() {
-  const listed = currentUser ? paintings.filter(p=>p.artistId===currentUser.id) : paintings;
+function renderListings(artistFilter) {
+  const isAdmin = currentUser?.isAdmin;
+  const heading = document.getElementById("listingsHeading");
+  heading.innerHTML = isAdmin
+    ? `All <em style="font-style:normal;font-weight:700;color:var(--terracotta)">Listings</em>`
+    : `Your <em style="font-style:normal;font-weight:700;color:var(--terracotta)">Listings</em>`;
+
+  // Admin banner with artist filter
+  const banner = document.getElementById("adminBanner");
+  if(isAdmin) {
+    const artists = [...new Set(paintings.map(p=>p.artist))].sort();
+    const activeFilter = artistFilter || document.getElementById("adminArtistSelect")?.value || "";
+    banner.style.display = "flex";
+    banner.innerHTML = `
+      <i class="ti ti-shield-check"></i>
+      <span>Admin — viewing all ${paintings.length} listings</span>
+      <select class="admin-artist-filter" id="adminArtistSelect" onchange="renderListings(this.value)">
+        <option value="">All artists</option>
+        ${artists.map(a=>`<option value="${a}"${a===activeFilter?' selected':''}>${a}</option>`).join("")}
+      </select>
+    `;
+  } else {
+    banner.style.display = "none";
+  }
+
+  const activeFilter = isAdmin ? (document.getElementById("adminArtistSelect")?.value || artistFilter || "") : "";
+  let listed = isAdmin
+    ? (activeFilter ? paintings.filter(p=>p.artist===activeFilter) : paintings)
+    : paintings.filter(p=>p.artistId===currentUser?.id);
+
   const totalVal = listed.reduce((s,p)=>s+p.price,0);
   const cats = [...new Set(listed.map(p=>p.category))];
   document.getElementById("listingsStats").innerHTML = `
-    <div class="stat-chip"><div class="stat-val">${listed.length}</div><div class="stat-label">Listed</div></div>
-    <div class="stat-chip"><div class="stat-val">$${totalVal.toLocaleString()}</div><div class="stat-label">Total value</div></div>
+    <div class="stat-chip"><div class="stat-val">${listed.length}</div><div class="stat-label">${isAdmin?"Total":"Listed"}</div></div>
+    <div class="stat-chip"><div class="stat-val">$${totalVal.toLocaleString("en-CA",{minimumFractionDigits:2,maximumFractionDigits:2})}</div><div class="stat-label">Value</div></div>
     <div class="stat-chip"><div class="stat-val">${cats.length||"—"}</div><div class="stat-label">Categories</div></div>
   `;
+
   const list = document.getElementById("listingsList");
   list.innerHTML="";
   listed.forEach(p=>{
+    const canEdit = isAdmin || p.artistId===currentUser?.id;
     const row=document.createElement("div"); row.className="listing-row";
     row.innerHTML=`
       <div class="listing-thumb" id="lthumb-${p.id}"></div>
       <div class="listing-info">
         <div class="listing-title">${p.title}</div>
-        <div class="listing-meta">${p.artist} · ${p.category} · ${p.medium}</div>
+        <div class="listing-meta">${p.artist}${isAdmin?"":" · "+p.category+" · "+p.medium}</div>
       </div>
-      <div class="listing-price">$${p.price.toLocaleString()}</div>
-      <span class="status-pill ${p.available?"pill-live":"pill-draft"}">${p.available?"Live":"Sold"}</span>
-      <button class="listing-edit" onclick="editListing(${p.id})" title="Edit"><i class="ti ti-pencil"></i></button>
-      <button class="listing-del" onclick="deleteListing(${p.id})" title="Delete"><i class="ti ti-trash"></i></button>
+      <div class="listing-price">$${p.price.toLocaleString("en-CA",{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+      <button class="avail-toggle ${p.available?"avail-live":"avail-sold"}" onclick="toggleAvailability(${p.id})" title="Toggle availability">
+        ${p.available?"● Live":"○ Sold"}
+      </button>
+      ${canEdit ? `<button class="listing-edit" onclick="editListing(${p.id})" title="Edit"><i class="ti ti-pencil"></i></button>` : ""}
+      ${canEdit ? `<button class="listing-del" onclick="deleteListing(${p.id})" title="Delete"><i class="ti ti-trash"></i></button>` : ""}
     `;
     list.appendChild(row);
     const wrap=document.getElementById("lthumb-"+p.id);
@@ -1533,13 +1621,26 @@ function renderListings() {
   });
 }
 
+function toggleAvailability(id) {
+  const idx = paintings.findIndex(p=>p.id===id);
+  if(idx === -1) return;
+  paintings[idx].available = !paintings[idx].available;
+  paintings[idx].badge = paintings[idx].available ? null : "sold";
+  const isSeed = SEED.find(s=>s.id===id);
+  if(isSeed) saveSeedEdit(paintings[idx]); else savePaintings();
+  renderListings(); applyFilters();
+  toast(`"${paintings[idx].title}" marked as ${paintings[idx].available?"available":"sold"}.`);
+}
+
 function deleteListing(id) {
-  paintings = paintings.filter(p=>p.id!==id);
+  const p = paintings.find(x=>x.id===id);
+  paintings = paintings.filter(x=>x.id!==id);
   cart = cart.filter(c=>c.id!==id);
+  // Seed paintings get a deleted flag so the removal survives reload
+  if(p && SEED.find(s=>s.id===id)) saveSeedEdit({...p, _deleted:true});
   savePaintings();
   updateCartBadge();
-  renderListings();
-  applyFilters();
+  renderListings(); renderArtists(); applyFilters();
   toast("Listing removed.");
 }
 
