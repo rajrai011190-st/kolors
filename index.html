@@ -413,6 +413,16 @@
     .card-avail-btn:hover { opacity: 0.8; }
     .btn-mark-sold { background: #fdf0eb; color: var(--terracotta); }
     .btn-mark-live { background: #edf7f1; color: #2D6A4F; }
+    .modal-status-select {
+      margin-top: 5px; width: 100%; padding: 7px 30px 7px 10px;
+      border-radius: 6px; border: 1px solid rgba(0,0,0,0.12);
+      font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+      cursor: pointer; outline: none; appearance: none; -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 10px center;
+    }
+    .modal-status-select.status-live { background-color: #edf7f1; color: #2D6A4F; border-color: rgba(45,106,79,0.3); }
+    .modal-status-select.status-sold { background-color: #fdf0eb; color: var(--terracotta); border-color: rgba(162,107,37,0.3); }
     .card-status-select {
       font-family: var(--font-sans); font-size: 11px; font-weight: 500;
       border-radius: 4px; border: 1px solid rgba(0,0,0,0.12);
@@ -1471,6 +1481,14 @@ function openModal(id) {
     <div class="modal-detail"><div class="modal-detail-label">Year</div><div class="modal-detail-val">${p.year}</div></div>
     <div class="modal-detail"><div class="modal-detail-label">Medium</div><div class="modal-detail-val">${p.medium}</div></div>
     <div class="modal-detail"><div class="modal-detail-label">Status</div><div class="modal-detail-val" style="color:${p.available?'var(--green)':'var(--terracotta)'}">${p.available?"Available":"Sold"}</div></div>
+    ${currentUser?.isAdmin ? `
+    <div class="modal-detail" style="grid-column:1/-1">
+      <div class="modal-detail-label"><i class="ti ti-shield-check" style="color:var(--terracotta);font-size:10px"></i> Admin — Change Status</div>
+      <select class="modal-status-select ${p.available?"status-live":"status-sold"}" onchange="setAvailability(${p.id},this.value);openModal(${p.id})">
+        <option value="1" ${p.available?"selected":""}>● Available</option>
+        <option value="0" ${!p.available?"selected":""}>○ Sold Out</option>
+      </select>
+    </div>` : ""}
   `;
   const inCart = cart.find(c=>c.id===p.id);
   document.getElementById("modalActions").innerHTML = p.available
