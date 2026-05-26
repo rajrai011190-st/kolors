@@ -396,6 +396,15 @@
     .dot-live { background: var(--green); }
     .dot-sold { background: var(--terracotta); }
 
+    /* ADMIN CARD BAR — shown on gallery cards when admin is logged in */
+    .card-admin-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 7px 0 2px; border-top: 1px solid #efefef; margin-top: 8px;
+      gap: 6px;
+    }
+    .card-admin-label { font-size: 11px; color: rgba(0,0,0,0.38); display: flex; align-items: center; gap: 4px; }
+    .card-admin-label .listing-status-dot { width: 6px; height: 6px; }
+
     /* LISTINGS PANEL */
     .listings-panel { margin-top: 40px; padding-top: 32px; border-top: 0.5px solid var(--border); }
     .listings-stats { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
@@ -1274,6 +1283,16 @@ function renderGrid(list) {
             : `<button class="card-add-btn sold-btn" disabled>Sold</button>`
           }
         </div>
+        ${currentUser?.isAdmin ? `
+        <div class="card-admin-bar" onclick="event.stopPropagation()">
+          <span class="card-admin-label">
+            <span class="listing-status-dot ${p.available?"dot-live":"dot-sold"}"></span>
+            ${p.available ? "Live" : "Sold out"}
+          </span>
+          <button class="avail-toggle ${p.available?"avail-live":"avail-sold"}" onclick="toggleAvailability(${p.id})">
+            ${p.available ? "Mark as Sold" : "Mark as Available"}
+          </button>
+        </div>` : ""}
       </div>
     `;
     card.querySelector(".card-img-wrap").addEventListener("click", ()=>openModal(p.id));
