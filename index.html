@@ -413,6 +413,18 @@
     .card-avail-btn:hover { opacity: 0.8; }
     .btn-mark-sold { background: #fdf0eb; color: var(--terracotta); }
     .btn-mark-live { background: #edf7f1; color: #2D6A4F; }
+    .modal-admin-bar {
+      margin: 14px 0 4px;
+      padding: 12px 14px;
+      background: #fdf8f5;
+      border: 1px solid rgba(162,107,37,0.2);
+      border-radius: 8px;
+    }
+    .modal-admin-label {
+      display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--terracotta); margin-bottom: 8px;
+    }
+    .modal-admin-label .ti { font-size: 11px; margin-right: 4px; }
     .modal-status-select {
       margin-top: 5px; width: 100%; padding: 7px 30px 7px 10px;
       border-radius: 6px; border: 1px solid rgba(0,0,0,0.12);
@@ -961,6 +973,7 @@
       <div class="modal-artist" id="modalArtist"></div>
       <div class="modal-price" id="modalPrice"></div>
       <div class="modal-grid" id="modalGrid"></div>
+      <div id="modalAdminBar"></div>
       <div class="modal-desc" id="modalDesc"></div>
       <div class="modal-actions" id="modalActions"></div>
     </div>
@@ -1481,15 +1494,19 @@ function openModal(id) {
     <div class="modal-detail"><div class="modal-detail-label">Year</div><div class="modal-detail-val">${p.year}</div></div>
     <div class="modal-detail"><div class="modal-detail-label">Medium</div><div class="modal-detail-val">${p.medium}</div></div>
     <div class="modal-detail"><div class="modal-detail-label">Status</div><div class="modal-detail-val" style="color:${p.available?'var(--green)':'var(--terracotta)'}">${p.available?"Available":"Sold"}</div></div>
-    ${currentUser?.isAdmin ? `
-    <div class="modal-detail" style="grid-column:1/-1">
-      <div class="modal-detail-label"><i class="ti ti-shield-check" style="color:var(--terracotta);font-size:10px"></i> Admin — Change Status</div>
+  `;
+  const adminBar = document.getElementById("modalAdminBar");
+  if(currentUser && currentUser.isAdmin) {
+    adminBar.innerHTML = `<div class="modal-admin-bar">
+      <span class="modal-admin-label"><i class="ti ti-shield-check"></i> Admin — Change Status</span>
       <select class="modal-status-select ${p.available?"status-live":"status-sold"}" onchange="setAvailability(${p.id},this.value);openModal(${p.id})">
         <option value="1" ${p.available?"selected":""}>● Available</option>
         <option value="0" ${!p.available?"selected":""}>○ Sold Out</option>
       </select>
-    </div>` : ""}
-  `;
+    </div>`;
+  } else {
+    adminBar.innerHTML = "";
+  }
   const inCart = cart.find(c=>c.id===p.id);
   document.getElementById("modalActions").innerHTML = p.available
     ? p.stripeLink
