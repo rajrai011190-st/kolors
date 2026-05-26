@@ -938,14 +938,14 @@
       </div>
       <div class="form-field"><label>Dimensions (cm)</label><input id="fSize" type="text" placeholder="e.g. 60×80 cm" /></div>
       <div class="form-field"><label>Year</label><input id="fYear" type="number" placeholder="2024" /></div>
-      <div class="form-field full"><label>Description</label><textarea id="fDesc" placeholder="Tell the story of this work…"></textarea></div>
       <div class="form-field">
         <label>Status</label>
         <select id="fAvailable">
-          <option value="1">Available — Live in gallery</option>
-          <option value="0">Sold — Hidden from sale</option>
+          <option value="1">● Available — Live in gallery</option>
+          <option value="0">○ Sold Out</option>
         </select>
       </div>
+      <div class="form-field full"><label>Description</label><textarea id="fDesc" placeholder="Tell the story of this work…"></textarea></div>
       <div class="form-field">
         <label>Stripe Payment Link <span style="font-size:10px;color:rgba(0,0,0,0.35);text-transform:none;letter-spacing:0">(optional)</span></label>
         <input id="fStripeLink" type="url" placeholder="https://buy.stripe.com/…" />
