@@ -672,6 +672,22 @@
     @media (min-width: 769px) {
       .bottom-nav { display: none; }
     }
+    /* ── APPROVAL WORKFLOW ───────────────────────────────────────────────── */
+    .listing-status-pill { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 7px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
+    .pill-pending  { background: #fff8e1; color: #b45309; }
+    .pill-approved { background: #edf7f1; color: #2D6A4F; }
+    .pill-rejected { background: #fdecea; color: #c0392b; }
+    .pending-section { margin-bottom: 32px; padding: 20px; border: 1.5px solid rgba(180,83,9,0.25); border-radius: 10px; background: #fffbf5; }
+    .pending-section-title { font-family: var(--font-serif); font-size: 17px; font-weight: 600; color: #b45309; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .pending-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 0.5px solid rgba(0,0,0,0.06); }
+    .pending-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .pending-actions { display: flex; gap: 8px; margin-left: auto; flex-shrink: 0; }
+    .btn-approve { background: #edf7f1; color: #2D6A4F; border: 1px solid rgba(45,106,79,0.3); border-radius: 4px; padding: 5px 12px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font-sans); transition: background 0.15s, color 0.15s; }
+    .btn-approve:hover { background: #2D6A4F; color: #fff; }
+    .btn-reject  { background: #fdecea; color: #c0392b; border: 1px solid rgba(192,57,43,0.3); border-radius: 4px; padding: 5px 12px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font-sans); transition: background 0.15s, color 0.15s; }
+    .btn-reject:hover  { background: #c0392b; color: #fff; }
+    .pill-pending-count { background: #b45309; color: #fff; border-radius: 20px; font-size: 10px; font-weight: 700; padding: 1px 6px; }
+
     /* ── ADMIN PAGE ──────────────────────────────────────────────────────── */
     .admin-page-wrap { max-width: 960px; margin: 0 auto; padding: 32px 24px 120px; }
     .admin-dash-header {
@@ -967,6 +983,7 @@
         </select>
         <input class="admin-search" id="adminDashSearch" type="text" placeholder="Search by title…" oninput="renderAdminTable()" />
       </div>
+      <div id="adminPendingSection"></div>
       <div id="adminDashList"></div>
     </div>
 
@@ -1365,6 +1382,7 @@ function applyFilters() {
   });
 
   let list = paintings.filter(p => {
+    if(p.status === "pending" || p.status === "rejected") return false;
     if(activeCategory !== "All" && p.category !== activeCategory) return false;
     if(mediumFilter && !p.medium.includes(mediumFilter)) return false;
     if(avail === "available" && !p.available) return false;
@@ -1679,7 +1697,11 @@ function submitPainting() {
     document.getElementById("successMsg").textContent = `"${fields.title}" updated — live in the gallery.`;
     setTimeout(()=>showPage("gallery"), 1800);
   } else {
-    paintings.unshift({ id:Date.now(), ...fields, artistId:currentUser?.id||null, badge:"new", img:uploadedImg||null, colors:["#c0a880","#e0c8a0","#a08060","#604020"] });
+    const isAdminUpload = currentUser && currentUser.isAdmin;
+    paintings.unshift({ id:Date.now(), ...fields, artistId:currentUser?.id||null, badge:"new", status: isAdminUpload ? "approved" : "pending", img:uploadedImg||null, colors:["#c0a880","#e0c8a0","#a08060","#604020"] });
+    document.getElementById("successMsg").textContent = isAdminUpload
+      ? "Painting listed successfully!"
+      : "Submitted for review — it will appear in the gallery once approved.";
     resetForm();
     savePaintings();
   }
@@ -1781,6 +1803,7 @@ function renderListings(artistFilter) {
         <div class="listing-meta">${p.artist}${isAdmin?"":" · "+p.category+" · "+p.medium}</div>
       </div>
       <div class="listing-price">$${p.price.toLocaleString("en-CA",{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+      <span class="listing-status-pill ${p.status==="pending"?"pill-pending":p.status==="rejected"?"pill-rejected":"pill-approved"}">${p.status==="pending"?"Pending Review":p.status==="rejected"?"Rejected":"Approved"}</span>
       <button class="avail-toggle ${p.available?"avail-live":"avail-sold"}" onclick="toggleAvailability(${p.id})" title="${p.available?'Mark as sold out':'Mark as available'}">
         <span class="listing-status-dot ${p.available?"dot-live":"dot-sold"}"></span>
         ${p.available?"Mark as Sold":"Mark as Available"}
@@ -1855,6 +1878,60 @@ function toast(msg) {
   setTimeout(()=>{ el.classList.remove("show"); setTimeout(()=>el.remove(),300); },2500);
 }
 
+// ─── APPROVAL WORKFLOW ───────────────────────────────────────────────────────
+function renderPendingSection() {
+  const pending = paintings.filter(p=>p.status==="pending");
+  const container = document.getElementById("adminPendingSection");
+  if(!pending.length) { container.innerHTML=""; return; }
+  container.innerHTML = `
+    <div class="pending-section">
+      <div class="pending-section-title">
+        <i class="ti ti-clock-hour-4"></i> Pending Review
+        <span class="pill-pending-count">${pending.length}</span>
+      </div>
+      <div id="pendingRows"></div>
+    </div>`;
+  const rows = document.getElementById("pendingRows");
+  pending.forEach(p=>{
+    const row = document.createElement("div"); row.className="pending-row";
+    row.innerHTML=`
+      <div class="listing-thumb" id="pthumb-${p.id}"></div>
+      <div class="listing-info" style="flex:1;min-width:0">
+        <div class="listing-title">${p.title}</div>
+        <div class="listing-meta">${p.artist} · ${p.category} · $${p.price.toLocaleString("en-CA",{minimumFractionDigits:2})}</div>
+      </div>
+      <div class="pending-actions">
+        <button class="btn-approve" onclick="approveListingAdmin(${p.id})"><i class="ti ti-check"></i> Approve</button>
+        <button class="btn-reject"  onclick="rejectListingAdmin(${p.id})"><i class="ti ti-x"></i> Reject</button>
+      </div>`;
+    rows.appendChild(row);
+    const wrap = document.getElementById("pthumb-"+p.id);
+    if(wrap) wrap.appendChild(paintingMediaEl(p,48,48));
+  });
+}
+
+function approveListingAdmin(id) {
+  const idx = paintings.findIndex(p=>p.id===id);
+  if(idx===-1) return;
+  const title = paintings[idx].title;
+  paintings[idx].status = "approved";
+  const isSeed = SEED.find(s=>s.id===id);
+  if(isSeed) saveSeedEdit(paintings[idx]); else savePaintings();
+  applyFilters(); renderAdminDashboard();
+  toast(`"${title}" approved — now live in the gallery.`);
+}
+
+function rejectListingAdmin(id) {
+  const idx = paintings.findIndex(p=>p.id===id);
+  if(idx===-1) return;
+  const title = paintings[idx].title;
+  paintings[idx].status = "rejected";
+  const isSeed = SEED.find(s=>s.id===id);
+  if(isSeed) saveSeedEdit(paintings[idx]); else savePaintings();
+  applyFilters(); renderAdminDashboard();
+  toast(`"${title}" rejected.`);
+}
+
 // ─── ADMIN PAGE ──────────────────────────────────────────────────────────────
 function showAdminPage() {
   if(currentUser && currentUser.isAdmin) {
@@ -1891,17 +1968,20 @@ function adminLogin() {
 }
 
 function renderAdminDashboard() {
-  const total = paintings.length;
-  const avail = paintings.filter(p=>p.available).length;
+  const total   = paintings.length;
+  const avail   = paintings.filter(p=>p.available).length;
+  const pending = paintings.filter(p=>p.status==="pending").length;
   document.getElementById("adminDashStats").innerHTML = `
     <div class="stat-chip"><div class="stat-val">${total}</div><div class="stat-label">Total Listings</div></div>
     <div class="stat-chip"><div class="stat-val" style="color:var(--green)">${avail}</div><div class="stat-label">Available</div></div>
     <div class="stat-chip"><div class="stat-val" style="color:var(--terracotta)">${total-avail}</div><div class="stat-label">Sold Out</div></div>
+    <div class="stat-chip"><div class="stat-val" style="color:#b45309">${pending}</div><div class="stat-label">Pending Review</div></div>
   `;
   const artists = [...new Set(paintings.map(p=>p.artist))].sort();
   const sel = document.getElementById("adminDashArtistFilter");
   const cur = sel.value;
   sel.innerHTML = `<option value="">All Artists</option>` + artists.map(a=>`<option value="${a}"${a===cur?" selected":""}>${a}</option>`).join("");
+  renderPendingSection();
   renderAdminTable();
 }
 
