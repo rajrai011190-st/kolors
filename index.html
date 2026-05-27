@@ -666,6 +666,36 @@
     @media (min-width: 769px) {
       .bottom-nav { display: none; }
     }
+    /* ── ADMIN PAGE ──────────────────────────────────────────────────────── */
+    .admin-page-wrap { max-width: 960px; margin: 0 auto; padding: 32px 24px 120px; }
+    .admin-dash-header {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px; padding: 20px 0 24px;
+      border-bottom: 1px solid var(--border); margin-bottom: 28px;
+    }
+    .admin-dash-title { font-family: var(--font-serif); font-size: 22px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .admin-dash-actions { display: flex; gap: 8px; }
+    .admin-filter-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .admin-filter-bar select { font-family: var(--font-sans); font-size: 13px; border: 1px solid var(--border-dark); border-radius: 4px; padding: 7px 10px; outline: none; background: var(--bg); }
+    .admin-search {
+      font-family: var(--font-sans); font-size: 13px;
+      border: 1px solid var(--border-dark); border-radius: 4px;
+      padding: 7px 12px; flex: 1; min-width: 160px; outline: none; background: var(--bg);
+    }
+    .admin-search:focus { border-color: var(--black); }
+    .admin-listing-row {
+      display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+      border: 0.5px solid var(--border); border-radius: 8px; background: var(--bg);
+      margin-bottom: 8px; transition: background 0.1s;
+    }
+    .admin-listing-row:hover { background: var(--bg2); }
+    .admin-login-note { font-size: 12px; color: rgba(0,0,0,0.35); text-align: center; margin-top: 14px; line-height: 1.6; }
+    .admin-local-note { font-size: 11px; color: rgba(0,0,0,0.35); margin-bottom: 20px; display: flex; align-items: center; gap: 5px; }
+    @media (max-width: 768px) {
+      .admin-page-wrap { padding: 24px 16px calc(var(--bottom-nav-h) + var(--safe-b) + 32px); }
+      .admin-dash-header { flex-direction: column; align-items: flex-start; }
+      .admin-listing-row { flex-wrap: wrap; }
+    }
   </style>
 </head>
 <body>
@@ -674,6 +704,7 @@
 <nav class="top-nav">
   <a class="nav-logo" href="#" onclick="showPage('gallery');return false;"><img src="images/logo.png" alt="The Kolours" /></a>
   <div class="nav-right">
+    <button class="nav-link" id="navAdminLink" onclick="showAdminPage()" style="display:none">Admin</button>
     <button class="nav-link" id="navAboutLink" onclick="showPage('about')">About</button>
     <button class="nav-cart-btn" onclick="openCart()">
       <i class="ti ti-shopping-bag"></i>
@@ -689,6 +720,7 @@
       </button>
       <div class="nav-dropdown" id="navDropdown">
         <div class="dropdown-item" onclick="showPage('studio');toggleDropdown()"><i class="ti ti-palette"></i>My Studio</div>
+        <div class="dropdown-item" id="navAdminDropdownItem" onclick="showAdminPage();toggleDropdown()" style="display:none"><i class="ti ti-shield-check"></i>Admin Dashboard</div>
         <div class="dropdown-divider"></div>
         <div class="dropdown-item danger" onclick="logout()"><i class="ti ti-logout"></i>Log out</div>
       </div>
@@ -882,6 +914,56 @@
         <div class="login-switch">Already have an account? <a onclick="switchToLogin()">Sign in</a></div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ADMIN PAGE -->
+<div class="page" id="pageAdmin">
+  <div class="admin-page-wrap">
+
+    <!-- ADMIN LOGIN STATE -->
+    <div id="adminLoginSection">
+      <div class="login-page">
+        <div class="login-card">
+          <div class="login-eyebrow">Platform Admin</div>
+          <div style="margin-bottom:12px"><img src="images/logo.png" alt="The Kolours" style="height:56px;width:auto" /></div>
+          <div class="login-title">Admin Dashboard</div>
+          <div class="login-sub">For platform administrators only. Your credentials must have admin privileges.</div>
+          <div class="login-error" id="adminLoginError"></div>
+          <div class="login-form">
+            <div class="login-field"><label>Email</label><input id="adminEmail" type="email" placeholder="admin@thekolours.com" /></div>
+            <div class="login-field"><label>Password</label><input id="adminPassword" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')adminLogin()" /></div>
+            <button class="btn btn-primary login-submit" onclick="adminLogin()"><i class="ti ti-shield-check"></i>Sign In as Admin</button>
+          </div>
+          <div class="admin-login-note">Not an admin? <a style="cursor:pointer;color:var(--terracotta)" onclick="showPage('login')">Sign in as artist →</a></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN DASHBOARD STATE -->
+    <div id="adminDashSection" style="display:none">
+      <div class="admin-dash-header">
+        <div class="admin-dash-title">
+          <i class="ti ti-shield-check" style="color:var(--terracotta);font-size:20px"></i>
+          Admin Dashboard
+          <span class="admin-badge"><i class="ti ti-shield-check" style="font-size:10px"></i> Admin</span>
+        </div>
+        <div class="admin-dash-actions">
+          <button class="btn btn-outline" onclick="showPage('gallery')"><i class="ti ti-layout-grid"></i>View Gallery</button>
+          <button class="btn btn-outline danger" onclick="logout()"><i class="ti ti-logout"></i>Log Out</button>
+        </div>
+      </div>
+      <div class="admin-local-note"><i class="ti ti-info-circle" style="font-size:13px"></i> Changes update the gallery instantly in this session and persist in your browser's local storage.</div>
+      <div class="listings-stats" id="adminDashStats"></div>
+      <div class="admin-filter-bar" style="margin-top:20px">
+        <select id="adminDashArtistFilter" onchange="renderAdminTable()">
+          <option value="">All Artists</option>
+        </select>
+        <input class="admin-search" id="adminDashSearch" type="text" placeholder="Search by title…" oninput="renderAdminTable()" />
+      </div>
+      <div id="adminDashList"></div>
+    </div>
+
   </div>
 </div>
 
@@ -1141,7 +1223,7 @@ function paintingMediaEl(p, w, h) {
 // ─── PAGES ───────────────────────────────────────────────────────────────────
 function showPage(name) {
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-  const pageMap = { gallery:"pageGallery", studio:"pageStudio", login:"pageLogin", about:"pageAbout" };
+  const pageMap = { gallery:"pageGallery", studio:"pageStudio", login:"pageLogin", about:"pageAbout", admin:"pageAdmin" };
   document.getElementById(pageMap[name]||"pageGallery").classList.add("active");
   document.getElementById("bnGallery").classList.toggle("active", name==="gallery");
   document.getElementById("bnAbout").classList.toggle("active", name==="about");
@@ -1174,6 +1256,8 @@ function updateNavAuth() {
     loginBtn.style.display = "";
     artistWrap.style.display = "none";
   }
+  document.getElementById("navAdminLink").style.display = currentUser?.isAdmin ? "" : "none";
+  document.getElementById("navAdminDropdownItem").style.display = currentUser?.isAdmin ? "" : "none";
 }
 
 function artistHue(name) {
@@ -1760,6 +1844,109 @@ function toast(msg) {
   document.getElementById("toastContainer").appendChild(el);
   requestAnimationFrame(()=>{ requestAnimationFrame(()=>el.classList.add("show")); });
   setTimeout(()=>{ el.classList.remove("show"); setTimeout(()=>el.remove(),300); },2500);
+}
+
+// ─── ADMIN PAGE ──────────────────────────────────────────────────────────────
+function showAdminPage() {
+  if(currentUser && currentUser.isAdmin) {
+    document.getElementById("adminLoginSection").style.display = "none";
+    document.getElementById("adminDashSection").style.display = "";
+    renderAdminDashboard();
+  } else {
+    document.getElementById("adminLoginSection").style.display = "";
+    document.getElementById("adminDashSection").style.display = "none";
+    document.getElementById("adminLoginError").classList.remove("show");
+    document.getElementById("adminEmail").value = "";
+    document.getElementById("adminPassword").value = "";
+  }
+  showPage("admin");
+}
+
+function adminLogin() {
+  const email = document.getElementById("adminEmail").value.trim();
+  const password = document.getElementById("adminPassword").value;
+  const err = document.getElementById("adminLoginError");
+  if(!email || !password) { err.textContent = "Please enter your email and password."; err.classList.add("show"); return; }
+  const user = AUTH.login(email, password);
+  if(!user || !user.isAdmin) {
+    AUTH.logout();
+    err.textContent = "No admin account found with those credentials.";
+    err.classList.add("show"); return;
+  }
+  currentUser = user;
+  updateNavAuth();
+  err.classList.remove("show");
+  document.getElementById("adminLoginSection").style.display = "none";
+  document.getElementById("adminDashSection").style.display = "";
+  renderAdminDashboard();
+}
+
+function renderAdminDashboard() {
+  const total = paintings.length;
+  const avail = paintings.filter(p=>p.available).length;
+  document.getElementById("adminDashStats").innerHTML = `
+    <div class="stat-chip"><div class="stat-val">${total}</div><div class="stat-label">Total Listings</div></div>
+    <div class="stat-chip"><div class="stat-val" style="color:var(--green)">${avail}</div><div class="stat-label">Available</div></div>
+    <div class="stat-chip"><div class="stat-val" style="color:var(--terracotta)">${total-avail}</div><div class="stat-label">Sold Out</div></div>
+  `;
+  const artists = [...new Set(paintings.map(p=>p.artist))].sort();
+  const sel = document.getElementById("adminDashArtistFilter");
+  const cur = sel.value;
+  sel.innerHTML = `<option value="">All Artists</option>` + artists.map(a=>`<option value="${a}"${a===cur?" selected":""}>${a}</option>`).join("");
+  renderAdminTable();
+}
+
+function renderAdminTable() {
+  const af = document.getElementById("adminDashArtistFilter").value;
+  const q  = document.getElementById("adminDashSearch").value.toLowerCase().trim();
+  let list = paintings;
+  if(af) list = list.filter(p=>p.artist===af);
+  if(q)  list = list.filter(p=>p.title.toLowerCase().includes(q));
+  const container = document.getElementById("adminDashList");
+  container.innerHTML = "";
+  if(!list.length) {
+    container.innerHTML = '<p style="color:rgba(0,0,0,0.35);padding:40px 0;font-size:14px">No listings found.</p>';
+    return;
+  }
+  list.forEach(p=>{
+    const row = document.createElement("div");
+    row.className = "admin-listing-row";
+    row.innerHTML = `
+      <div class="listing-thumb" id="adthumb-${p.id}"></div>
+      <div class="listing-info" style="flex:1;min-width:0">
+        <div class="listing-title">${p.title}</div>
+        <div class="listing-meta">${p.artist} · ${p.category} · $${p.price.toLocaleString("en-CA",{minimumFractionDigits:2})}</div>
+      </div>
+      <select class="card-status-select ${p.available?"status-live":"status-sold"}" onchange="adminSetAvailability(${p.id},this.value)">
+        <option value="1" ${p.available?"selected":""}>● Available</option>
+        <option value="0" ${!p.available?"selected":""}>○ Sold Out</option>
+      </select>
+      <button class="listing-edit" onclick="adminEditListing(${p.id})" title="Edit listing"><i class="ti ti-pencil"></i></button>
+      <button class="listing-del" onclick="adminDeleteListing(${p.id})" title="Delete listing"><i class="ti ti-trash"></i></button>
+    `;
+    container.appendChild(row);
+    const wrap = document.getElementById("adthumb-"+p.id);
+    if(wrap) wrap.appendChild(paintingMediaEl(p, 48, 48));
+  });
+}
+
+function adminSetAvailability(id, value) {
+  setAvailability(id, value);
+  renderAdminDashboard();
+}
+
+function adminEditListing(id) {
+  editListing(id);
+  showPage("studio");
+  toast("Edit the details below, then click Save Changes.");
+}
+
+function adminDeleteListing(id) {
+  const p = paintings.find(x=>x.id===id);
+  if(!p) return;
+  if(!confirm(`Delete "${p.title}" permanently? This cannot be undone.`)) return;
+  deleteListing(id);
+  renderAdminDashboard();
 }
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
