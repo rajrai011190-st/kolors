@@ -913,12 +913,34 @@
         <div class="login-error" id="loginError"></div>
         <div class="login-form">
           <div class="login-field"><label>Email</label><input id="loginEmail" type="email" placeholder="you@example.com" /></div>
-          <div class="login-field"><label>Password</label><input id="loginPassword" type="password" placeholder="••••••••" /></div>
+          <div class="login-field">
+            <label style="display:flex;justify-content:space-between;align-items:center">
+              Password
+              <a onclick="switchToForgot()" style="font-size:11px;color:var(--terracotta);cursor:pointer;text-transform:none;letter-spacing:0;font-weight:500">Forgot password?</a>
+            </label>
+            <input id="loginPassword" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" />
+          </div>
           <button class="btn btn-primary login-submit" onclick="doLogin()"><i class="ti ti-login"></i>Sign In</button>
         </div>
         <div class="login-divider"></div>
 
         <div class="login-switch">New artist? <a onclick="switchToSignup()">Create an account</a></div>
+      </div>
+
+      <!-- FORGOT PASSWORD VIEW -->
+      <div id="forgotView" style="display:none">
+        <div class="login-eyebrow">Artist Portal</div>
+        <div style="margin-bottom:12px"><img src="images/logo.png" alt="The Kolours" style="height:56px;width:auto" /></div>
+        <div class="login-title">Reset Password</div>
+        <div class="login-sub">Enter your email and we'll send you a link to reset your password.</div>
+        <div class="login-error" id="forgotError"></div>
+        <div class="login-error" id="forgotSuccess" style="background:rgba(45,106,79,0.08);color:var(--green);display:none"></div>
+        <div class="login-form">
+          <div class="login-field"><label>Email</label><input id="forgotEmail" type="email" placeholder="you@example.com" onkeydown="if(event.key==='Enter')doForgotPassword()" /></div>
+          <button class="btn btn-primary login-submit" onclick="doForgotPassword()"><i class="ti ti-mail"></i>Send Reset Link</button>
+        </div>
+        <div class="login-divider"></div>
+        <div class="login-switch"><a onclick="switchToLogin()">← Back to Sign In</a></div>
       </div>
       <div id="signupView" style="display:none">
         <div class="login-eyebrow">Artist Portal</div>
@@ -1112,7 +1134,7 @@
 <script type="module">
 // ─── FIREBASE + CLOUDINARY ────────────────────────────────────────────────────
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -1296,11 +1318,31 @@ async function logout() {
 }
 
 function showErr(el, msg) { el.textContent=msg; el.classList.add("show"); }
-function switchToSignup() { document.getElementById("loginView").style.display="none"; document.getElementById("signupView").style.display=""; }
-function switchToLogin() { document.getElementById("signupView").style.display="none"; document.getElementById("loginView").style.display=""; }
+function switchToSignup() { document.getElementById("loginView").style.display="none"; document.getElementById("signupView").style.display=""; document.getElementById("forgotView").style.display="none"; }
+function switchToLogin() { document.getElementById("signupView").style.display="none"; document.getElementById("forgotView").style.display="none"; document.getElementById("loginView").style.display=""; }
+function switchToForgot() { document.getElementById("loginView").style.display="none"; document.getElementById("signupView").style.display="none"; document.getElementById("forgotView").style.display=""; document.getElementById("forgotEmail").value=""; document.getElementById("forgotError").classList.remove("show"); document.getElementById("forgotSuccess").style.display="none"; }
+
+async function doForgotPassword() {
+  const email = document.getElementById("forgotEmail").value.trim();
+  const err = document.getElementById("forgotError");
+  const success = document.getElementById("forgotSuccess");
+  err.classList.remove("show"); success.style.display="none";
+  if(!email){ err.textContent="Please enter your email address."; err.classList.add("show"); return; }
+  try {
+    await sendPasswordResetEmail(auth, email);
+    success.textContent = `Reset link sent to ${email} — check your inbox.`;
+    success.style.display = "block";
+    document.getElementById("forgotEmail").value = "";
+  } catch(e) {
+    if(e.code === "auth/user-not-found") err.textContent = "No account found with that email.";
+    else err.textContent = "Something went wrong. Please try again.";
+    err.classList.add("show");
+  }
+}
 function clearLoginForms() {
-  ["loginEmail","loginPassword","signupName","signupEmail","signupPassword","signupCountry"].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=""; });
-  ["loginError","signupError"].forEach(id=>document.getElementById(id)?.classList.remove("show"));
+  ["loginEmail","loginPassword","signupName","signupEmail","signupPassword","signupCountry","forgotEmail"].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=""; });
+  ["loginError","signupError","forgotError"].forEach(id=>document.getElementById(id)?.classList.remove("show"));
+  const s = document.getElementById("forgotSuccess"); if(s) s.style.display="none";
   switchToLogin();
 }
 
