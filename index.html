@@ -975,7 +975,7 @@
           <button class="btn btn-outline danger" onclick="logout()"><i class="ti ti-logout"></i>Log Out</button>
         </div>
       </div>
-      <div class="admin-local-note"><i class="ti ti-info-circle" style="font-size:13px"></i> Changes update the gallery instantly in this session and persist in your browser's local storage.</div>
+      <div class="admin-local-note"><i class="ti ti-info-circle" style="font-size:13px"></i> Changes save to Firestore and reflect on the live website for all visitors instantly.</div>
       <div class="listings-stats" id="adminDashStats"></div>
       <div class="admin-filter-bar" style="margin-top:20px">
         <select id="adminDashArtistFilter" onchange="renderAdminTable()">
@@ -1109,48 +1109,36 @@
 <!-- TOAST CONTAINER -->
 <div class="toast-container" id="toastContainer"></div>
 
-<script>
-// ─── AUTH ────────────────────────────────────────────────────────────────────
-const AUTH = {
-  USERS_KEY: "kolours_users",
-  SESSION_KEY: "kolours_session",
-  seedUsers() {
-    const existing = this.getUsers();
-    const seeds = [
-      { id:"artist-raj",      name:"Raj R",      email:"raj@thekolours.com",      password:"kolours123", country:"Canada", joinDate:"2024-01-01", isAdmin:true },
-      { id:"artist-ankita",   name:"Ankita P",   email:"ankita@thekolours.com",   password:"kolours123", country:"Canada", joinDate:"2024-01-01" },
-      { id:"artist-abhineet", name:"Abhineet G", email:"abhineet@thekolours.com", password:"kolours123", country:"Canada", joinDate:"2024-01-01" },
-    ];
-    let changed = false;
-    seeds.forEach(s => {
-      const ex = existing.find(u=>u.id===s.id);
-      if(!ex){ existing.push(s); changed=true; }
-      else if(s.isAdmin && !ex.isAdmin){ ex.isAdmin=true; changed=true; } // patch existing admin
-    });
-    if(changed || !localStorage.getItem(this.USERS_KEY)) this.saveUsers(existing);
-  },
-  getUsers() { return JSON.parse(localStorage.getItem(this.USERS_KEY)||"[]"); },
-  saveUsers(u) { localStorage.setItem(this.USERS_KEY, JSON.stringify(u)); },
-  login(email, password) {
-    const u = this.getUsers().find(u=>u.email===email.toLowerCase()&&u.password===password);
-    if(!u) return null;
-    localStorage.setItem(this.SESSION_KEY, u.id);
-    return u;
-  },
-  signup(name, email, password, country) {
-    const users = this.getUsers();
-    if(users.find(u=>u.email===email.toLowerCase())) return null;
-    const u = { id:"artist-"+Date.now(), name, email:email.toLowerCase(), password, country, joinDate:new Date().toISOString().split("T")[0] };
-    users.push(u); this.saveUsers(users);
-    localStorage.setItem(this.SESSION_KEY, u.id);
-    return u;
-  },
-  logout() { localStorage.removeItem(this.SESSION_KEY); },
-  currentUser() {
-    const id = localStorage.getItem(this.SESSION_KEY);
-    return id ? this.getUsers().find(u=>u.id===id)||null : null;
-  },
+<script type="module">
+// ─── FIREBASE + CLOUDINARY ────────────────────────────────────────────────────
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAyMKOqGKBK9Sb4jEkNxKuaMpGOqUQlP6g",
+  authDomain: "the-kolours.firebaseapp.com",
+  projectId: "the-kolours",
+  storageBucket: "the-kolours.firebasestorage.app",
+  messagingSenderId: "165590296975",
+  appId: "1:165590296975:web:b25cbe01881509f60fc3fa"
 };
+const fbApp = initializeApp(firebaseConfig);
+const auth  = getAuth(fbApp);
+const db    = getFirestore(fbApp);
+
+const CLOUDINARY_CLOUD  = "dxl6ntgrm";
+const CLOUDINARY_PRESET = "kolours_uploads";
+
+async function uploadToCloudinary(file) {
+  const fd = new FormData();
+  fd.append("file", file);
+  fd.append("upload_preset", CLOUDINARY_PRESET);
+  const res  = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method:"POST", body:fd });
+  const data = await res.json();
+  if(!data.secure_url) throw new Error("Cloudinary upload failed");
+  return data.secure_url;
+}
 
 // ─── DATA ───────────────────────────────────────────────────────────────────
 const ARTISTS = [
@@ -1174,43 +1162,12 @@ const SEED = [
   { id:12, title:"The Cosmos",           artist:"Abhineet G", artistId:"artist-abhineet", price:249.99, size:"50×70 cm",  medium:"Acrylic",     category:"Abstract",   origin:"Canada", year:2024, available:true,  badge:"featured", desc:"Discover the mysteries of the universe with The Cosmos. This captivating painting depicts the birth and death of stars, with deep indigos and purples swirling with golden starbursts — evoking the infinite wonder of the universe.", img:"https://cdn.shopify.com/s/files/1/0647/6988/4314/files/IMG_8111.jpg?v=1731115222" },
 ];
 
-const PAINTINGS_KEY = "kolours_paintings";
-const SEED_EDITS_KEY = "kolours_seed_edits";
-
-function savePaintings() {
-  const uploads = paintings.filter(p => p.id > 100);
-  localStorage.setItem(PAINTINGS_KEY, JSON.stringify(uploads));
-}
-
-function saveSeedEdit(painting) {
-  const edits = JSON.parse(localStorage.getItem(SEED_EDITS_KEY)||"[]");
-  const idx = edits.findIndex(e=>e.id===painting.id);
-  if(idx !== -1) edits[idx] = painting; else edits.push(painting);
-  localStorage.setItem(SEED_EDITS_KEY, JSON.stringify(edits));
-}
-
-function loadPaintings() {
-  try {
-    const stored  = JSON.parse(localStorage.getItem(PAINTINGS_KEY) || "[]");
-    const edits   = JSON.parse(localStorage.getItem(SEED_EDITS_KEY) || "[]");
-    const editMap = Object.fromEntries(edits.map(e=>[e.id, e]));
-    const seedIds = new Set(SEED.map(p => p.id));
-    const seedKeys = new Set(SEED.map(p => p.title.toLowerCase()+"|"+p.artist.toLowerCase()));
-    const uploads = stored.filter(p => !seedIds.has(p.id) && !seedKeys.has(p.title?.toLowerCase()+"|"+p.artist?.toLowerCase()));
-    if(uploads.length !== stored.filter(p=>!seedIds.has(p.id)).length)
-      localStorage.setItem(PAINTINGS_KEY, JSON.stringify(uploads));
-    const seeds = SEED.map(p => editMap[p.id] ? {...p, ...editMap[p.id]} : p)
-                      .filter(p => !p._deleted);
-    return [...seeds, ...uploads];
-  } catch(e) { return [...SEED]; }
-}
-
-let paintings = loadPaintings();
+let paintings = [];
 let cart = [];
 let wishlist = new Set();
 let activeCategory = "All";
 let currentPainting = null;
-let uploadedImg = null;
+let uploadedFile = null;
 let editingId = null;
 let currentUser = null;
 
@@ -1264,7 +1221,6 @@ function studioOrLogin() {
 
 // ─── AUTH UI ─────────────────────────────────────────────────────────────────
 function updateNavAuth() {
-  currentUser = AUTH.currentUser();
   const loginBtn = document.getElementById("navLoginBtn");
   const artistWrap = document.getElementById("navArtistWrap");
   if(currentUser) {
@@ -1295,20 +1251,21 @@ document.addEventListener("click", e=>{
   if(!e.target.closest("#navArtistWrap")) document.getElementById("navDropdown")?.classList.remove("open");
 });
 
-function doLogin() {
+async function doLogin() {
   const email = document.getElementById("loginEmail").value.trim();
   const password = document.getElementById("loginPassword").value;
   const err = document.getElementById("loginError");
   if(!email||!password){ showErr(err,"Please enter email and password."); return; }
-  const user = AUTH.login(email, password);
-  if(!user){ showErr(err,"Incorrect email or password."); return; }
-  err.classList.remove("show");
-  currentUser = user;
-  updateNavAuth();
-  showPage("studio");
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    err.classList.remove("show");
+    showPage("studio");
+  } catch(e) {
+    showErr(err, "Incorrect email or password.");
+  }
 }
 
-function doSignup() {
+async function doSignup() {
   const name = document.getElementById("signupName").value.trim();
   const email = document.getElementById("signupEmail").value.trim();
   const password = document.getElementById("signupPassword").value;
@@ -1316,16 +1273,22 @@ function doSignup() {
   const err = document.getElementById("signupError");
   if(!name||!email||!password){ showErr(err,"Name, email and password are required."); return; }
   if(password.length<6){ showErr(err,"Password must be at least 6 characters."); return; }
-  const user = AUTH.signup(name, email, password, country);
-  if(!user){ showErr(err,"An account with that email already exists."); return; }
-  err.classList.remove("show");
-  currentUser = user;
-  updateNavAuth();
-  showPage("studio");
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    const isAdmin = email === "raj@thekolours.com";
+    const ARTIST_ID_MAP = { "raj@thekolours.com":"artist-raj", "ankita@thekolours.com":"artist-ankita", "abhineet@thekolours.com":"artist-abhineet" };
+    const artistId = ARTIST_ID_MAP[email] || cred.user.uid;
+    await setDoc(doc(db, "users", cred.user.uid), { name, email, country: country||"🇨🇦", isAdmin, artistId });
+    err.classList.remove("show");
+    showPage("studio");
+  } catch(e) {
+    if(e.code === "auth/email-already-in-use") showErr(err, "An account with that email already exists.");
+    else showErr(err, e.message);
+  }
 }
 
-function logout() {
-  AUTH.logout();
+async function logout() {
+  await signOut(auth);
   currentUser = null;
   updateNavAuth();
   showPage("gallery");
@@ -1349,7 +1312,7 @@ function renderStudioHeader() {
   avatarEl.appendChild(genCanvas(hue, 52, 52, currentUser.name.length*7));
   const badge = currentUser.isAdmin ? `<span class="admin-badge"><i class="ti ti-shield-check" style="font-size:10px"></i> Admin</span>` : "";
   document.getElementById("studioName").innerHTML = currentUser.name + badge;
-  const myCount = currentUser.isAdmin ? paintings.length : paintings.filter(p=>p.artistId===currentUser.id).length;
+  const myCount = currentUser.isAdmin ? paintings.length : paintings.filter(p=>p.artistId===currentUser.uid||p.artistId===currentUser.artistId).length;
   document.getElementById("studioMeta").textContent = `${currentUser.country||""}  ·  ${myCount} listing${myCount!==1?"s":""}`;
 }
 
@@ -1655,10 +1618,10 @@ function closeModal(e) {
 function handleFile(input) {
   const file = input.files[0];
   if(!file) return;
+  uploadedFile = file;
   const reader = new FileReader();
   reader.onload = e => {
-    uploadedImg = e.target.result;
-    document.getElementById("previewImg").src = uploadedImg;
+    document.getElementById("previewImg").src = e.target.result;
     document.getElementById("previewWrap").style.display = "block";
   };
   reader.readAsDataURL(file);
@@ -1669,45 +1632,60 @@ dz.addEventListener("dragover", e=>{ e.preventDefault(); dz.classList.add("drag-
 dz.addEventListener("dragleave", ()=>dz.classList.remove("drag-over"));
 dz.addEventListener("drop", e=>{ e.preventDefault(); dz.classList.remove("drag-over"); const f=e.dataTransfer.files[0]; if(f){ document.getElementById("fileInput").files=e.dataTransfer.files; handleFile({files:e.dataTransfer.files}); }});
 
-function submitPainting() {
+async function submitPainting() {
   const title=document.getElementById("fTitle").value.trim();
   const price=parseFloat(document.getElementById("fPrice").value);
   const artist=document.getElementById("fArtist").value.trim();
   if(!title||!price||!artist){ toast("Please fill in Title, Price, and Artist name."); return; }
-  const fields = {
-    title, price, artist,
-    origin: document.getElementById("fOrigin").value.trim()||"Unknown",
-    category: document.getElementById("fCategory").value,
-    medium: document.getElementById("fMedium").value,
-    size: document.getElementById("fSize").value.trim()||"—",
-    year: parseInt(document.getElementById("fYear").value)||new Date().getFullYear(),
-    desc: document.getElementById("fDesc").value.trim()||"Original painting.",
-    stripeLink: document.getElementById("fStripeLink").value.trim()||null,
-    available: document.getElementById("fAvailable").value === "1",
-  };
-  if(editingId !== null) {
-    const idx = paintings.findIndex(p=>p.id===editingId);
-    if(idx !== -1) {
-      paintings[idx] = { ...paintings[idx], ...fields };
-      if(uploadedImg) paintings[idx].img = uploadedImg;
-      const isSeed = SEED.find(s=>s.id===editingId);
-      if(isSeed) saveSeedEdit(paintings[idx]); else savePaintings();
+  const submitBtn = document.getElementById("submitBtn");
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<i class="ti ti-loader"></i> Saving…';
+  try {
+    let imgUrl = null;
+    if(uploadedFile) imgUrl = await uploadToCloudinary(uploadedFile);
+    const fields = {
+      title, price, artist,
+      origin: document.getElementById("fOrigin").value.trim()||"Unknown",
+      category: document.getElementById("fCategory").value,
+      medium: document.getElementById("fMedium").value,
+      size: document.getElementById("fSize").value.trim()||"—",
+      year: parseInt(document.getElementById("fYear").value)||new Date().getFullYear(),
+      desc: document.getElementById("fDesc").value.trim()||"Original painting.",
+      stripeLink: document.getElementById("fStripeLink").value.trim()||null,
+      available: document.getElementById("fAvailable").value === "1",
+    };
+    if(editingId !== null) {
+      const updates = { ...fields };
+      if(imgUrl) updates.img = imgUrl;
+      await updateDoc(doc(db, "paintings", String(editingId)), updates);
+      cancelEdit();
+      document.getElementById("successMsg").textContent = `"${fields.title}" updated — live in the gallery.`;
+      setTimeout(()=>showPage("gallery"), 1800);
+    } else {
+      const isAdminUpload = currentUser && currentUser.isAdmin;
+      const newId = Date.now();
+      await setDoc(doc(db, "paintings", String(newId)), {
+        id: newId, ...fields,
+        artistId: currentUser?.uid || currentUser?.artistId || null,
+        badge: "new",
+        status: isAdminUpload ? "approved" : "pending",
+        img: imgUrl || null,
+        colors: ["#c0a880","#e0c8a0","#a08060","#604020"]
+      });
+      document.getElementById("successMsg").textContent = isAdminUpload
+        ? "Painting listed successfully!"
+        : "Submitted for review — it will appear in the gallery once approved.";
+      resetForm();
     }
-    cancelEdit();
-    document.getElementById("successMsg").textContent = `"${fields.title}" updated — live in the gallery.`;
-    setTimeout(()=>showPage("gallery"), 1800);
-  } else {
-    const isAdminUpload = currentUser && currentUser.isAdmin;
-    paintings.unshift({ id:Date.now(), ...fields, artistId:currentUser?.id||null, badge:"new", status: isAdminUpload ? "approved" : "pending", img:uploadedImg||null, colors:["#c0a880","#e0c8a0","#a08060","#604020"] });
-    document.getElementById("successMsg").textContent = isAdminUpload
-      ? "Painting listed successfully!"
-      : "Submitted for review — it will appear in the gallery once approved.";
-    resetForm();
-    savePaintings();
+    document.getElementById("successBar").classList.add("show");
+    setTimeout(()=>document.getElementById("successBar").classList.remove("show"),4000);
+  } catch(e) {
+    toast("Error saving: " + e.message);
+  } finally {
+    submitBtn.disabled = false;
+    if(editingId !== null) submitBtn.innerHTML = '<i class="ti ti-device-floppy"></i> Save Changes';
+    else submitBtn.innerHTML = '<i class="ti ti-check"></i> List Painting';
   }
-  document.getElementById("successBar").classList.add("show");
-  setTimeout(()=>document.getElementById("successBar").classList.remove("show"),4000);
-  renderListings(); renderArtists(); renderTabs(); applyFilters();
 }
 
 function resetForm() {
@@ -1716,12 +1694,14 @@ function resetForm() {
   document.getElementById("fMedium").selectedIndex=0;
   document.getElementById("fAvailable").value="1";
   document.getElementById("previewWrap").style.display="none";
-  uploadedImg=null; document.getElementById("fileInput").value="";
+  uploadedFile=null; document.getElementById("fileInput").value="";
 }
 
 function editListing(id) {
   const p = paintings.find(x=>x.id===id);
   if(!p) return;
+  uploadedFile = null;
+  document.getElementById("fileInput").value = "";
   editingId = id;
   document.getElementById("fTitle").value = p.title;
   document.getElementById("fPrice").value = p.price;
@@ -1781,7 +1761,7 @@ function renderListings(artistFilter) {
   const activeFilter = isAdmin ? (document.getElementById("adminArtistSelect")?.value || artistFilter || "") : "";
   let listed = isAdmin
     ? (activeFilter ? paintings.filter(p=>p.artist===activeFilter) : paintings)
-    : paintings.filter(p=>p.artistId===currentUser?.id);
+    : paintings.filter(p=>p.artistId===currentUser?.uid||p.artistId===currentUser?.artistId);
 
   const totalVal = listed.reduce((s,p)=>s+p.price,0);
   const cats = [...new Set(listed.map(p=>p.category))];
@@ -1817,37 +1797,28 @@ function renderListings(artistFilter) {
   });
 }
 
-function setAvailability(id, value) {
+async function setAvailability(id, value) {
   const idx = paintings.findIndex(p=>p.id===id);
   if(idx === -1) return;
-  paintings[idx].available = value === "1";
-  paintings[idx].badge = value === "1" ? null : "sold";
-  const isSeed = SEED.find(s=>s.id===id);
-  if(isSeed) saveSeedEdit(paintings[idx]); else savePaintings();
-  renderListings(); applyFilters();
-  toast(`"${paintings[idx].title}" marked as ${value==="1"?"available":"sold out"}.`);
+  const isAvail = value === "1";
+  const title = paintings[idx].title;
+  await updateDoc(doc(db, "paintings", String(id)), { available: isAvail, badge: isAvail ? null : "sold" });
+  toast(`"${title}" marked as ${isAvail?"available":"sold out"}.`);
 }
 
-function toggleAvailability(id) {
+async function toggleAvailability(id) {
   const idx = paintings.findIndex(p=>p.id===id);
   if(idx === -1) return;
-  paintings[idx].available = !paintings[idx].available;
-  paintings[idx].badge = paintings[idx].available ? null : "sold";
-  const isSeed = SEED.find(s=>s.id===id);
-  if(isSeed) saveSeedEdit(paintings[idx]); else savePaintings();
-  renderListings(); applyFilters();
-  toast(`"${paintings[idx].title}" marked as ${paintings[idx].available?"available":"sold"}.`);
+  const newVal = !paintings[idx].available;
+  const title = paintings[idx].title;
+  await updateDoc(doc(db, "paintings", String(id)), { available: newVal, badge: newVal ? null : "sold" });
+  toast(`"${title}" marked as ${newVal?"available":"sold"}.`);
 }
 
-function deleteListing(id) {
-  const p = paintings.find(x=>x.id===id);
-  paintings = paintings.filter(x=>x.id!==id);
+async function deleteListing(id) {
   cart = cart.filter(c=>c.id!==id);
-  // Seed paintings get a deleted flag so the removal survives reload
-  if(p && SEED.find(s=>s.id===id)) saveSeedEdit({...p, _deleted:true});
-  savePaintings();
+  await deleteDoc(doc(db, "paintings", String(id)));
   updateCartBadge();
-  renderListings(); renderArtists(); applyFilters();
   toast("Listing removed.");
 }
 
@@ -1910,25 +1881,19 @@ function renderPendingSection() {
   });
 }
 
-function approveListingAdmin(id) {
+async function approveListingAdmin(id) {
   const idx = paintings.findIndex(p=>p.id===id);
   if(idx===-1) return;
   const title = paintings[idx].title;
-  paintings[idx].status = "approved";
-  const isSeed = SEED.find(s=>s.id===id);
-  if(isSeed) saveSeedEdit(paintings[idx]); else savePaintings();
-  applyFilters(); renderAdminDashboard();
+  await updateDoc(doc(db, "paintings", String(id)), { status: "approved" });
   toast(`"${title}" approved — now live in the gallery.`);
 }
 
-function rejectListingAdmin(id) {
+async function rejectListingAdmin(id) {
   const idx = paintings.findIndex(p=>p.id===id);
   if(idx===-1) return;
   const title = paintings[idx].title;
-  paintings[idx].status = "rejected";
-  const isSeed = SEED.find(s=>s.id===id);
-  if(isSeed) saveSeedEdit(paintings[idx]); else savePaintings();
-  applyFilters(); renderAdminDashboard();
+  await updateDoc(doc(db, "paintings", String(id)), { status: "rejected" });
   toast(`"${title}" rejected.`);
 }
 
@@ -1948,23 +1913,27 @@ function showAdminPage() {
   showPage("admin");
 }
 
-function adminLogin() {
+async function adminLogin() {
   const email = document.getElementById("adminEmail").value.trim();
   const password = document.getElementById("adminPassword").value;
   const err = document.getElementById("adminLoginError");
   if(!email || !password) { err.textContent = "Please enter your email and password."; err.classList.add("show"); return; }
-  const user = AUTH.login(email, password);
-  if(!user || !user.isAdmin) {
-    AUTH.logout();
+  try {
+    const cred = await signInWithEmailAndPassword(auth, email, password);
+    const profileDoc = await getDoc(doc(db, "users", cred.user.uid));
+    if(!profileDoc.exists() || !profileDoc.data().isAdmin) {
+      await signOut(auth);
+      err.textContent = "No admin account found with those credentials.";
+      err.classList.add("show"); return;
+    }
+    err.classList.remove("show");
+    document.getElementById("adminLoginSection").style.display = "none";
+    document.getElementById("adminDashSection").style.display = "";
+    renderAdminDashboard();
+  } catch(e) {
     err.textContent = "No admin account found with those credentials.";
-    err.classList.add("show"); return;
+    err.classList.add("show");
   }
-  currentUser = user;
-  updateNavAuth();
-  err.classList.remove("show");
-  document.getElementById("adminLoginSection").style.display = "none";
-  document.getElementById("adminDashSection").style.display = "";
-  renderAdminDashboard();
 }
 
 function renderAdminDashboard() {
@@ -2019,9 +1988,8 @@ function renderAdminTable() {
   });
 }
 
-function adminSetAvailability(id, value) {
-  setAvailability(id, value);
-  renderAdminDashboard();
+async function adminSetAvailability(id, value) {
+  await setAvailability(id, value);
 }
 
 function adminEditListing(id) {
@@ -2030,21 +1998,94 @@ function adminEditListing(id) {
   toast("Edit the details below, then click Save Changes.");
 }
 
-function adminDeleteListing(id) {
+async function adminDeleteListing(id) {
   const p = paintings.find(x=>x.id===id);
   if(!p) return;
   if(!confirm(`Delete "${p.title}" permanently? This cannot be undone.`)) return;
-  deleteListing(id);
-  renderAdminDashboard();
+  await deleteListing(id);
 }
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
-AUTH.seedUsers();
-currentUser = AUTH.currentUser();
-updateNavAuth();
+async function seedFirestoreIfEmpty() {
+  const testDoc = await getDoc(doc(db, "paintings", "1"));
+  if(testDoc.exists()) return;
+  for(const p of SEED) {
+    await setDoc(doc(db, "paintings", String(p.id)), { ...p, status:"approved" });
+  }
+}
+
+async function initData() {
+  await seedFirestoreIfEmpty();
+  onSnapshot(collection(db, "paintings"), snap => {
+    paintings = snap.docs.map(d => ({ ...d.data(), id: d.data().id ?? Number(d.id) }));
+    applyFilters();
+    renderArtists();
+    renderTabs();
+    if(document.getElementById("pageStudio")?.classList.contains("active")) renderListings();
+    if(document.getElementById("pageAdmin")?.classList.contains("active") && currentUser?.isAdmin) renderAdminDashboard();
+  });
+}
+
+onAuthStateChanged(auth, async fbUser => {
+  if(fbUser) {
+    const profileDoc = await getDoc(doc(db, "users", fbUser.uid));
+    if(profileDoc.exists()) {
+      currentUser = { uid: fbUser.uid, ...profileDoc.data() };
+    } else {
+      const isAdmin = fbUser.email === "raj@thekolours.com";
+      const ARTIST_ID_MAP = { "raj@thekolours.com":"artist-raj", "ankita@thekolours.com":"artist-ankita", "abhineet@thekolours.com":"artist-abhineet" };
+      const profile = { name: fbUser.displayName || fbUser.email.split("@")[0], email: fbUser.email, isAdmin, country:"🇨🇦", artistId: ARTIST_ID_MAP[fbUser.email] || fbUser.uid };
+      await setDoc(doc(db, "users", fbUser.uid), profile);
+      currentUser = { uid: fbUser.uid, ...profile };
+    }
+  } else {
+    currentUser = null;
+  }
+  updateNavAuth();
+  if(document.getElementById("pageStudio")?.classList.contains("active")) { renderStudioHeader(); renderListings(); }
+  if(document.getElementById("pageAdmin")?.classList.contains("active")) showAdminPage();
+});
+
 renderTabs();
 applyFilters();
-renderArtists();
+initData();
+
+// ─── WINDOW EXPORTS (required for type="module" inline handlers) ─────────────
+window.setCategory = setCategory;
+window.toggleWish = toggleWish;
+window.addToCart = addToCart;
+window.removeFromCart = removeFromCart;
+window.openCart = openCart;
+window.closeCart = closeCart;
+window.closeCartEvent = closeCartEvent;
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.modalAddCart = modalAddCart;
+window.cartCheckout = cartCheckout;
+window.handleFile = handleFile;
+window.submitPainting = submitPainting;
+window.cancelEdit = cancelEdit;
+window.editListing = editListing;
+window.deleteListing = deleteListing;
+window.toggleAvailability = toggleAvailability;
+window.setAvailability = setAvailability;
+window.toggleDropdown = toggleDropdown;
+window.doLogin = doLogin;
+window.doSignup = doSignup;
+window.logout = logout;
+window.switchToSignup = switchToSignup;
+window.switchToLogin = switchToLogin;
+window.studioOrLogin = studioOrLogin;
+window.showPage = showPage;
+window.showAdminPage = showAdminPage;
+window.adminLogin = adminLogin;
+window.renderAdminTable = renderAdminTable;
+window.renderListings = renderListings;
+window.adminSetAvailability = adminSetAvailability;
+window.adminEditListing = adminEditListing;
+window.adminDeleteListing = adminDeleteListing;
+window.approveListingAdmin = approveListingAdmin;
+window.rejectListingAdmin = rejectListingAdmin;
 </script>
 </body>
 </html>
