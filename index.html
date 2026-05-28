@@ -1340,7 +1340,7 @@ async function logout() {
 }
 
 function showErr(el, msg) { el.textContent=msg; el.classList.add("show"); }
-function togglePassword(inputId, btn) {
+window.togglePassword = function(inputId, btn) {
   const input = document.getElementById(inputId);
   const isHidden = input.type === "password";
   input.type = isHidden ? "text" : "password";
