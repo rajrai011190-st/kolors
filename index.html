@@ -542,6 +542,15 @@
       transition: border-color 0.15s;
     }
     .login-field input:focus { border-color: var(--black); }
+    .password-wrap { position: relative; display: flex; align-items: center; }
+    .password-wrap input { flex: 1; padding-right: 40px !important; }
+    .password-eye {
+      position: absolute; right: 10px;
+      background: none; border: none; cursor: pointer;
+      color: rgba(0,0,0,0.35); font-size: 16px; padding: 4px;
+      display: flex; align-items: center; transition: color 0.15s;
+    }
+    .password-eye:hover { color: var(--black); }
     .login-submit { margin-top: 6px; padding: 12px; font-size: 14px; justify-content: center; }
     .login-error { font-size: 13px; color: var(--terracotta); padding: 8px 12px; background: rgba(184,92,56,0.08); border-radius: 4px; display: none; }
     .login-error.show { display: block; }
@@ -918,7 +927,10 @@
               Password
               <a onclick="switchToForgot()" style="font-size:11px;color:var(--terracotta);cursor:pointer;text-transform:none;letter-spacing:0;font-weight:500">Forgot password?</a>
             </label>
-            <input id="loginPassword" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" />
+            <div class="password-wrap">
+              <input id="loginPassword" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" />
+              <button class="password-eye" type="button" onclick="togglePassword('loginPassword', this)" tabindex="-1"><i class="ti ti-eye"></i></button>
+            </div>
           </div>
           <button class="btn btn-primary login-submit" onclick="doLogin()"><i class="ti ti-login"></i>Sign In</button>
         </div>
@@ -951,7 +963,12 @@
         <div class="login-form">
           <div class="login-field"><label>Full Name *</label><input id="signupName" type="text" placeholder="Your artist name" /></div>
           <div class="login-field"><label>Email *</label><input id="signupEmail" type="email" placeholder="you@example.com" /></div>
-          <div class="login-field"><label>Password *</label><input id="signupPassword" type="password" placeholder="Min 6 characters" /></div>
+          <div class="login-field"><label>Password *</label>
+            <div class="password-wrap">
+              <input id="signupPassword" type="password" placeholder="Min 6 characters" />
+              <button class="password-eye" type="button" onclick="togglePassword('signupPassword', this)" tabindex="-1"><i class="ti ti-eye"></i></button>
+            </div>
+          </div>
           <div class="login-field"><label>Country</label><input id="signupCountry" type="text" placeholder="e.g. Canada" /></div>
           <button class="btn btn-primary login-submit" onclick="doSignup()"><i class="ti ti-user-plus"></i>Create Account</button>
         </div>
@@ -976,7 +993,12 @@
           <div class="login-error" id="adminLoginError"></div>
           <div class="login-form">
             <div class="login-field"><label>Email</label><input id="adminEmail" type="email" placeholder="admin@thekolours.com" /></div>
-            <div class="login-field"><label>Password</label><input id="adminPassword" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')adminLogin()" /></div>
+            <div class="login-field"><label>Password</label>
+              <div class="password-wrap">
+                <input id="adminPassword" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')adminLogin()" />
+                <button class="password-eye" type="button" onclick="togglePassword('adminPassword', this)" tabindex="-1"><i class="ti ti-eye"></i></button>
+              </div>
+            </div>
             <button class="btn btn-primary login-submit" onclick="adminLogin()"><i class="ti ti-shield-check"></i>Sign In as Admin</button>
           </div>
           <div class="admin-login-note">Not an admin? <a style="cursor:pointer;color:var(--terracotta)" onclick="showPage('login')">Sign in as artist →</a></div>
@@ -1318,6 +1340,13 @@ async function logout() {
 }
 
 function showErr(el, msg) { el.textContent=msg; el.classList.add("show"); }
+function togglePassword(inputId, btn) {
+  const input = document.getElementById(inputId);
+  const isHidden = input.type === "password";
+  input.type = isHidden ? "text" : "password";
+  btn.innerHTML = isHidden ? '<i class="ti ti-eye-off"></i>' : '<i class="ti ti-eye"></i>';
+}
+
 function switchToSignup() { document.getElementById("loginView").style.display="none"; document.getElementById("signupView").style.display=""; document.getElementById("forgotView").style.display="none"; }
 function switchToLogin() { document.getElementById("signupView").style.display="none"; document.getElementById("forgotView").style.display="none"; document.getElementById("loginView").style.display=""; }
 function switchToForgot() { document.getElementById("loginView").style.display="none"; document.getElementById("signupView").style.display="none"; document.getElementById("forgotView").style.display=""; document.getElementById("forgotEmail").value=""; document.getElementById("forgotError").classList.remove("show"); document.getElementById("forgotSuccess").style.display="none"; }
