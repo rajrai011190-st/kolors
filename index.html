@@ -1007,6 +1007,31 @@
           </div>
           <button class="btn btn-primary login-submit" onclick="adminTabLogin()"><i class="ti ti-shield-check"></i>Sign In as Admin</button>
         </div>
+        <div class="login-divider"></div>
+        <div class="login-switch">First-time setup? <a onclick="switchToAdminSignup()">Create the admin account</a></div>
+      </div>
+
+      <!-- ADMIN SIGN-UP VIEW (restricted to authorized email) -->
+      <div id="adminSignupView" style="display:none">
+        <div class="login-eyebrow">Platform Admin</div>
+        <div style="margin-bottom:12px"><img src="images/logo.png" alt="The Kolours" style="height:56px;width:auto" /></div>
+        <div class="login-title">Create Admin <em>Account</em></div>
+        <div class="login-sub">Restricted registration — only the authorized administrator email can create an account.</div>
+        <div class="login-error" id="adminSignupError"></div>
+        <div class="login-error" id="adminSignupSuccess" style="background:rgba(45,106,79,0.08);color:var(--green);display:none"></div>
+        <div class="login-form">
+          <div class="login-field"><label>Full Name</label><input id="adminSignupName" type="text" placeholder="Your name" /></div>
+          <div class="login-field"><label>Admin Email</label><input id="adminSignupEmail" type="email" placeholder="you@example.com" /></div>
+          <div class="login-field"><label>Password</label>
+            <div class="password-wrap">
+              <input id="adminSignupPassword" type="password" placeholder="Min 6 characters" onkeydown="if(event.key==='Enter')adminSignup()" />
+              <button class="password-eye" type="button" onclick="togglePassword('adminSignupPassword', this)" tabindex="-1"><i class="ti ti-eye"></i></button>
+            </div>
+          </div>
+          <button class="btn btn-primary login-submit" onclick="adminSignup()"><i class="ti ti-shield-check"></i>Create Admin Account</button>
+        </div>
+        <div class="login-divider"></div>
+        <div class="login-switch"><a onclick="switchToAdminTab()">← Back to Admin Sign In</a></div>
       </div>
 
       <!-- FORGOT PASSWORD VIEW -->
@@ -1071,7 +1096,7 @@
             </div>
             <button class="btn btn-primary login-submit" onclick="adminLogin()"><i class="ti ti-shield-check"></i>Sign In as Admin</button>
           </div>
-          <div class="admin-login-note">Not an admin? <a style="cursor:pointer;color:var(--terracotta)" onclick="showPage('login')">Sign in as artist →</a></div>
+          <div class="admin-login-note">First-time setup? <a style="cursor:pointer;color:var(--terracotta)" onclick="showPage('login');switchToAdminSignup()">Create the admin account →</a><br>Not an admin? <a style="cursor:pointer;color:var(--terracotta)" onclick="showPage('login')">Sign in as artist →</a></div>
         </div>
       </div>
     </div>
@@ -1398,6 +1423,13 @@ async function doLogin() {
   }
 }
 
+// ─── ADMIN ACCESS CONTROL ────────────────────────────────────────────────────
+// Emails recognised as platform admins (used when a profile doc is first created).
+const ADMIN_EMAILS = ["raj@thekolours.com", "rajrai90210@gmail.com"];
+const isAdminEmail = (e) => ADMIN_EMAILS.includes(String(e || "").trim().toLowerCase());
+// Only this exact email may register through the Admin Sign-Up page.
+const ADMIN_SIGNUP_EMAIL = "rajrai90210@gmail.com";
+
 async function doSignup() {
   const name = document.getElementById("signupName").value.trim();
   const email = document.getElementById("signupEmail").value.trim();
@@ -1408,7 +1440,7 @@ async function doSignup() {
   if(password.length<6){ showErr(err,"Password must be at least 6 characters."); return; }
   try {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
-    const isAdmin = email === "raj@thekolours.com";
+    const isAdmin = isAdminEmail(email);
     const ARTIST_ID_MAP = { "raj@thekolours.com":"artist-raj", "ankita@thekolours.com":"artist-ankita", "abhineet@thekolours.com":"artist-abhineet" };
     const artistId = ARTIST_ID_MAP[email] || cred.user.uid;
     await setDoc(doc(db, "users", cred.user.uid), { name, email, country: country||"🇨🇦", isAdmin, artistId });
@@ -1442,26 +1474,33 @@ function _setTab(active) {
   document.getElementById("tabArtist")?.classList.toggle("active", active === "artist");
   document.getElementById("tabAdmin")?.classList.toggle("active", active === "admin");
 }
+function _hideLoginViews() {
+  ["loginView","signupView","forgotView","adminTabView","adminSignupView"].forEach(id=>{
+    const el = document.getElementById(id); if(el) el.style.display="none";
+  });
+}
 function switchToSignup() {
-  document.getElementById("loginView").style.display="none"; document.getElementById("signupView").style.display="";
-  document.getElementById("forgotView").style.display="none"; document.getElementById("adminTabView").style.display="none";
+  _hideLoginViews(); document.getElementById("signupView").style.display="";
   _setTab(false);
 }
 function switchToLogin() {
-  document.getElementById("signupView").style.display="none"; document.getElementById("forgotView").style.display="none";
-  document.getElementById("adminTabView").style.display="none"; document.getElementById("loginView").style.display="";
+  _hideLoginViews(); document.getElementById("loginView").style.display="";
   _setTab("artist");
 }
 function switchToForgot() {
-  document.getElementById("loginView").style.display="none"; document.getElementById("signupView").style.display="none";
-  document.getElementById("forgotView").style.display=""; document.getElementById("adminTabView").style.display="none";
+  _hideLoginViews(); document.getElementById("forgotView").style.display="";
   document.getElementById("forgotEmail").value=""; document.getElementById("forgotError").classList.remove("show"); document.getElementById("forgotSuccess").style.display="none";
   _setTab(false);
 }
 function switchToAdminTab() {
-  document.getElementById("loginView").style.display="none"; document.getElementById("signupView").style.display="none";
-  document.getElementById("forgotView").style.display="none"; document.getElementById("adminTabView").style.display="";
+  _hideLoginViews(); document.getElementById("adminTabView").style.display="";
   document.getElementById("adminTabError").classList.remove("show");
+  _setTab("admin");
+}
+function switchToAdminSignup() {
+  _hideLoginViews(); document.getElementById("adminSignupView").style.display="";
+  document.getElementById("adminSignupError")?.classList.remove("show");
+  const s = document.getElementById("adminSignupSuccess"); if(s) s.style.display="none";
   _setTab("admin");
 }
 async function adminTabLogin() {
@@ -1484,6 +1523,33 @@ async function adminTabLogin() {
   }
 }
 
+async function adminSignup() {
+  const name = document.getElementById("adminSignupName").value.trim();
+  const email = document.getElementById("adminSignupEmail").value.trim().toLowerCase();
+  const password = document.getElementById("adminSignupPassword").value;
+  const err = document.getElementById("adminSignupError");
+  const ok = document.getElementById("adminSignupSuccess");
+  err.classList.remove("show"); ok.style.display="none";
+  if(!email || !password) { showErr(err, "Please enter an email and password."); return; }
+  if(email !== ADMIN_SIGNUP_EMAIL) { showErr(err, "This email is not authorized to create an admin account."); return; }
+  if(password.length < 6) { showErr(err, "Password must be at least 6 characters."); return; }
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    const profile = { name: name || "Admin", email, isAdmin: true, country: "🇨🇦", artistId: cred.user.uid };
+    await setDoc(doc(db, "users", cred.user.uid), profile);
+    currentUser = { uid: cred.user.uid, ...profile };
+    err.classList.remove("show");
+    updateNavAuth();
+    toast("Admin account created ✓");
+    showAdminPage();
+  } catch(e) {
+    if(e.code === "auth/email-already-in-use") showErr(err, "This admin account already exists — use Admin Sign In instead.");
+    else if(e.code === "auth/weak-password") showErr(err, "Password is too weak (use at least 6 characters).");
+    else if(e.code === "auth/invalid-email") showErr(err, "That email address looks invalid.");
+    else showErr(err, "Could not create the account. " + (e.message || ""));
+  }
+}
+
 async function doForgotPassword() {
   const email = document.getElementById("forgotEmail").value.trim();
   const err = document.getElementById("forgotError");
@@ -1502,9 +1568,9 @@ async function doForgotPassword() {
   }
 }
 function clearLoginForms() {
-  ["loginEmail","loginPassword","signupName","signupEmail","signupPassword","signupCountry","forgotEmail"].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=""; });
-  ["loginError","signupError","forgotError"].forEach(id=>document.getElementById(id)?.classList.remove("show"));
-  const s = document.getElementById("forgotSuccess"); if(s) s.style.display="none";
+  ["loginEmail","loginPassword","signupName","signupEmail","signupPassword","signupCountry","forgotEmail","adminSignupName","adminSignupEmail","adminSignupPassword"].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=""; });
+  ["loginError","signupError","forgotError","adminSignupError"].forEach(id=>document.getElementById(id)?.classList.remove("show"));
+  ["forgotSuccess","adminSignupSuccess"].forEach(id=>{ const s=document.getElementById(id); if(s) s.style.display="none"; });
   switchToLogin();
 }
 
@@ -2410,7 +2476,7 @@ onAuthStateChanged(auth, async fbUser => {
     if(profileDoc.exists()) {
       currentUser = { uid: fbUser.uid, ...profileDoc.data() };
     } else {
-      const isAdmin = fbUser.email === "raj@thekolours.com";
+      const isAdmin = isAdminEmail(fbUser.email);
       const ARTIST_ID_MAP = { "raj@thekolours.com":"artist-raj", "ankita@thekolours.com":"artist-ankita", "abhineet@thekolours.com":"artist-abhineet" };
       const profile = { name: fbUser.displayName || fbUser.email.split("@")[0], email: fbUser.email, isAdmin, country:"🇨🇦", artistId: ARTIST_ID_MAP[fbUser.email] || fbUser.uid };
       await setDoc(doc(db, "users", fbUser.uid), profile);
@@ -2456,6 +2522,8 @@ window.switchToLogin = switchToLogin;
 window.switchToForgot = switchToForgot;
 window.doForgotPassword = doForgotPassword;
 window.switchToAdminTab = switchToAdminTab;
+window.switchToAdminSignup = switchToAdminSignup;
+window.adminSignup = adminSignup;
 window.adminTabLogin = adminTabLogin;
 window.studioOrLogin = studioOrLogin;
 window.showPage = showPage;
