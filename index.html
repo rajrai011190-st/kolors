@@ -557,6 +557,9 @@
     .login-switch { text-align: center; margin-top: 20px; font-size: 13px; color: rgba(0,0,0,0.45); }
     .login-switch a { color: var(--black); font-weight: 500; cursor: pointer; text-decoration: underline; }
     .login-divider { height: 0.5px; background: var(--border); margin: 20px 0; }
+    .login-tabs { display: flex; border: 0.5px solid var(--border-dark); border-radius: 6px; margin-bottom: 24px; overflow: hidden; }
+    .login-tab { flex: 1; font-family: var(--font-sans); font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; padding: 9px 12px; background: none; border: none; cursor: pointer; color: rgba(0,0,0,0.4); transition: all 0.15s; }
+    .login-tab.active { background: var(--black); color: #fff; }
     .seed-hint { font-size: 12px; color: rgba(0,0,0,0.35); text-align: center; line-height: 1.6; }
 
     /* ARTIST PROFILE BANNER */
@@ -722,10 +725,54 @@
     .admin-listing-row:hover { background: var(--bg2); }
     .admin-login-note { font-size: 12px; color: rgba(0,0,0,0.35); text-align: center; margin-top: 14px; line-height: 1.6; }
     .admin-local-note { font-size: 11px; color: rgba(0,0,0,0.35); margin-bottom: 20px; display: flex; align-items: center; gap: 5px; }
+
+    /* ADMIN TABS */
+    .admin-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+    .admin-tab {
+      background: none; border: none; border-bottom: 2px solid transparent;
+      font-family: var(--font-sans); font-size: 14px; font-weight: 500;
+      color: rgba(0,0,0,0.45); cursor: pointer; padding: 10px 14px; margin-bottom: -1px;
+      display: inline-flex; align-items: center; gap: 6px; transition: color 0.15s, border-color 0.15s;
+    }
+    .admin-tab:hover { color: var(--black); }
+    .admin-tab.active { color: var(--black); border-bottom-color: var(--terracotta); }
+    .admin-tab i { font-size: 15px; }
+
+    /* SITE CONTENT EDITOR */
+    .ce-section { margin-bottom: 30px; border: 1px solid var(--border); border-radius: 12px; padding: 20px 22px; background: var(--bg); }
+    .ce-section-title { font-family: var(--font-serif); font-size: 15px; font-weight: 600; color: var(--black); margin-bottom: 4px; display: flex; align-items: center; gap: 7px; }
+    .ce-section-title i { color: var(--terracotta); font-size: 16px; }
+    .ce-section-sub { font-size: 12px; color: rgba(0,0,0,0.4); margin-bottom: 18px; }
+    .ce-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .ce-field { display: flex; flex-direction: column; gap: 6px; }
+    .ce-field.full { grid-column: 1 / -1; }
+    .ce-field label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(0,0,0,0.45); font-weight: 500; }
+    .ce-field input, .ce-field textarea {
+      font-family: var(--font-sans); font-size: 14px; color: var(--black);
+      border: 1px solid var(--border-dark); border-radius: 6px; padding: 9px 11px;
+      outline: none; background: var(--bg); width: 100%; transition: border-color 0.15s;
+    }
+    .ce-field input:focus, .ce-field textarea:focus { border-color: var(--black); }
+    .ce-field textarea { resize: vertical; min-height: 70px; line-height: 1.5; }
+    .ce-field textarea.tall { min-height: 150px; }
+    .ce-hint { font-size: 11px; color: rgba(0,0,0,0.38); }
+    .ce-hint code { background: var(--bg2); padding: 1px 5px; border-radius: 3px; font-size: 11px; }
+    .ce-note { font-size: 11px; color: rgba(0,0,0,0.4); font-style: italic; }
+    .content-save-bar {
+      position: sticky; bottom: 0; display: flex; align-items: center; justify-content: flex-end; gap: 12px;
+      padding: 14px 0; background: linear-gradient(to top, var(--bg) 70%, transparent);
+      border-top: 1px solid var(--border); margin-top: 8px;
+    }
+    .content-save-status { font-size: 12px; color: var(--green); margin-right: auto; opacity: 0; transition: opacity 0.2s; }
+    .content-save-status.show { opacity: 1; }
+    .content-save-status.error { color: var(--terracotta); }
+
     @media (max-width: 768px) {
       .admin-page-wrap { padding: 24px 16px calc(var(--bottom-nav-h) + var(--safe-b) + 32px); }
       .admin-dash-header { flex-direction: column; align-items: flex-start; }
       .admin-listing-row { flex-wrap: wrap; }
+      .ce-grid { grid-template-columns: 1fr; }
+      .admin-tab { padding: 10px 10px; font-size: 13px; }
     }
   </style>
 </head>
@@ -775,22 +822,22 @@
 <!-- GALLERY PAGE -->
 <div class="page active" id="pageGallery">
   <div class="hero">
-    <p class="hero-eyebrow">Handmade Originals · Acrylic · Digital Print · Canadian Artists</p>
-    <h1>Bring <em>Kolours</em><br/>to your life.</h1>
-    <p>Original paintings and prints by independent Canadian artists. Every piece is one of a kind — made by hand, shipped to your door.</p>
+    <p class="hero-eyebrow" id="scHeroEyebrow">Handmade Originals · Acrylic · Digital Print · Canadian Artists</p>
+    <h1 id="scHeroTitle">Bring <em>Kolours</em><br/>to your life.</h1>
+    <p id="scHeroDesc">Original paintings and prints by independent Canadian artists. Every piece is one of a kind — made by hand, shipped to your door.</p>
     <div class="hero-ctas">
-      <button class="btn btn-primary" onclick="document.querySelector('.category-tabs').scrollIntoView({behavior:'smooth'})"><i class="ti ti-brush"></i>Shop the Gallery</button>
-      <button class="btn btn-outline" onclick="studioOrLogin()"><i class="ti ti-palette"></i>Join to Sell</button>
+      <button class="btn btn-primary" onclick="document.querySelector('.category-tabs').scrollIntoView({behavior:'smooth'})"><i class="ti ti-brush"></i><span id="scHeroCta1">Shop the Gallery</span></button>
+      <button class="btn btn-outline" onclick="studioOrLogin()"><i class="ti ti-palette"></i><span id="scHeroCta2">Join to Sell</span></button>
     </div>
   </div>
 
   <div class="sell-banner">
     <div class="sell-banner-inner">
       <div>
-        <div class="sell-banner-title">Are you an artist?</div>
-        <div class="sell-banner-sub">List your original work on The Kolours and reach collectors across Canada.</div>
+        <div class="sell-banner-title" id="scBannerTitle">Are you an artist?</div>
+        <div class="sell-banner-sub" id="scBannerSub">List your original work on The Kolours and reach collectors across Canada.</div>
       </div>
-      <button class="btn btn-gold sell-banner-btn" onclick="studioOrLogin()">Join to Sell →</button>
+      <button class="btn btn-gold sell-banner-btn" id="scBannerBtn" onclick="studioOrLogin()">Join to Sell →</button>
     </div>
   </div>
 
@@ -847,20 +894,20 @@
 
     <!-- Hero -->
     <div class="about-hero">
-      <p class="about-eyebrow">The Kolours · Est. 2024 · Canada</p>
-      <h1>Art that brings<br/><em>colour</em> to your world.</h1>
-      <p>We're a small collective of Canadian artists on a mission to make original, handmade art accessible to everyone. Every painting on this site was made by hand — no prints, no reproductions.</p>
+      <p class="about-eyebrow" id="scAboutEyebrow">The Kolours · Est. 2024 · Canada</p>
+      <h1 id="scAboutTitle">Art that brings<br/><em>colour</em> to your world.</h1>
+      <p id="scAboutDesc">We're a small collective of Canadian artists on a mission to make original, handmade art accessible to everyone. Every painting on this site was made by hand — no prints, no reproductions.</p>
     </div>
 
     <div class="about-divider"></div>
 
     <!-- Story -->
-    <div style="margin-bottom:8px" class="about-section-label">Our Story</div>
+    <div style="margin-bottom:8px" class="about-section-label" id="scStoryLabel">Our Story</div>
     <div class="about-story">
       <div>
-        <div class="about-story-heading">From a kitchen table<br/><em>to your walls.</em></div>
+        <div class="about-story-heading" id="scStoryHeading">From a kitchen table<br/><em>to your walls.</em></div>
       </div>
-      <div class="about-story-body">
+      <div class="about-story-body" id="scStoryBody">
         <p>The Kolours started with Raj painting late into the night — acrylic on canvas, music on, no plan to sell. A few Instagram posts later, friends started asking to buy. That question — "is it for sale?" — became the seed of this marketplace.</p>
         <p>We built The Kolours so that artists like Raj, Ankita, and Abhineet could list their original work without the overhead of a gallery or the noise of a massive platform. Every artist keeps most of what they earn. Every buyer gets a one-of-a-kind original, not a mass-produced print.</p>
         <p>Based in Canada. Shipping Canada-wide.</p>
@@ -870,40 +917,40 @@
     <div class="about-divider"></div>
 
     <!-- Stats -->
-    <div style="margin-bottom:28px" class="about-section-label">By the numbers</div>
+    <div style="margin-bottom:28px" class="about-section-label" id="scStatsLabel">By the numbers</div>
     <div class="about-values">
       <div>
         <div class="about-value-num" id="aboutWorkCount">12</div>
-        <div class="about-value-title">Original works</div>
-        <div class="about-value-desc">Every painting is one of a kind — no prints, no reproductions.</div>
+        <div class="about-value-title" id="scStat1Title">Original works</div>
+        <div class="about-value-desc" id="scStat1Desc">Every painting is one of a kind — no prints, no reproductions.</div>
       </div>
       <div>
-        <div class="about-value-num">3</div>
-        <div class="about-value-title">Artists</div>
-        <div class="about-value-desc">Raj R, Ankita P, and Abhineet G — all based in Canada.</div>
+        <div class="about-value-num" id="scStat2Num">3</div>
+        <div class="about-value-title" id="scStat2Title">Artists</div>
+        <div class="about-value-desc" id="scStat2Desc">Raj R, Ankita P, and Abhineet G — all based in Canada.</div>
       </div>
       <div>
-        <div class="about-value-num">100%</div>
-        <div class="about-value-title">Handmade</div>
-        <div class="about-value-desc">Acrylic on canvas, mixed media, and digital originals — crafted by the artist's hand.</div>
+        <div class="about-value-num" id="scStat3Num">100%</div>
+        <div class="about-value-title" id="scStat3Title">Handmade</div>
+        <div class="about-value-desc" id="scStat3Desc">Acrylic on canvas, mixed media, and digital originals — crafted by the artist's hand.</div>
       </div>
     </div>
 
     <div class="about-divider"></div>
 
     <!-- Artists -->
-    <div style="margin-bottom:28px" class="about-section-label">Meet the Artists</div>
+    <div style="margin-bottom:28px" class="about-section-label" id="scArtistsLabel">Meet the Artists</div>
     <div class="about-artist-grid" id="aboutArtistGrid"></div>
 
     <div class="about-divider"></div>
 
     <!-- Contact -->
     <div class="about-contact">
-      <h2>Want to sell on<br/><em>The Kolours?</em></h2>
-      <p>We're always looking for talented Canadian artists. Create a free account, upload your work, and start selling today. No commission fees for the first year.</p>
+      <h2 id="scContactTitle">Want to sell on<br/><em>The Kolours?</em></h2>
+      <p id="scContactDesc">We're always looking for talented Canadian artists. Create a free account, upload your work, and start selling today. No commission fees for the first year.</p>
       <div class="about-contact-links">
-        <button class="about-contact-link primary" onclick="studioOrLogin()"><i class="ti ti-palette"></i>Join as an Artist</button>
-        <a class="about-contact-link outline" href="mailto:hello@thekolours.com"><i class="ti ti-mail"></i>hello@thekolours.com</a>
+        <button class="about-contact-link primary" onclick="studioOrLogin()"><i class="ti ti-palette"></i><span id="scContactBtn">Join as an Artist</span></button>
+        <a class="about-contact-link outline" id="scContactEmailLink" href="mailto:hello@thekolours.com"><i class="ti ti-mail"></i><span id="scContactEmail">hello@thekolours.com</span></a>
       </div>
     </div>
 
@@ -914,6 +961,10 @@
 <div class="page" id="pageLogin">
   <div class="login-page">
     <div class="login-card">
+      <div class="login-tabs" id="loginTabs">
+        <button class="login-tab active" id="tabArtist" onclick="switchToLogin()">Artist</button>
+        <button class="login-tab" id="tabAdmin" onclick="switchToAdminTab()">Admin</button>
+      </div>
       <div id="loginView">
         <div class="login-eyebrow">Artist Portal</div>
         <div style="margin-bottom:12px"><img src="images/logo.png" alt="The Kolours" style="height:56px;width:auto" /></div>
@@ -937,6 +988,25 @@
         <div class="login-divider"></div>
 
         <div class="login-switch">New artist? <a onclick="switchToSignup()">Create an account</a></div>
+      </div>
+
+      <!-- ADMIN TAB VIEW -->
+      <div id="adminTabView" style="display:none">
+        <div class="login-eyebrow">Platform Admin</div>
+        <div style="margin-bottom:12px"><img src="images/logo.png" alt="The Kolours" style="height:56px;width:auto" /></div>
+        <div class="login-title">Admin <em>Access</em></div>
+        <div class="login-sub">For platform administrators only. Your account must have admin privileges.</div>
+        <div class="login-error" id="adminTabError"></div>
+        <div class="login-form">
+          <div class="login-field"><label>Email</label><input id="adminTabEmail" type="email" placeholder="admin@thekolours.com" /></div>
+          <div class="login-field"><label>Password</label>
+            <div class="password-wrap">
+              <input id="adminTabPassword" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')adminTabLogin()" />
+              <button class="password-eye" type="button" onclick="togglePassword('adminTabPassword', this)" tabindex="-1"><i class="ti ti-eye"></i></button>
+            </div>
+          </div>
+          <button class="btn btn-primary login-submit" onclick="adminTabLogin()"><i class="ti ti-shield-check"></i>Sign In as Admin</button>
+        </div>
       </div>
 
       <!-- FORGOT PASSWORD VIEW -->
@@ -1019,16 +1089,35 @@
           <button class="btn btn-outline danger" onclick="logout()"><i class="ti ti-logout"></i>Log Out</button>
         </div>
       </div>
-      <div class="admin-local-note"><i class="ti ti-info-circle" style="font-size:13px"></i> Changes save to Firestore and reflect on the live website for all visitors instantly.</div>
-      <div class="listings-stats" id="adminDashStats"></div>
-      <div class="admin-filter-bar" style="margin-top:20px">
-        <select id="adminDashArtistFilter" onchange="renderAdminTable()">
-          <option value="">All Artists</option>
-        </select>
-        <input class="admin-search" id="adminDashSearch" type="text" placeholder="Search by title…" oninput="renderAdminTable()" />
+      <div class="admin-tabs">
+        <button class="admin-tab active" id="adminTabBtnListings" onclick="switchAdminTab('listings')"><i class="ti ti-photo"></i> Listings</button>
+        <button class="admin-tab" id="adminTabBtnContent" onclick="switchAdminTab('content')"><i class="ti ti-edit"></i> Site Content</button>
       </div>
-      <div id="adminPendingSection"></div>
-      <div id="adminDashList"></div>
+
+      <!-- TAB: LISTINGS -->
+      <div id="adminTabListings">
+        <div class="admin-local-note"><i class="ti ti-info-circle" style="font-size:13px"></i> Changes save to Firestore and reflect on the live website for all visitors instantly.</div>
+        <div class="listings-stats" id="adminDashStats"></div>
+        <div class="admin-filter-bar" style="margin-top:20px">
+          <select id="adminDashArtistFilter" onchange="renderAdminTable()">
+            <option value="">All Artists</option>
+          </select>
+          <input class="admin-search" id="adminDashSearch" type="text" placeholder="Search by title…" oninput="renderAdminTable()" />
+        </div>
+        <div id="adminPendingSection"></div>
+        <div id="adminDashList"></div>
+      </div>
+
+      <!-- TAB: SITE CONTENT -->
+      <div id="adminTabContent" style="display:none">
+        <div class="admin-local-note"><i class="ti ti-info-circle" style="font-size:13px"></i> Edit any text on the public website below. Saved changes go live for all visitors instantly.</div>
+        <div id="contentEditorForm"></div>
+        <div class="content-save-bar">
+          <span class="content-save-status" id="contentSaveStatus"></span>
+          <button class="btn btn-outline" onclick="renderContentForm()"><i class="ti ti-rotate"></i> Revert</button>
+          <button class="btn btn-primary" id="contentSaveBtn" onclick="saveSiteContent()"><i class="ti ti-check"></i> Save Changes</button>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -1347,9 +1436,53 @@ window.togglePassword = function(inputId, btn) {
   btn.innerHTML = isHidden ? '<i class="ti ti-eye-off"></i>' : '<i class="ti ti-eye"></i>';
 }
 
-function switchToSignup() { document.getElementById("loginView").style.display="none"; document.getElementById("signupView").style.display=""; document.getElementById("forgotView").style.display="none"; }
-function switchToLogin() { document.getElementById("signupView").style.display="none"; document.getElementById("forgotView").style.display="none"; document.getElementById("loginView").style.display=""; }
-function switchToForgot() { document.getElementById("loginView").style.display="none"; document.getElementById("signupView").style.display="none"; document.getElementById("forgotView").style.display=""; document.getElementById("forgotEmail").value=""; document.getElementById("forgotError").classList.remove("show"); document.getElementById("forgotSuccess").style.display="none"; }
+function _setTab(active) {
+  const tabs = document.getElementById("loginTabs");
+  if(tabs) tabs.style.display = active ? "flex" : "none";
+  document.getElementById("tabArtist")?.classList.toggle("active", active === "artist");
+  document.getElementById("tabAdmin")?.classList.toggle("active", active === "admin");
+}
+function switchToSignup() {
+  document.getElementById("loginView").style.display="none"; document.getElementById("signupView").style.display="";
+  document.getElementById("forgotView").style.display="none"; document.getElementById("adminTabView").style.display="none";
+  _setTab(false);
+}
+function switchToLogin() {
+  document.getElementById("signupView").style.display="none"; document.getElementById("forgotView").style.display="none";
+  document.getElementById("adminTabView").style.display="none"; document.getElementById("loginView").style.display="";
+  _setTab("artist");
+}
+function switchToForgot() {
+  document.getElementById("loginView").style.display="none"; document.getElementById("signupView").style.display="none";
+  document.getElementById("forgotView").style.display=""; document.getElementById("adminTabView").style.display="none";
+  document.getElementById("forgotEmail").value=""; document.getElementById("forgotError").classList.remove("show"); document.getElementById("forgotSuccess").style.display="none";
+  _setTab(false);
+}
+function switchToAdminTab() {
+  document.getElementById("loginView").style.display="none"; document.getElementById("signupView").style.display="none";
+  document.getElementById("forgotView").style.display="none"; document.getElementById("adminTabView").style.display="";
+  document.getElementById("adminTabError").classList.remove("show");
+  _setTab("admin");
+}
+async function adminTabLogin() {
+  const email = document.getElementById("adminTabEmail").value.trim();
+  const password = document.getElementById("adminTabPassword").value;
+  const err = document.getElementById("adminTabError");
+  err.classList.remove("show");
+  if(!email || !password) { err.textContent="Please enter your email and password."; err.classList.add("show"); return; }
+  try {
+    const cred = await signInWithEmailAndPassword(auth, email, password);
+    const profileDoc = await getDoc(doc(db, "users", cred.user.uid));
+    if(!profileDoc.exists() || !profileDoc.data().isAdmin) {
+      await signOut(auth); err.textContent="No admin account found with those credentials."; err.classList.add("show"); return;
+    }
+    currentUser = { uid: cred.user.uid, ...profileDoc.data() };
+    updateNavAuth();
+    showAdminPage();
+  } catch(e) {
+    err.textContent="No admin account found with those credentials."; err.classList.add("show");
+  }
+}
 
 async function doForgotPassword() {
   const email = document.getElementById("forgotEmail").value.trim();
@@ -2076,6 +2209,175 @@ async function adminDeleteListing(id) {
   await deleteListing(id);
 }
 
+// ─── SITE CONTENT (CMS) ──────────────────────────────────────────────────────
+let siteContent = {};
+
+// Single source of truth: defines every editable text field on the public site,
+// its default value, the DOM element it populates, and how it should be rendered.
+const CONTENT_SECTIONS = [
+  {
+    title: "Gallery — Hero", icon: "ti-home", sub: "The main banner at the top of the homepage.",
+    fields: [
+      { key:"heroEyebrow", label:"Eyebrow (small text above title)", el:"scHeroEyebrow", mode:"text", type:"input", full:true, def:"Handmade Originals · Acrylic · Digital Print · Canadian Artists" },
+      { key:"heroTitle", label:"Headline", el:"scHeroTitle", mode:"rich", type:"textarea", full:true, def:"Bring *Kolours*\nto your life.", hint:true },
+      { key:"heroDesc", label:"Description", el:"scHeroDesc", mode:"text", type:"textarea", full:true, def:"Original paintings and prints by independent Canadian artists. Every piece is one of a kind — made by hand, shipped to your door." },
+      { key:"heroCta1", label:"Primary button", el:"scHeroCta1", mode:"text", type:"input", def:"Shop the Gallery" },
+      { key:"heroCta2", label:"Secondary button", el:"scHeroCta2", mode:"text", type:"input", def:"Join to Sell" }
+    ]
+  },
+  {
+    title: "Gallery — Artist Banner", icon:"ti-speakerphone", sub:"The call-out strip inviting artists to join.",
+    fields: [
+      { key:"bannerTitle", label:"Title", el:"scBannerTitle", mode:"text", type:"input", def:"Are you an artist?" },
+      { key:"bannerBtn", label:"Button", el:"scBannerBtn", mode:"text", type:"input", def:"Join to Sell →" },
+      { key:"bannerSub", label:"Subtitle", el:"scBannerSub", mode:"text", type:"textarea", full:true, def:"List your original work on The Kolours and reach collectors across Canada." }
+    ]
+  },
+  {
+    title: "About — Hero", icon:"ti-info-circle", sub:"Top of the About page.",
+    fields: [
+      { key:"aboutEyebrow", label:"Eyebrow", el:"scAboutEyebrow", mode:"text", type:"input", full:true, def:"The Kolours · Est. 2024 · Canada" },
+      { key:"aboutTitle", label:"Headline", el:"scAboutTitle", mode:"rich", type:"textarea", full:true, def:"Art that brings\n*colour* to your world.", hint:true },
+      { key:"aboutDesc", label:"Description", el:"scAboutDesc", mode:"text", type:"textarea", full:true, def:"We're a small collective of Canadian artists on a mission to make original, handmade art accessible to everyone. Every painting on this site was made by hand — no prints, no reproductions." }
+    ]
+  },
+  {
+    title: "About — Our Story", icon:"ti-book", sub:"The story section.",
+    fields: [
+      { key:"storyLabel", label:"Section label", el:"scStoryLabel", mode:"text", type:"input", def:"Our Story" },
+      { key:"storyHeading", label:"Heading", el:"scStoryHeading", mode:"rich", type:"textarea", def:"From a kitchen table\n*to your walls.*", hint:true },
+      { key:"storyBody", label:"Body", el:"scStoryBody", mode:"paragraphs", type:"textarea-tall", full:true, paraHint:true, def:"The Kolours started with Raj painting late into the night — acrylic on canvas, music on, no plan to sell. A few Instagram posts later, friends started asking to buy. That question — \"is it for sale?\" — became the seed of this marketplace.\nWe built The Kolours so that artists like Raj, Ankita, and Abhineet could list their original work without the overhead of a gallery or the noise of a massive platform. Every artist keeps most of what they earn. Every buyer gets a one-of-a-kind original, not a mass-produced print.\nBased in Canada. Shipping Canada-wide." }
+    ]
+  },
+  {
+    title: "About — By the Numbers", icon:"ti-chart-bar", sub:"The three stat blocks.",
+    fields: [
+      { key:"statsLabel", label:"Section label", el:"scStatsLabel", mode:"text", type:"input", full:true, def:"By the numbers" },
+      { key:"stat1Title", label:"Stat 1 title", el:"scStat1Title", mode:"text", type:"input", def:"Original works", note:"Stat 1's number updates automatically (live count of available works)." },
+      { key:"stat1Desc", label:"Stat 1 description", el:"scStat1Desc", mode:"text", type:"textarea", def:"Every painting is one of a kind — no prints, no reproductions." },
+      { key:"stat2Num", label:"Stat 2 number", el:"scStat2Num", mode:"text", type:"input", def:"3" },
+      { key:"stat2Title", label:"Stat 2 title", el:"scStat2Title", mode:"text", type:"input", def:"Artists" },
+      { key:"stat2Desc", label:"Stat 2 description", el:"scStat2Desc", mode:"text", type:"textarea", full:true, def:"Raj R, Ankita P, and Abhineet G — all based in Canada." },
+      { key:"stat3Num", label:"Stat 3 number", el:"scStat3Num", mode:"text", type:"input", def:"100%" },
+      { key:"stat3Title", label:"Stat 3 title", el:"scStat3Title", mode:"text", type:"input", def:"Handmade" },
+      { key:"stat3Desc", label:"Stat 3 description", el:"scStat3Desc", mode:"text", type:"textarea", full:true, def:"Acrylic on canvas, mixed media, and digital originals — crafted by the artist's hand." }
+    ]
+  },
+  {
+    title: "About — Artists & Contact", icon:"ti-mail", sub:"The closing contact section.",
+    fields: [
+      { key:"artistsLabel", label:"Artists section label", el:"scArtistsLabel", mode:"text", type:"input", full:true, def:"Meet the Artists" },
+      { key:"contactTitle", label:"Contact headline", el:"scContactTitle", mode:"rich", type:"textarea", full:true, def:"Want to sell on\n*The Kolours?*", hint:true },
+      { key:"contactDesc", label:"Contact description", el:"scContactDesc", mode:"text", type:"textarea", full:true, def:"We're always looking for talented Canadian artists. Create a free account, upload your work, and start selling today. No commission fees for the first year." },
+      { key:"contactBtn", label:"Button", el:"scContactBtn", mode:"text", type:"input", def:"Join as an Artist" },
+      { key:"contactEmail", label:"Contact email", el:"scContactEmail", mode:"email", type:"input", def:"hello@thekolours.com" }
+    ]
+  }
+];
+
+const DEFAULT_CONTENT = {};
+CONTENT_SECTIONS.forEach(s => s.fields.forEach(f => { DEFAULT_CONTENT[f.key] = f.def; }));
+const allContentFields = () => CONTENT_SECTIONS.flatMap(s => s.fields);
+
+function escHtml(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+// Friendly markup → HTML: *word* becomes an italic accent, newlines become line breaks.
+function richText(s) {
+  return escHtml(s).replace(/\*([^*\n]+)\*/g, "<em>$1</em>").replace(/\n/g, "<br>");
+}
+
+// Push the current content onto the public-facing DOM.
+function applySiteContent(c) {
+  const data = Object.assign({}, DEFAULT_CONTENT, c || {});
+  allContentFields().forEach(f => {
+    const el = document.getElementById(f.el);
+    if(!el) return;
+    const val = (data[f.key] ?? "").toString();
+    if(f.mode === "rich") {
+      el.innerHTML = richText(val);
+    } else if(f.mode === "paragraphs") {
+      el.innerHTML = val.split(/\n+/).map(p=>p.trim()).filter(Boolean).map(p=>`<p>${escHtml(p)}</p>`).join("");
+    } else if(f.mode === "email") {
+      el.textContent = val;
+      const link = document.getElementById("scContactEmailLink");
+      if(link) link.href = "mailto:" + val;
+    } else {
+      el.textContent = val;
+    }
+  });
+}
+
+function setContentStatus(msg, isError) {
+  const el = document.getElementById("contentSaveStatus");
+  if(!el) return;
+  el.textContent = msg || "";
+  el.classList.toggle("show", !!msg);
+  el.classList.toggle("error", !!isError);
+}
+
+// Build the admin editor form from the current content.
+function renderContentForm() {
+  const data = Object.assign({}, DEFAULT_CONTENT, siteContent || {});
+  const richHint = `<div class="ce-hint">Wrap a word in <code>*asterisks*</code> for an <em>italic accent</em>; press Enter for a line break.</div>`;
+  const paraHint = `<div class="ce-hint">Write one paragraph per line (press Enter between paragraphs).</div>`;
+  const wrap = document.getElementById("contentEditorForm");
+  if(!wrap) return;
+  wrap.innerHTML = CONTENT_SECTIONS.map(s => `
+    <div class="ce-section">
+      <div class="ce-section-title"><i class="ti ${s.icon}"></i>${s.title}</div>
+      <div class="ce-section-sub">${s.sub}</div>
+      <div class="ce-grid">
+        ${s.fields.map(f => {
+          const esc = escHtml(data[f.key] ?? "");
+          const full = (f.full || f.type !== "input") ? " full" : "";
+          const tall = f.type === "textarea-tall" ? " tall" : "";
+          const control = f.type === "input"
+            ? `<input id="ce_${f.key}" type="${f.mode==="email"?"email":"text"}" value="${esc.replace(/"/g,"&quot;")}" />`
+            : `<textarea id="ce_${f.key}" class="${tall.trim()}">${esc}</textarea>`;
+          const hint = f.hint ? richHint : (f.paraHint ? paraHint : "");
+          const note = f.note ? `<div class="ce-note">${f.note}</div>` : "";
+          return `<div class="ce-field${full}"><label>${f.label}</label>${control}${hint}${note}</div>`;
+        }).join("")}
+      </div>
+    </div>
+  `).join("");
+  setContentStatus("");
+}
+
+function switchAdminTab(tab) {
+  const isContent = tab === "content";
+  document.getElementById("adminTabListings").style.display = isContent ? "none" : "";
+  document.getElementById("adminTabContent").style.display = isContent ? "" : "none";
+  document.getElementById("adminTabBtnListings").classList.toggle("active", !isContent);
+  document.getElementById("adminTabBtnContent").classList.toggle("active", isContent);
+  if(isContent) renderContentForm();
+}
+
+async function saveSiteContent() {
+  if(!currentUser || !currentUser.isAdmin) { setContentStatus("Admin access required.", true); return; }
+  const btn = document.getElementById("contentSaveBtn");
+  const data = {};
+  allContentFields().forEach(f => {
+    const el = document.getElementById("ce_" + f.key);
+    if(el) data[f.key] = el.value;
+  });
+  if(btn) btn.disabled = true;
+  setContentStatus("Saving…");
+  try {
+    await setDoc(doc(db, "siteContent", "main"), data, { merge:true });
+    siteContent = Object.assign({}, siteContent, data);
+    applySiteContent(siteContent);
+    setContentStatus("Saved — live on the website ✓");
+    toast("Site content saved — live for all visitors ✓");
+  } catch(e) {
+    setContentStatus("Save failed: " + (e?.message || e), true);
+    toast("Could not save — check your connection or permissions.");
+  } finally {
+    if(btn) btn.disabled = false;
+  }
+}
+
 // ─── INIT ────────────────────────────────────────────────────────────────────
 async function seedFirestoreIfEmpty() {
   const testDoc = await getDoc(doc(db, "paintings", "1"));
@@ -2094,6 +2396,11 @@ async function initData() {
     renderTabs();
     if(document.getElementById("pageStudio")?.classList.contains("active")) renderListings();
     if(document.getElementById("pageAdmin")?.classList.contains("active") && currentUser?.isAdmin) renderAdminDashboard();
+  });
+  // Live-sync editable site content (hero, banner, About copy) for all visitors.
+  onSnapshot(doc(db, "siteContent", "main"), snap => {
+    siteContent = snap.exists() ? snap.data() : {};
+    applySiteContent(siteContent);
   });
 }
 
@@ -2146,6 +2453,10 @@ window.doSignup = doSignup;
 window.logout = logout;
 window.switchToSignup = switchToSignup;
 window.switchToLogin = switchToLogin;
+window.switchToForgot = switchToForgot;
+window.doForgotPassword = doForgotPassword;
+window.switchToAdminTab = switchToAdminTab;
+window.adminTabLogin = adminTabLogin;
 window.studioOrLogin = studioOrLogin;
 window.showPage = showPage;
 window.showAdminPage = showAdminPage;
@@ -2157,6 +2468,9 @@ window.adminEditListing = adminEditListing;
 window.adminDeleteListing = adminDeleteListing;
 window.approveListingAdmin = approveListingAdmin;
 window.rejectListingAdmin = rejectListingAdmin;
+window.switchAdminTab = switchAdminTab;
+window.renderContentForm = renderContentForm;
+window.saveSiteContent = saveSiteContent;
 </script>
 </body>
 </html>
