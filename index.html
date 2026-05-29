@@ -335,6 +335,37 @@
     .upload-page h2 { font-family: var(--font-display); font-size: 32px; font-weight: 400; margin-bottom: 6px; }
     .upload-page h2 em { font-family: var(--font-serif); font-style: normal; font-weight: 700; color: var(--terracotta); }
     .upload-page .sub { font-size: 14px; color: rgba(0,0,0,0.45); margin-bottom: 32px; }
+    /* ARTIST PROFILE PANEL */
+    .profile-panel { max-width: 720px; margin: 0 auto 8px; padding: 0 24px; }
+    .profile-panel-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .profile-panel-head h2 { font-family: var(--font-display); font-size: 26px; font-weight: 400; }
+    .profile-panel-head h2 em { font-family: var(--font-serif); font-style: normal; font-weight: 700; color: var(--terracotta); }
+    .profile-panel-sub { font-size: 13px; color: rgba(0,0,0,0.45); margin: 6px 0 18px; line-height: 1.5; }
+    .profile-status { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 100px; letter-spacing: 0.02em; }
+    .profile-status.is-none { background: var(--bg2); color: rgba(0,0,0,0.45); }
+    .profile-status.is-pending { background: rgba(180,83,9,0.1); color: #b45309; }
+    .profile-status.is-approved { background: rgba(45,106,79,0.1); color: var(--green); }
+    .profile-status.is-rejected { background: rgba(162,107,37,0.12); color: var(--terracotta); }
+    .profile-grid { display: grid; grid-template-columns: 140px 1fr; gap: 20px; align-items: start; padding: 20px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); margin-bottom: 36px; }
+    .profile-photo-col { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+    .profile-photo-wrap { width: 120px; height: 120px; border-radius: 50%; overflow: hidden; border: 1px solid var(--border-dark); background: var(--bg2); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .profile-photo-wrap img { width: 100%; height: 100%; object-fit: cover; }
+    .profile-photo-empty { display: flex; flex-direction: column; align-items: center; gap: 4px; color: rgba(0,0,0,0.35); font-size: 11px; }
+    .profile-photo-empty i { font-size: 24px; }
+    .profile-photo-btn { font-size: 12px; border: 1px solid var(--border-dark); border-radius: 6px; padding: 6px 10px; background: var(--bg); cursor: pointer; display: inline-flex; align-items: center; gap: 5px; color: var(--black); }
+    .profile-photo-btn:hover { border-color: var(--black); }
+    .profile-bio-col { display: flex; flex-direction: column; gap: 10px; }
+    .profile-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(0,0,0,0.4); }
+    .profile-bio-col textarea { font-family: var(--font-sans); font-size: 14px; line-height: 1.6; color: var(--black); border: 1px solid var(--border-dark); border-radius: 8px; padding: 12px; outline: none; min-height: 120px; resize: vertical; }
+    .profile-bio-col textarea:focus { border-color: var(--black); }
+    .profile-submit { align-self: flex-start; justify-content: center; }
+    .profile-review-photo { width: 48px; height: 48px; border-radius: 50%; overflow: hidden; background: var(--bg2); flex-shrink: 0; }
+    .profile-review-photo img { width: 100%; height: 100%; object-fit: cover; }
+    .profile-review-noimg { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: rgba(0,0,0,0.3); }
+    @media (max-width: 768px) {
+      .profile-grid { grid-template-columns: 1fr; justify-items: center; }
+      .profile-bio-col { width: 100%; }
+    }
     .dropzone {
       border: 1.5px dashed rgba(0,0,0,0.15); border-radius: 12px;
       padding: 40px; text-align: center; cursor: pointer;
@@ -1153,6 +1184,7 @@
           <input class="admin-search" id="adminDashSearch" type="text" placeholder="Search by title…" oninput="renderAdminTable()" />
         </div>
         <div id="adminPendingSection"></div>
+        <div id="adminPendingProfiles"></div>
         <div id="adminDashList"></div>
       </div>
 
@@ -1180,6 +1212,30 @@
       <div class="studio-meta" id="studioMeta"></div>
     </div>
   </div>
+
+  <div class="profile-panel" id="profilePanel">
+    <div class="profile-panel-head">
+      <h2>Your <em>Profile</em></h2>
+      <span class="profile-status" id="profileStatus"></span>
+    </div>
+    <p class="profile-panel-sub">Add a short bio and a photo of yourself. An admin reviews them before they appear on the About page.</p>
+    <div class="profile-grid">
+      <div class="profile-photo-col">
+        <div class="profile-photo-wrap" id="profilePhotoWrap" onclick="document.getElementById('profilePhotoInput').click()">
+          <img id="profilePhotoImg" alt="" style="display:none" />
+          <div class="profile-photo-empty" id="profilePhotoEmpty"><i class="ti ti-camera"></i><span>Add photo</span></div>
+        </div>
+        <input type="file" id="profilePhotoInput" accept="image/*" style="display:none" onchange="handleProfilePhoto(this)" />
+        <button class="profile-photo-btn" type="button" onclick="document.getElementById('profilePhotoInput').click()"><i class="ti ti-upload"></i> Upload photo</button>
+      </div>
+      <div class="profile-bio-col">
+        <label class="profile-label">Short bio / your story</label>
+        <textarea id="profileBio" placeholder="Tell collectors about yourself and your work…"></textarea>
+        <button class="btn btn-primary profile-submit" id="profileSubmitBtn" onclick="submitArtistProfile()"><i class="ti ti-send"></i> Submit for Review</button>
+      </div>
+    </div>
+  </div>
+
   <div class="upload-page">
     <h2 id="scStudioHeading">Upload a <em style="font-family:var(--font-serif);font-style:normal;font-weight:700;color:var(--terracotta)">Painting</em></h2>
     <p class="sub" id="scStudioSub">Add your original work to the gallery.</p>
@@ -1390,7 +1446,7 @@ function showPage(name) {
   document.getElementById("bnAbout").classList.toggle("active", name==="about");
   document.getElementById("bnStudio").classList.toggle("active", name==="studio");
   document.getElementById("navAboutLink").classList.toggle("active", name==="about");
-  if(name==="studio") { renderStudioHeader(); renderListings(); }
+  if(name==="studio") { renderStudioHeader(); renderListings(); renderArtistProfilePanel(); }
   if(name==="login") { clearLoginForms(); }
   if(name==="about") { renderAboutArtists(); }
   window.scrollTo(0,0);
@@ -1609,6 +1665,72 @@ function renderStudioHeader() {
   document.getElementById("studioMeta").textContent = `${currentUser.country||""}  ·  ${myCount} listing${myCount!==1?"s":""}`;
 }
 
+// ─── ARTIST PROFILE: submit bio + photo for admin review ─────────────────────
+function renderArtistProfilePanel() {
+  const panel = document.getElementById("profilePanel");
+  if(!panel) return;
+  if(!currentUser) { panel.style.display = "none"; return; }
+  panel.style.display = "";
+  const id = currentUser.artistId || currentUser.uid;
+  myProfile = artistProfiles.find(p => p.id === id || p.artistId === id || (p.uid && p.uid === currentUser.uid)) || null;
+  profilePhotoFile = null;
+  const bio = myProfile ? (myProfile.bioPending || myProfile.bio || "") : "";
+  const photo = myProfile ? (myProfile.photoPending || myProfile.photo || "") : "";
+  document.getElementById("profileBio").value = bio;
+  const img = document.getElementById("profilePhotoImg");
+  const empty = document.getElementById("profilePhotoEmpty");
+  if(photo) { img.src = photo; img.style.display = ""; empty.style.display = "none"; }
+  else { img.removeAttribute("src"); img.style.display = "none"; empty.style.display = ""; }
+  const status = myProfile ? myProfile.status : "none";
+  const map = {
+    pending:  ["is-pending",  "Pending review"],
+    approved: ["is-approved", "Live on the About page"],
+    rejected: ["is-rejected", "Not approved — edit & resubmit"],
+    none:     ["is-none",     "Not submitted yet"]
+  };
+  const [cls, label] = map[status] || map.none;
+  const st = document.getElementById("profileStatus");
+  st.className = "profile-status " + cls;
+  st.textContent = label;
+}
+
+function handleProfilePhoto(input) {
+  const file = input.files && input.files[0];
+  if(!file) return;
+  profilePhotoFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = document.getElementById("profilePhotoImg");
+    img.src = e.target.result; img.style.display = "";
+    document.getElementById("profilePhotoEmpty").style.display = "none";
+  };
+  reader.readAsDataURL(file);
+}
+
+async function submitArtistProfile() {
+  if(!currentUser) { showPage("login"); return; }
+  const bio = document.getElementById("profileBio").value.trim();
+  const btn = document.getElementById("profileSubmitBtn");
+  let photo = myProfile ? (myProfile.photoPending || myProfile.photo || "") : "";
+  if(!bio && !profilePhotoFile && !photo) { toast("Add a short bio or a photo first."); return; }
+  btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader"></i> Submitting…';
+  try {
+    if(profilePhotoFile) photo = await uploadToCloudinary(profilePhotoFile);
+    const id = currentUser.artistId || currentUser.uid;
+    await setDoc(doc(db, "artistProfiles", id), {
+      artistId: id, uid: currentUser.uid, name: currentUser.name,
+      bioPending: bio, photoPending: photo || "",
+      status: "pending", updatedAt: Date.now()
+    }, { merge: true });
+    profilePhotoFile = null;
+    toast("Profile submitted — an admin will review it before it goes live.");
+  } catch(e) {
+    toast("Could not submit: " + (e?.message || e));
+  } finally {
+    btn.disabled = false; btn.innerHTML = '<i class="ti ti-send"></i> Submit for Review';
+  }
+}
+
 // ─── CATEGORY TABS ───────────────────────────────────────────────────────────
 const CATEGORIES = ["All","Abstract","Landscape","Portrait","Still Life","Figurative"];
 function renderTabs() {
@@ -1711,6 +1833,17 @@ function renderGrid(list) {
 }
 
 // ─── ARTISTS STRIP ───────────────────────────────────────────────────────────
+// ─── ARTIST PROFILES (artist-submitted bio + photo, admin-approved) ──────────
+let artistProfiles = [];
+let myProfile = null;
+let profilePhotoFile = null;
+// Approved self-submitted profile for an artist, looked up by display name.
+function getApprovedProfile(name) {
+  if(!name) return null;
+  const n = String(name).trim().toLowerCase();
+  return artistProfiles.find(p => p.status === "approved" && String(p.name||"").trim().toLowerCase() === n) || null;
+}
+
 function renderArtists() {
   const allArtists = [...ARTISTS];
   paintings.forEach(p=>{
@@ -1720,7 +1853,8 @@ function renderArtists() {
   document.getElementById("artistsRow").innerHTML = allArtists.map(a=>{
     const workCount = paintings.filter(p=>p.artist===a.name).length;
     const c = genCanvas(a.hue, 360, 360, a.name.length*7);
-    const dataUrl = c.toDataURL();
+    const prof = getApprovedProfile(a.name);
+    const dataUrl = (prof && prof.photo) ? prof.photo : c.toDataURL();
     return `<div class="artist-card">
       <div class="artist-cover">
         <img src="${dataUrl}" alt="${a.name}" style="width:100%;height:100%;object-fit:cover;display:block" />
@@ -1765,17 +1899,19 @@ function renderAboutArtists() {
   });
   grid.innerHTML = allArtists.map(a => {
     const bio = ARTIST_BIOS[a.name] || { role:"Artist", bio:"Original works available in the gallery." };
+    const prof = getApprovedProfile(a.name);
     const c = genCanvas(a.hue, 480, 480, a.name.length*7);
-    const dataUrl = c.toDataURL();
+    const dataUrl = (prof && prof.photo) ? prof.photo : c.toDataURL();
+    const bioText = (prof && prof.bio) ? escHtml(prof.bio) : bio.bio;
     const workCount = paintings.filter(p=>p.artist===a.name).length;
     return `<div class="about-artist-card">
       <div class="about-artist-img">
         <canvas style="display:none"></canvas>
-        <img src="${dataUrl}" alt="${a.name}" style="width:100%;height:100%;object-fit:cover;display:block"/>
+        <img src="${escAttr(dataUrl)}" alt="${a.name}" style="width:100%;height:100%;object-fit:cover;display:block"/>
       </div>
       <div class="about-artist-name">${a.name} ${a.country}</div>
       <div class="about-artist-role">${bio.role} · ${workCount} work${workCount!==1?"s":""}</div>
-      <div class="about-artist-bio">${bio.bio}</div>
+      <div class="about-artist-bio">${bioText}</div>
     </div>`;
   }).join("");
   // live work count
@@ -2197,6 +2333,57 @@ async function rejectListingAdmin(id) {
   toast(`"${title}" rejected.`);
 }
 
+// ─── ADMIN: artist profile review ────────────────────────────────────────────
+function renderPendingProfiles() {
+  const container = document.getElementById("adminPendingProfiles");
+  if(!container) return;
+  const pending = artistProfiles.filter(p => p.status === "pending");
+  if(!pending.length) { container.innerHTML = ""; return; }
+  container.innerHTML = `
+    <div class="pending-section">
+      <div class="pending-section-title">
+        <i class="ti ti-user-check"></i> Artist Profiles Awaiting Review
+        <span class="pill-pending-count">${pending.length}</span>
+      </div>
+      <div id="pendingProfileRows"></div>
+    </div>`;
+  const rows = document.getElementById("pendingProfileRows");
+  pending.forEach(p => {
+    const photo = p.photoPending || p.photo || "";
+    const row = document.createElement("div");
+    row.className = "pending-row";
+    row.innerHTML = `
+      <div class="profile-review-photo">${photo ? `<img src="${escAttr(photo)}" alt="">` : `<div class="profile-review-noimg"><i class="ti ti-user"></i></div>`}</div>
+      <div class="listing-info" style="flex:1;min-width:0">
+        <div class="listing-title">${escHtml(p.name||"(unnamed artist)")}</div>
+        <div class="listing-meta" style="white-space:normal">${p.bioPending ? escHtml(p.bioPending) : "<em>No bio submitted</em>"}</div>
+      </div>
+      <div class="pending-actions">
+        <button class="btn-approve" onclick="approveProfile('${p.id}')"><i class="ti ti-check"></i> Approve</button>
+        <button class="btn-reject" onclick="rejectProfile('${p.id}')"><i class="ti ti-x"></i> Reject</button>
+      </div>`;
+    rows.appendChild(row);
+  });
+}
+
+async function approveProfile(id) {
+  const p = artistProfiles.find(x => x.id === id);
+  if(!p) return;
+  await updateDoc(doc(db, "artistProfiles", id), {
+    bio:   (p.bioPending != null && p.bioPending !== "")   ? p.bioPending   : (p.bio || ""),
+    photo: (p.photoPending != null && p.photoPending !== "") ? p.photoPending : (p.photo || ""),
+    bioPending: "", photoPending: "", status: "approved", reviewedAt: Date.now()
+  });
+  toast(`${p.name || "Artist"}'s profile approved — now live on the About page.`);
+}
+
+async function rejectProfile(id) {
+  const p = artistProfiles.find(x => x.id === id);
+  if(!p) return;
+  await updateDoc(doc(db, "artistProfiles", id), { status: "rejected", bioPending: "", photoPending: "", reviewedAt: Date.now() });
+  toast(`${p.name || "Artist"}'s profile submission was rejected.`);
+}
+
 // ─── ADMIN PAGE ──────────────────────────────────────────────────────────────
 function showAdminPage() {
   if(currentUser && currentUser.isAdmin) {
@@ -2240,17 +2427,20 @@ function renderAdminDashboard() {
   const total   = paintings.length;
   const avail   = paintings.filter(p=>p.available).length;
   const pending = paintings.filter(p=>p.status==="pending").length;
+  const profilesPending = artistProfiles.filter(p=>p.status==="pending").length;
   document.getElementById("adminDashStats").innerHTML = `
     <div class="stat-chip"><div class="stat-val">${total}</div><div class="stat-label">Total Listings</div></div>
     <div class="stat-chip"><div class="stat-val" style="color:var(--green)">${avail}</div><div class="stat-label">Available</div></div>
     <div class="stat-chip"><div class="stat-val" style="color:var(--terracotta)">${total-avail}</div><div class="stat-label">Sold Out</div></div>
     <div class="stat-chip"><div class="stat-val" style="color:#b45309">${pending}</div><div class="stat-label">Pending Review</div></div>
+    <div class="stat-chip"><div class="stat-val" style="color:#b45309">${profilesPending}</div><div class="stat-label">Profiles Pending</div></div>
   `;
   const artists = [...new Set(paintings.map(p=>p.artist))].sort();
   const sel = document.getElementById("adminDashArtistFilter");
   const cur = sel.value;
   sel.innerHTML = `<option value="">All Artists</option>` + artists.map(a=>`<option value="${a}"${a===cur?" selected":""}>${a}</option>`).join("");
   renderPendingSection();
+  renderPendingProfiles();
   renderAdminTable();
 }
 
@@ -2699,6 +2889,14 @@ async function initData() {
     siteContent = snap.exists() ? snap.data() : {};
     applySiteContent(siteContent);
   });
+  // Live-sync artist-submitted profiles (bio + photo). Only approved ones show publicly.
+  onSnapshot(collection(db, "artistProfiles"), snap => {
+    artistProfiles = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderArtists();
+    if(document.getElementById("pageAbout")?.classList.contains("active")) renderAboutArtists();
+    if(document.getElementById("pageStudio")?.classList.contains("active")) renderArtistProfilePanel();
+    if(document.getElementById("pageAdmin")?.classList.contains("active") && currentUser?.isAdmin) renderAdminDashboard();
+  });
 }
 
 onAuthStateChanged(auth, async fbUser => {
@@ -2766,6 +2964,11 @@ window.adminSetAvailability = adminSetAvailability;
 window.adminEditListing = adminEditListing;
 window.adminDeleteListing = adminDeleteListing;
 window.approveListingAdmin = approveListingAdmin;
+window.handleProfilePhoto = handleProfilePhoto;
+window.submitArtistProfile = submitArtistProfile;
+window.approveProfile = approveProfile;
+window.rejectProfile = rejectProfile;
+window.renderArtistProfilePanel = renderArtistProfilePanel;
 window.rejectListingAdmin = rejectListingAdmin;
 window.switchAdminTab = switchAdminTab;
 window.renderContentForm = renderContentForm;
