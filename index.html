@@ -362,6 +362,16 @@
     .profile-review-photo { width: 48px; height: 48px; border-radius: 50%; overflow: hidden; background: var(--bg2); flex-shrink: 0; }
     .profile-review-photo img { width: 100%; height: 100%; object-fit: cover; }
     .profile-review-noimg { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: rgba(0,0,0,0.3); }
+    .profile-socials { display: flex; flex-direction: column; gap: 8px; }
+    .profile-social-field { display: flex; align-items: center; gap: 8px; border: 1px solid var(--border-dark); border-radius: 8px; padding: 0 10px; }
+    .profile-social-field:focus-within { border-color: var(--black); }
+    .profile-social-field i { color: rgba(0,0,0,0.4); font-size: 16px; flex-shrink: 0; }
+    .profile-social-field input { flex: 1; border: none; outline: none; font-family: var(--font-sans); font-size: 14px; padding: 10px 0; background: none; color: var(--black); }
+    .about-artist-socials { display: flex; gap: 10px; margin-top: 12px; }
+    .about-artist-social { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--border-dark); display: inline-flex; align-items: center; justify-content: center; color: var(--black); text-decoration: none; transition: all 0.15s; }
+    .about-artist-social:hover { background: var(--black); color: #fff; border-color: var(--black); }
+    .about-artist-social i { font-size: 16px; }
+    .pending-row .about-artist-socials { margin-top: 6px; }
     @media (max-width: 768px) {
       .profile-grid { grid-template-columns: 1fr; justify-items: center; }
       .profile-bio-col { width: 100%; }
@@ -1231,6 +1241,12 @@
       <div class="profile-bio-col">
         <label class="profile-label">Short bio / your story</label>
         <textarea id="profileBio" placeholder="Tell collectors about yourself and your work…"></textarea>
+        <label class="profile-label">Social links <span style="text-transform:none;letter-spacing:0;color:rgba(0,0,0,0.35)">(optional)</span></label>
+        <div class="profile-socials">
+          <div class="profile-social-field"><i class="ti ti-brand-instagram"></i><input id="profileInstagram" type="text" placeholder="Instagram — @handle or full link" /></div>
+          <div class="profile-social-field"><i class="ti ti-brand-facebook"></i><input id="profileFacebook" type="text" placeholder="Facebook — page name or full link" /></div>
+          <div class="profile-social-field"><i class="ti ti-world"></i><input id="profileWebsite" type="text" placeholder="Website — yoursite.com" /></div>
+        </div>
         <button class="btn btn-primary profile-submit" id="profileSubmitBtn" onclick="submitArtistProfile()"><i class="ti ti-send"></i> Submit for Review</button>
       </div>
     </div>
@@ -1666,6 +1682,26 @@ function renderStudioHeader() {
 }
 
 // ─── ARTIST PROFILE: submit bio + photo for admin review ─────────────────────
+// Normalise a social handle/URL into a full link.
+function normalizeSocial(type, val) {
+  val = String(val || "").trim();
+  if(!val) return "";
+  if(/^https?:\/\//i.test(val)) return val;
+  if(val.includes(".") && !val.startsWith("@")) return "https://" + val.replace(/^\/+/, "");
+  const handle = val.replace(/^@/, "");
+  if(type === "instagram") return "https://instagram.com/" + handle;
+  if(type === "facebook")  return "https://facebook.com/" + handle;
+  return "https://" + handle;
+}
+function socialLinksHtml(socials) {
+  if(!socials) return "";
+  const items = [["instagram","ti-brand-instagram","Instagram"],["facebook","ti-brand-facebook","Facebook"],["website","ti-world","Website"]];
+  const links = items.filter(([k]) => socials[k]).map(([k,icon,label]) =>
+    `<a class="about-artist-social" href="${escAttr(socials[k])}" target="_blank" rel="noopener" title="${label}" aria-label="${label}"><i class="ti ${icon}"></i></a>`
+  ).join("");
+  return links ? `<div class="about-artist-socials">${links}</div>` : "";
+}
+
 function renderArtistProfilePanel() {
   const panel = document.getElementById("profilePanel");
   if(!panel) return;
@@ -1681,6 +1717,10 @@ function renderArtistProfilePanel() {
   const empty = document.getElementById("profilePhotoEmpty");
   if(photo) { img.src = photo; img.style.display = ""; empty.style.display = "none"; }
   else { img.removeAttribute("src"); img.style.display = "none"; empty.style.display = ""; }
+  const socials = myProfile ? (myProfile.socialsPending || myProfile.socials || {}) : {};
+  document.getElementById("profileInstagram").value = socials.instagram || "";
+  document.getElementById("profileFacebook").value = socials.facebook || "";
+  document.getElementById("profileWebsite").value = socials.website || "";
   const status = myProfile ? myProfile.status : "none";
   const map = {
     pending:  ["is-pending",  "Pending review"],
@@ -1712,14 +1752,20 @@ async function submitArtistProfile() {
   const bio = document.getElementById("profileBio").value.trim();
   const btn = document.getElementById("profileSubmitBtn");
   let photo = myProfile ? (myProfile.photoPending || myProfile.photo || "") : "";
-  if(!bio && !profilePhotoFile && !photo) { toast("Add a short bio or a photo first."); return; }
+  const socials = {
+    instagram: normalizeSocial("instagram", document.getElementById("profileInstagram").value),
+    facebook:  normalizeSocial("facebook",  document.getElementById("profileFacebook").value),
+    website:   normalizeSocial("website",   document.getElementById("profileWebsite").value)
+  };
+  const hasSocial = socials.instagram || socials.facebook || socials.website;
+  if(!bio && !profilePhotoFile && !photo && !hasSocial) { toast("Add a bio, a photo, or a social link first."); return; }
   btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader"></i> Submitting…';
   try {
     if(profilePhotoFile) photo = await uploadToCloudinary(profilePhotoFile);
     const id = currentUser.artistId || currentUser.uid;
     await setDoc(doc(db, "artistProfiles", id), {
       artistId: id, uid: currentUser.uid, name: currentUser.name,
-      bioPending: bio, photoPending: photo || "",
+      bioPending: bio, photoPending: photo || "", socialsPending: socials,
       status: "pending", updatedAt: Date.now()
     }, { merge: true });
     profilePhotoFile = null;
@@ -1912,6 +1958,7 @@ function renderAboutArtists() {
       <div class="about-artist-name">${a.name} ${a.country}</div>
       <div class="about-artist-role">${bio.role} · ${workCount} work${workCount!==1?"s":""}</div>
       <div class="about-artist-bio">${bioText}</div>
+      ${prof ? socialLinksHtml(prof.socials) : ""}
     </div>`;
   }).join("");
   // live work count
@@ -2357,6 +2404,7 @@ function renderPendingProfiles() {
       <div class="listing-info" style="flex:1;min-width:0">
         <div class="listing-title">${escHtml(p.name||"(unnamed artist)")}</div>
         <div class="listing-meta" style="white-space:normal">${p.bioPending ? escHtml(p.bioPending) : "<em>No bio submitted</em>"}</div>
+        ${socialLinksHtml(p.socialsPending)}
       </div>
       <div class="pending-actions">
         <button class="btn-approve" onclick="approveProfile('${p.id}')"><i class="ti ti-check"></i> Approve</button>
@@ -2372,7 +2420,8 @@ async function approveProfile(id) {
   await updateDoc(doc(db, "artistProfiles", id), {
     bio:   (p.bioPending != null && p.bioPending !== "")   ? p.bioPending   : (p.bio || ""),
     photo: (p.photoPending != null && p.photoPending !== "") ? p.photoPending : (p.photo || ""),
-    bioPending: "", photoPending: "", status: "approved", reviewedAt: Date.now()
+    socials: (p.socialsPending && Object.keys(p.socialsPending).length) ? p.socialsPending : (p.socials || {}),
+    bioPending: "", photoPending: "", socialsPending: {}, status: "approved", reviewedAt: Date.now()
   });
   toast(`${p.name || "Artist"}'s profile approved — now live on the About page.`);
 }
@@ -2380,7 +2429,7 @@ async function approveProfile(id) {
 async function rejectProfile(id) {
   const p = artistProfiles.find(x => x.id === id);
   if(!p) return;
-  await updateDoc(doc(db, "artistProfiles", id), { status: "rejected", bioPending: "", photoPending: "", reviewedAt: Date.now() });
+  await updateDoc(doc(db, "artistProfiles", id), { status: "rejected", bioPending: "", photoPending: "", socialsPending: {}, reviewedAt: Date.now() });
   toast(`${p.name || "Artist"}'s profile submission was rejected.`);
 }
 
