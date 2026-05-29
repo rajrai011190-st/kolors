@@ -333,6 +333,7 @@
     /* UPLOAD PAGE */
     .upload-page { max-width: 720px; margin: 0 auto; padding: 32px 24px 120px; }
     .upload-page h2 { font-family: var(--font-display); font-size: 32px; font-weight: 400; margin-bottom: 6px; }
+    .upload-page h2 em { font-family: var(--font-serif); font-style: normal; font-weight: 700; color: var(--terracotta); }
     .upload-page .sub { font-size: 14px; color: rgba(0,0,0,0.45); margin-bottom: 32px; }
     .dropzone {
       border: 1.5px dashed rgba(0,0,0,0.15); border-radius: 12px;
@@ -766,6 +767,28 @@
     .content-save-status { font-size: 12px; color: var(--green); margin-right: auto; opacity: 0; transition: opacity 0.2s; }
     .content-save-status.show { opacity: 1; }
     .content-save-status.error { color: var(--terracotta); }
+    /* collapsible sections */
+    details.ce-section > summary { cursor: pointer; list-style: none; }
+    details.ce-section > summary::-webkit-details-marker { display: none; }
+    details.ce-section > summary::before { content: "▸"; margin-right: 8px; color: var(--terracotta); font-size: 12px; }
+    details.ce-section[open] > summary::before { content: "▾"; }
+    /* extended field types */
+    .ce-color { display: flex; align-items: center; gap: 8px; }
+    .ce-color input[type=color], .ce-color-row input[type=color] { width: 40px; height: 34px; padding: 0; border: 1px solid var(--border-dark); border-radius: 6px; background: none; cursor: pointer; flex-shrink: 0; }
+    .ce-color input[type=text] { flex: 1; font-family: var(--font-sans); font-size: 13px; border: 1px solid var(--border-dark); border-radius: 6px; padding: 8px 10px; outline: none; }
+    .ce-color input[type=text]:focus { border-color: var(--black); }
+    .ce-color-row { display: flex; gap: 8px; }
+    .ce-image { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .ce-thumb { width: 64px; height: 64px; object-fit: contain; border: 1px solid var(--border); border-radius: 8px; background: var(--bg2); padding: 4px; }
+    .ce-upload-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; border: 1px solid var(--border-dark); border-radius: 6px; padding: 8px 12px; cursor: pointer; background: var(--bg); }
+    .ce-upload-btn:hover { border-color: var(--black); }
+    .ce-field select { font-family: var(--font-sans); font-size: 14px; color: var(--black); border: 1px solid var(--border-dark); border-radius: 6px; padding: 9px 11px; outline: none; background: var(--bg); width: 100%; }
+    .ce-field select:focus { border-color: var(--black); }
+    .ce-artists { display: flex; flex-direction: column; gap: 0; }
+    .ce-artist-row { border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 14px; background: var(--bg2); }
+    .ce-del-artist { margin-top: 10px; font-size: 12px; color: var(--terracotta); background: none; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
+    .ce-add-artist { font-size: 13px; font-weight: 500; border: 1px dashed var(--border-dark); border-radius: 8px; padding: 11px 14px; width: 100%; cursor: pointer; background: var(--bg); display: inline-flex; align-items: center; justify-content: center; gap: 6px; color: var(--black); }
+    .ce-add-artist:hover { border-color: var(--black); }
 
     @media (max-width: 768px) {
       .admin-page-wrap { padding: 24px 16px calc(var(--bottom-nav-h) + var(--safe-b) + 32px); }
@@ -780,13 +803,13 @@
 
 <!-- TOP NAV -->
 <nav class="top-nav">
-  <a class="nav-logo" href="#" onclick="showPage('gallery');return false;"><img src="images/logo.png" alt="The Kolours" /></a>
+  <a class="nav-logo" href="#" onclick="showPage('gallery');return false;"><img src="images/logo.png" alt="The Kolours" class="site-logo" /></a>
   <div class="nav-right">
     <button class="nav-link" id="navAdminLink" onclick="showAdminPage()" style="display:none">Admin</button>
     <button class="nav-link" id="navAboutLink" onclick="showPage('about')">About</button>
     <button class="nav-cart-btn" onclick="openCart()">
       <i class="ti ti-shopping-bag"></i>
-      <span>Cart</span>
+      <span id="scNavCart">Cart</span>
       <span class="cart-badge" id="cartBadge">0</span>
     </button>
     <button class="nav-login-btn" id="navLoginBtn" onclick="showPage('login')">Join / Login</button>
@@ -809,13 +832,13 @@
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav">
   <button class="bottom-nav-btn active" id="bnGallery" onclick="showPage('gallery')">
-    <i class="ti ti-layout-grid"></i>Gallery
+    <i class="ti ti-layout-grid"></i><span id="scBnGallery">Gallery</span>
   </button>
   <button class="bottom-nav-btn" id="bnAbout" onclick="showPage('about')">
-    <i class="ti ti-info-circle"></i>About
+    <i class="ti ti-info-circle"></i><span id="scBnAbout">About</span>
   </button>
   <button class="bottom-nav-btn" id="bnStudio" onclick="studioOrLogin()">
-    <i class="ti ti-palette"></i>My Studio
+    <i class="ti ti-palette"></i><span id="scBnStudio">My Studio</span>
   </button>
 </nav>
 
@@ -967,9 +990,9 @@
       </div>
       <div id="loginView">
         <div class="login-eyebrow">Artist Portal</div>
-        <div style="margin-bottom:12px"><img src="images/logo.png" alt="The Kolours" style="height:56px;width:auto" /></div>
-        <div class="login-title">Welcome back</div>
-        <div class="login-sub">Sign in to manage your listings and reach collectors worldwide.</div>
+        <div style="margin-bottom:12px"><img src="images/logo.png" alt="The Kolours" class="site-logo" style="height:56px;width:auto" /></div>
+        <div class="login-title" id="scLoginTitle">Welcome back</div>
+        <div class="login-sub" id="scLoginSub">Sign in to manage your listings and reach collectors worldwide.</div>
         <div class="login-error" id="loginError"></div>
         <div class="login-form">
           <div class="login-field"><label>Email</label><input id="loginEmail" type="email" placeholder="you@example.com" /></div>
@@ -983,7 +1006,7 @@
               <button class="password-eye" type="button" onclick="togglePassword('loginPassword', this)" tabindex="-1"><i class="ti ti-eye"></i></button>
             </div>
           </div>
-          <button class="btn btn-primary login-submit" onclick="doLogin()"><i class="ti ti-login"></i>Sign In</button>
+          <button class="btn btn-primary login-submit" onclick="doLogin()"><i class="ti ti-login"></i><span id="scLoginBtn">Sign In</span></button>
         </div>
         <div class="login-divider"></div>
 
@@ -993,7 +1016,7 @@
       <!-- ADMIN TAB VIEW -->
       <div id="adminTabView" style="display:none">
         <div class="login-eyebrow">Platform Admin</div>
-        <div style="margin-bottom:12px"><img src="images/logo.png" alt="The Kolours" style="height:56px;width:auto" /></div>
+        <div style="margin-bottom:12px"><img src="images/logo.png" alt="The Kolours" class="site-logo" style="height:56px;width:auto" /></div>
         <div class="login-title">Admin <em>Access</em></div>
         <div class="login-sub">For platform administrators only. Your account must have admin privileges.</div>
         <div class="login-error" id="adminTabError"></div>
@@ -1014,7 +1037,7 @@
       <!-- ADMIN SIGN-UP VIEW (restricted to authorized email) -->
       <div id="adminSignupView" style="display:none">
         <div class="login-eyebrow">Platform Admin</div>
-        <div style="margin-bottom:12px"><img src="images/logo.png" alt="The Kolours" style="height:56px;width:auto" /></div>
+        <div style="margin-bottom:12px"><img src="images/logo.png" alt="The Kolours" class="site-logo" style="height:56px;width:auto" /></div>
         <div class="login-title">Create Admin <em>Account</em></div>
         <div class="login-sub">Restricted registration — only the authorized administrator email can create an account.</div>
         <div class="login-error" id="adminSignupError"></div>
@@ -1037,7 +1060,7 @@
       <!-- FORGOT PASSWORD VIEW -->
       <div id="forgotView" style="display:none">
         <div class="login-eyebrow">Artist Portal</div>
-        <div style="margin-bottom:12px"><img src="images/logo.png" alt="The Kolours" style="height:56px;width:auto" /></div>
+        <div style="margin-bottom:12px"><img src="images/logo.png" alt="The Kolours" class="site-logo" style="height:56px;width:auto" /></div>
         <div class="login-title">Reset Password</div>
         <div class="login-sub">Enter your email and we'll send you a link to reset your password.</div>
         <div class="login-error" id="forgotError"></div>
@@ -1051,9 +1074,9 @@
       </div>
       <div id="signupView" style="display:none">
         <div class="login-eyebrow">Artist Portal</div>
-        <div style="margin-bottom:12px"><img src="images/logo.png" alt="The Kolours" style="height:56px;width:auto" /></div>
-        <div class="login-title">Join The Kolours</div>
-        <div class="login-sub">Create your artist account and start selling your original work.</div>
+        <div style="margin-bottom:12px"><img src="images/logo.png" alt="The Kolours" class="site-logo" style="height:56px;width:auto" /></div>
+        <div class="login-title" id="scSignupTitle">Join The Kolours</div>
+        <div class="login-sub" id="scSignupSub">Create your artist account and start selling your original work.</div>
         <div class="login-error" id="signupError"></div>
         <div class="login-form">
           <div class="login-field"><label>Full Name *</label><input id="signupName" type="text" placeholder="Your artist name" /></div>
@@ -1065,7 +1088,7 @@
             </div>
           </div>
           <div class="login-field"><label>Country</label><input id="signupCountry" type="text" placeholder="e.g. Canada" /></div>
-          <button class="btn btn-primary login-submit" onclick="doSignup()"><i class="ti ti-user-plus"></i>Create Account</button>
+          <button class="btn btn-primary login-submit" onclick="doSignup()"><i class="ti ti-user-plus"></i><span id="scSignupBtn">Create Account</span></button>
         </div>
         <div class="login-switch">Already have an account? <a onclick="switchToLogin()">Sign in</a></div>
       </div>
@@ -1082,7 +1105,7 @@
       <div class="login-page">
         <div class="login-card">
           <div class="login-eyebrow">Platform Admin</div>
-          <div style="margin-bottom:12px"><img src="images/logo.png" alt="The Kolours" style="height:56px;width:auto" /></div>
+          <div style="margin-bottom:12px"><img src="images/logo.png" alt="The Kolours" class="site-logo" style="height:56px;width:auto" /></div>
           <div class="login-title">Admin Dashboard</div>
           <div class="login-sub">For platform administrators only. Your credentials must have admin privileges.</div>
           <div class="login-error" id="adminLoginError"></div>
@@ -1158,8 +1181,8 @@
     </div>
   </div>
   <div class="upload-page">
-    <h2>Upload a <em style="font-family:var(--font-serif);font-style:normal;font-weight:700;color:var(--terracotta)">Painting</em></h2>
-    <p class="sub">Add your original work to the gallery.</p>
+    <h2 id="scStudioHeading">Upload a <em style="font-family:var(--font-serif);font-style:normal;font-weight:700;color:var(--terracotta)">Painting</em></h2>
+    <p class="sub" id="scStudioSub">Add your original work to the gallery.</p>
 
     <div class="edit-banner" id="editBanner">
       <span>Editing: <strong id="editBannerTitle"></strong></span>
@@ -1250,16 +1273,16 @@
   <div class="cart-sheet">
     <div class="drag-handle" style="margin-top:12px"></div>
     <div class="cart-header">
-      <h2>Your Cart</h2>
+      <h2 id="scCartTitle">Your Cart</h2>
       <button class="cart-close" onclick="closeCart()"><i class="ti ti-x"></i></button>
     </div>
     <div class="cart-items" id="cartItems"></div>
     <div class="cart-footer">
       <div class="cart-total">
-        <span class="cart-total-label">Total</span>
+        <span class="cart-total-label" id="scCartTotalLabel">Total</span>
         <span class="cart-total-val" id="cartTotal">$0</span>
       </div>
-      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="cartCheckout()"><i class="ti ti-brand-stripe"></i>Proceed to Checkout</button>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="cartCheckout()"><i class="ti ti-brand-stripe"></i><span id="scCartCheckout">Proceed to Checkout</span></button>
     </div>
   </div>
 </div>
@@ -1299,7 +1322,7 @@ async function uploadToCloudinary(file) {
 }
 
 // ─── DATA ───────────────────────────────────────────────────────────────────
-const ARTISTS = [
+let ARTISTS = [
   { name:"Raj R",      country:"🇨🇦", hue:["#d4a870","#8c6030"] },
   { name:"Ankita P",   country:"🇨🇦", hue:["#d4a8b4","#8c5c6b"] },
   { name:"Abhineet G", country:"🇨🇦", hue:["#4a6fa5","#1e3a5f","#7040c0"] },
@@ -1710,7 +1733,7 @@ function renderArtists() {
 }
 
 // ─── ABOUT ARTISTS ───────────────────────────────────────────────────────────
-const ARTIST_BIOS = {
+let ARTIST_BIOS = {
   "Raj R": {
     role: "Founder & Artist",
     bio: "Raj is the founder of The Kolours and the heart of the collection. A self-taught acrylic painter based in Canada, his work spans portraiture, spiritual imagery, and vivid landscapes — each piece painted with bold colour and quiet intention.",
@@ -1724,6 +1747,13 @@ const ARTIST_BIOS = {
     bio: "Abhineet brings a cosmic perspective to the canvas. His signature work, The Cosmos, captures the birth and death of stars in deep indigos and golds. He paints the universe the way it feels — vast, mysterious, and alive.",
   },
 };
+
+// Default editable artist roster (built from the seed ARTISTS + bios above).
+const DEFAULT_ARTISTS_DATA = ARTISTS.map(a => ({
+  name: a.name, country: a.country, hue: a.hue.slice(),
+  role: (ARTIST_BIOS[a.name] && ARTIST_BIOS[a.name].role) || "Artist",
+  bio: (ARTIST_BIOS[a.name] && ARTIST_BIOS[a.name].bio) || ""
+}));
 
 function renderAboutArtists() {
   const grid = document.getElementById("aboutArtistGrid");
@@ -1756,8 +1786,8 @@ function renderAboutArtists() {
 // ─── WISHLIST ────────────────────────────────────────────────────────────────
 function toggleWish(e, id) {
   e.stopPropagation();
-  if(wishlist.has(id)) { wishlist.delete(id); toast("Removed from wishlist"); }
-  else { wishlist.add(id); toast("Saved to wishlist ♥"); }
+  if(wishlist.has(id)) { wishlist.delete(id); toast(getMsg("msgWishRemove")); }
+  else { wishlist.add(id); toast(getMsg("msgWishAdd")); }
   applyFilters();
 }
 
@@ -1770,7 +1800,7 @@ function addToCart(e, id) {
   cart.push(p);
   updateCartBadge();
   applyFilters();
-  toast(`"${p.title}" added to cart`);
+  toast(getMsg("msgAddedToCart").replace("{title}", p.title));
 }
 
 function removeFromCart(id) {
@@ -1873,7 +1903,7 @@ function modalAddCart() {
   cart.push(currentPainting);
   updateCartBadge();
   applyFilters();
-  toast(`"${currentPainting.title}" added to cart`);
+  toast(getMsg("msgAddedToCart").replace("{title}", currentPainting.title));
   document.getElementById("modalAddBtn").textContent = "In cart ✓";
 }
 
@@ -2096,7 +2126,7 @@ async function deleteListing(id) {
 function cartCheckout() {
   const withLinks = cart.filter(p=>p.stripeLink);
   const withoutLinks = cart.filter(p=>!p.stripeLink);
-  if(!cart.length) { toast("Your cart is empty."); return; }
+  if(!cart.length) { toast(getMsg("msgCartEmpty")); return; }
   if(withLinks.length === 1 && !withoutLinks.length) {
     window.open(withLinks[0].stripeLink, "_blank");
     return;
@@ -2338,12 +2368,91 @@ const CONTENT_SECTIONS = [
       { key:"contactBtn", label:"Button", el:"scContactBtn", mode:"text", type:"input", def:"Join as an Artist" },
       { key:"contactEmail", label:"Contact email", el:"scContactEmail", mode:"email", type:"input", def:"hello@thekolours.com" }
     ]
+  },
+  {
+    title: "Navigation", icon:"ti-menu-2", sub:"Top-bar and mobile tab labels.",
+    fields: [
+      { key:"navAbout", label:"Top nav: About", el:"navAboutLink", mode:"text", type:"input", def:"About" },
+      { key:"navCart", label:"Top nav: Cart", el:"scNavCart", mode:"text", type:"input", def:"Cart" },
+      { key:"navLogin", label:"Top nav: Join / Login button", el:"navLoginBtn", mode:"text", type:"input", def:"Join / Login" },
+      { key:"bnGallery", label:"Mobile tab: Gallery", el:"scBnGallery", mode:"text", type:"input", def:"Gallery" },
+      { key:"bnAbout", label:"Mobile tab: About", el:"scBnAbout", mode:"text", type:"input", def:"About" },
+      { key:"bnStudio", label:"Mobile tab: Studio", el:"scBnStudio", mode:"text", type:"input", def:"My Studio" }
+    ]
+  },
+  {
+    title: "Login & Sign-up", icon:"ti-login", sub:"The artist login and sign-up screens.",
+    fields: [
+      { key:"tabArtist", label:"Tab: Artist", el:"tabArtist", mode:"text", type:"input", def:"Artist" },
+      { key:"tabAdmin", label:"Tab: Admin", el:"tabAdmin", mode:"text", type:"input", def:"Admin" },
+      { key:"loginTitle", label:"Login title", el:"scLoginTitle", mode:"text", type:"input", def:"Welcome back" },
+      { key:"loginSub", label:"Login subtitle", el:"scLoginSub", mode:"text", type:"textarea", full:true, def:"Sign in to manage your listings and reach collectors worldwide." },
+      { key:"loginBtn", label:"Login button", el:"scLoginBtn", mode:"text", type:"input", def:"Sign In" },
+      { key:"signupTitle", label:"Sign-up title", el:"scSignupTitle", mode:"text", type:"input", def:"Join The Kolours" },
+      { key:"signupSub", label:"Sign-up subtitle", el:"scSignupSub", mode:"text", type:"textarea", full:true, def:"Create your artist account and start selling your original work." },
+      { key:"signupBtn", label:"Sign-up button", el:"scSignupBtn", mode:"text", type:"input", def:"Create Account" }
+    ]
+  },
+  {
+    title: "Studio / Upload", icon:"ti-photo-up", sub:"The artist upload page.",
+    fields: [
+      { key:"studioHeading", label:"Heading", el:"scStudioHeading", mode:"rich", type:"input", def:"Upload a *Painting*", hint:true },
+      { key:"studioSub", label:"Subtitle", el:"scStudioSub", mode:"text", type:"input", full:true, def:"Add your original work to the gallery." }
+    ]
+  },
+  {
+    title: "Cart", icon:"ti-shopping-bag", sub:"The shopping-cart panel.",
+    fields: [
+      { key:"cartTitle", label:"Cart title", el:"scCartTitle", mode:"text", type:"input", def:"Your Cart" },
+      { key:"cartTotalLabel", label:"Total label", el:"scCartTotalLabel", mode:"text", type:"input", def:"Total" },
+      { key:"cartCheckout", label:"Checkout button", el:"scCartCheckout", mode:"text", type:"input", def:"Proceed to Checkout" }
+    ]
+  },
+  {
+    title: "Messages", icon:"ti-message-2", sub:"Pop-up toast messages. Use {title} where the artwork name should appear.",
+    fields: [
+      { key:"msgAddedToCart", label:"Added to cart", mode:"message", type:"input", full:true, def:'"{title}" added to cart' },
+      { key:"msgWishAdd", label:"Saved to wishlist", mode:"message", type:"input", def:"Saved to wishlist ♥" },
+      { key:"msgWishRemove", label:"Removed from wishlist", mode:"message", type:"input", def:"Removed from wishlist" },
+      { key:"msgCartEmpty", label:"Empty cart (at checkout)", mode:"message", type:"input", def:"Your cart is empty." }
+    ]
+  },
+  {
+    title: "About — Artist Roster", icon:"ti-users", sub:"Artists shown in 'Meet the Artists' and the gallery strip. Add, remove, or edit each one.",
+    fields: [
+      { key:"artists", label:"Artists", mode:"artists", def:DEFAULT_ARTISTS_DATA }
+    ]
+  },
+  {
+    title: "Branding", icon:"ti-photo", sub:"Logo, browser-tab title, SEO description, and theme colour.",
+    fields: [
+      { key:"logoUrl", label:"Logo image (shown across the site)", mode:"image", selector:".site-logo", def:"images/logo.png" },
+      { key:"siteTitle", label:"Browser-tab title", mode:"meta", meta:"title", type:"input", full:true, def:"Kolours — Art Marketplace" },
+      { key:"metaDescription", label:"SEO description", mode:"meta", meta:"description", type:"textarea", full:true, def:"Original paintings and prints by independent Canadian artists. Every piece is one of a kind." },
+      { key:"appTitle", label:"Mobile home-screen name", mode:"meta", meta:"appTitle", type:"input", def:"Kolours" },
+      { key:"themeColor", label:"Browser theme colour", mode:"color", meta:"themeColor", def:"#ffffff" }
+    ]
+  },
+  {
+    title: "Theme — Colours & Fonts", icon:"ti-palette", sub:"Site-wide colours and fonts. Edits preview instantly; click Save to publish.",
+    fields: [
+      { key:"colAccent", label:"Accent colour", mode:"color", cssVar:"--terracotta", def:"#a26b25" },
+      { key:"colGreen", label:"Success / available colour", mode:"color", cssVar:"--green", def:"#2D6A4F" },
+      { key:"colInk", label:"Text colour", mode:"color", cssVar:"--black", def:"#111111" },
+      { key:"colBg", label:"Background", mode:"color", cssVar:"--bg", def:"#ffffff" },
+      { key:"colBg2", label:"Soft background", mode:"color", cssVar:"--bg2", def:"#f5f5f0" },
+      { key:"fontDisplay", label:"Display font (large headings)", mode:"font", cssVar:"--font-display", def:"'Playfair Display', Georgia, serif" },
+      { key:"fontSerif", label:"Heading font", mode:"font", cssVar:"--font-serif", def:"'Montserrat', system-ui, sans-serif" },
+      { key:"fontSans", label:"Body font", mode:"font", cssVar:"--font-sans", def:"'DM Sans', system-ui, sans-serif" }
+    ]
   }
 ];
 
 const DEFAULT_CONTENT = {};
 CONTENT_SECTIONS.forEach(s => s.fields.forEach(f => { DEFAULT_CONTENT[f.key] = f.def; }));
 const allContentFields = () => CONTENT_SECTIONS.flatMap(s => s.fields);
+// Editable toast/message lookup (falls back to the built-in default).
+const getMsg = (k) => { const v = siteContent && siteContent[k]; return (v != null && v !== "") ? v : DEFAULT_CONTENT[k]; };
 
 function escHtml(s) {
   return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
@@ -2353,24 +2462,78 @@ function richText(s) {
   return escHtml(s).replace(/\*([^*\n]+)\*/g, "<em>$1</em>").replace(/\n/g, "<br>");
 }
 
+const FONT_CHOICES = [
+  { label:"Playfair Display (serif)",   value:"'Playfair Display', Georgia, serif" },
+  { label:"Cormorant Garamond (serif)", value:"'Cormorant Garamond', Georgia, serif" },
+  { label:"Lora (serif)",               value:"'Lora', Georgia, serif" },
+  { label:"Georgia (system serif)",     value:"Georgia, 'Times New Roman', serif" },
+  { label:"Montserrat (sans)",          value:"'Montserrat', system-ui, sans-serif" },
+  { label:"DM Sans (sans)",             value:"'DM Sans', system-ui, sans-serif" },
+  { label:"Inter (sans)",               value:"'Inter', system-ui, sans-serif" },
+  { label:"Poppins (sans)",             value:"'Poppins', system-ui, sans-serif" },
+  { label:"System sans",                value:"system-ui, -apple-system, sans-serif" }
+];
+
+const escAttr = (s) => escHtml(s).replace(/"/g, "&quot;");
+
+// Dynamically load a Google font family the first time it is used.
+const _loadedFonts = new Set();
+function ensureFontLoaded(stack) {
+  const m = String(stack || "").match(/^\s*['"]?([^'",]+)['"]?/);
+  if(!m) return;
+  const family = m[1].trim();
+  const skip = ["serif","sans-serif","system-ui","-apple-system","monospace","Georgia","Arial","Helvetica","Times New Roman"];
+  if(!family || skip.includes(family) || _loadedFonts.has(family)) return;
+  _loadedFonts.add(family);
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = "https://fonts.googleapis.com/css2?family=" + encodeURIComponent(family).replace(/%20/g,"+") + ":ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap";
+  document.head.appendChild(link);
+}
+
+function applyMeta(which, val) {
+  if(!val) return;
+  if(which === "title") { document.title = val; return; }
+  const name = which === "description" ? "description" : which === "themeColor" ? "theme-color" : which === "appTitle" ? "apple-mobile-web-app-title" : null;
+  if(!name) return;
+  let m = document.querySelector(`meta[name="${name}"]`);
+  if(!m) { m = document.createElement("meta"); m.setAttribute("name", name); document.head.appendChild(m); }
+  m.setAttribute("content", val);
+}
+
+// Rebuild the live artist roster + bios from editable data, then re-render dependent UI.
+function applyArtists(arr) {
+  const list = (Array.isArray(arr) && arr.length) ? arr : DEFAULT_ARTISTS_DATA;
+  ARTISTS = list.map(a => ({ name:a.name, country:a.country||"🇨🇦", hue:(a.hue && a.hue.length ? a.hue : ["#d0d0d0","#a0a0a0"]) }));
+  ARTIST_BIOS = {};
+  list.forEach(a => { ARTIST_BIOS[a.name] = { role:a.role||"Artist", bio:a.bio||"" }; });
+  try { renderArtists(); } catch(e) {}
+  if(document.getElementById("pageAbout")?.classList.contains("active")) { try { renderAboutArtists(); } catch(e) {} }
+}
+
 // Push the current content onto the public-facing DOM.
 function applySiteContent(c) {
   const data = Object.assign({}, DEFAULT_CONTENT, c || {});
   allContentFields().forEach(f => {
+    if(f.mode === "artists") { applyArtists(data.artists); return; }
+    const val = (data[f.key] ?? "").toString();
+    if(f.mode === "color" || f.mode === "font") {
+      if(f.cssVar && val) document.documentElement.style.setProperty(f.cssVar, val);
+      if(f.mode === "font") ensureFontLoaded(val);
+      if(f.meta) applyMeta(f.meta, val);
+      return;
+    }
+    if(f.mode === "image") {
+      document.querySelectorAll(f.selector).forEach(img => { img.src = val || f.def; });
+      return;
+    }
+    if(f.mode === "meta") { applyMeta(f.meta, val); return; }
     const el = document.getElementById(f.el);
     if(!el) return;
-    const val = (data[f.key] ?? "").toString();
-    if(f.mode === "rich") {
-      el.innerHTML = richText(val);
-    } else if(f.mode === "paragraphs") {
-      el.innerHTML = val.split(/\n+/).map(p=>p.trim()).filter(Boolean).map(p=>`<p>${escHtml(p)}</p>`).join("");
-    } else if(f.mode === "email") {
-      el.textContent = val;
-      const link = document.getElementById("scContactEmailLink");
-      if(link) link.href = "mailto:" + val;
-    } else {
-      el.textContent = val;
-    }
+    if(f.mode === "rich") el.innerHTML = richText(val);
+    else if(f.mode === "paragraphs") el.innerHTML = val.split(/\n+/).map(p=>p.trim()).filter(Boolean).map(p=>`<p>${escHtml(p)}</p>`).join("");
+    else if(f.mode === "email") { el.textContent = val; const link = document.getElementById("scContactEmailLink"); if(link) link.href = "mailto:" + val; }
+    else el.textContent = val;
   });
 }
 
@@ -2382,31 +2545,89 @@ function setContentStatus(msg, isError) {
   el.classList.toggle("error", !!isError);
 }
 
+// Build one form field according to its mode.
+function renderField(f, data) {
+  if(f.mode === "artists") return `<div class="ce-field full"><label>${f.label}</label>${renderArtistsEditor(data.artists)}</div>`;
+  const raw = (data[f.key] ?? "").toString();
+  const richHint = `<div class="ce-hint">Wrap a word in <code>*asterisks*</code> for an <em>italic accent</em>; press Enter for a line break.</div>`;
+  const paraHint = `<div class="ce-hint">Write one paragraph per line (press Enter between paragraphs).</div>`;
+  const hint = f.hint ? richHint : (f.paraHint ? paraHint : "");
+  const note = f.note ? `<div class="ce-note">${f.note}</div>` : "";
+  let control, full = f.full ? " full" : "";
+  if(f.mode === "color") {
+    control = `<div class="ce-color"><input type="color" id="ce_${f.key}_pick" value="${escAttr(raw)}" oninput="document.getElementById('ce_${f.key}').value=this.value"><input type="text" id="ce_${f.key}" value="${escAttr(raw)}" oninput="if(/^#[0-9a-fA-F]{6}$/.test(this.value))document.getElementById('ce_${f.key}_pick').value=this.value"></div>`;
+  } else if(f.mode === "font") {
+    const opts = FONT_CHOICES.slice();
+    if(raw && !opts.some(o=>o.value===raw)) opts.unshift({ label:raw, value:raw });
+    control = `<select id="ce_${f.key}">${opts.map(o=>`<option value="${escAttr(o.value)}"${o.value===raw?" selected":""}>${escHtml(o.label)}</option>`).join("")}</select>`;
+    full = " full";
+  } else if(f.mode === "image") {
+    control = `<div class="ce-image"><img class="ce-thumb" src="${escAttr(raw||f.def)}" alt=""><input type="hidden" id="ce_${f.key}" value="${escAttr(raw)}"><label class="ce-upload-btn"><i class="ti ti-upload"></i> Upload<input type="file" accept="image/*" style="display:none" onchange="_ceUploadImage('${f.key}', this)"></label></div>`;
+    full = " full";
+  } else if(f.type === "input") {
+    control = `<input id="ce_${f.key}" type="${f.mode==="email"?"email":"text"}" value="${escAttr(raw)}" />`;
+  } else {
+    const tall = f.type === "textarea-tall" ? " tall" : "";
+    full = " full";
+    control = `<textarea id="ce_${f.key}" class="${tall.trim()}">${escHtml(raw)}</textarea>`;
+  }
+  return `<div class="ce-field${full}"><label>${f.label}</label>${control}${hint}${note}</div>`;
+}
+
+function renderArtistsEditor(arr) {
+  const list = (Array.isArray(arr) && arr.length) ? arr : DEFAULT_ARTISTS_DATA;
+  return `<div class="ce-artists" id="ce_artists">
+    ${list.map(a => artistRowHtml(a)).join("")}
+    <button type="button" class="ce-add-artist" onclick="addArtistRow()"><i class="ti ti-plus"></i> Add artist</button>
+  </div>`;
+}
+function artistRowHtml(a) {
+  a = a || {};
+  const hue = a.hue || ["#d4a870","#8c6030"];
+  return `<div class="ce-artist-row">
+    <div class="ce-grid">
+      <div class="ce-field"><label>Name</label><input class="ce-a-name" value="${escAttr(a.name||"")}" /></div>
+      <div class="ce-field"><label>Country (emoji)</label><input class="ce-a-country" value="${escAttr(a.country||"🇨🇦")}" /></div>
+      <div class="ce-field"><label>Role</label><input class="ce-a-role" value="${escAttr(a.role||"Artist")}" /></div>
+      <div class="ce-field"><label>Avatar colours</label><div class="ce-color-row"><input type="color" class="ce-a-hue1" value="${escAttr(hue[0]||"#d4a870")}"><input type="color" class="ce-a-hue2" value="${escAttr(hue[1]||"#8c6030")}"></div></div>
+      <div class="ce-field full"><label>Bio</label><textarea class="ce-a-bio">${escHtml(a.bio||"")}</textarea></div>
+    </div>
+    <button type="button" class="ce-del-artist" onclick="removeArtistRow(this)"><i class="ti ti-trash"></i> Remove artist</button>
+  </div>`;
+}
+window._ceUploadImage = async function(key, input) {
+  const file = input.files && input.files[0]; if(!file) return;
+  const thumb = input.closest(".ce-image")?.querySelector(".ce-thumb");
+  setContentStatus("Uploading image…");
+  try {
+    const url = await uploadToCloudinary(file);
+    document.getElementById("ce_" + key).value = url;
+    if(thumb) thumb.src = url;
+    setContentStatus("Image uploaded — click Save Changes to apply.");
+  } catch(e) { setContentStatus("Image upload failed.", true); }
+};
+window.addArtistRow = function() {
+  const c = document.getElementById("ce_artists"); if(!c) return;
+  const btn = c.querySelector(".ce-add-artist");
+  const tmp = document.createElement("div");
+  tmp.innerHTML = artistRowHtml({ name:"", country:"🇨🇦", role:"Artist", bio:"", hue:["#d4a870","#8c6030"] });
+  c.insertBefore(tmp.firstElementChild, btn);
+};
+window.removeArtistRow = function(b) { b.closest(".ce-artist-row")?.remove(); };
+
 // Build the admin editor form from the current content.
 function renderContentForm() {
   const data = Object.assign({}, DEFAULT_CONTENT, siteContent || {});
-  const richHint = `<div class="ce-hint">Wrap a word in <code>*asterisks*</code> for an <em>italic accent</em>; press Enter for a line break.</div>`;
-  const paraHint = `<div class="ce-hint">Write one paragraph per line (press Enter between paragraphs).</div>`;
   const wrap = document.getElementById("contentEditorForm");
   if(!wrap) return;
-  wrap.innerHTML = CONTENT_SECTIONS.map(s => `
-    <div class="ce-section">
-      <div class="ce-section-title"><i class="ti ${s.icon}"></i>${s.title}</div>
+  wrap.innerHTML = CONTENT_SECTIONS.map((s, i) => `
+    <details class="ce-section"${i===0?" open":""}>
+      <summary class="ce-section-title"><i class="ti ${s.icon}"></i>${s.title}</summary>
       <div class="ce-section-sub">${s.sub}</div>
       <div class="ce-grid">
-        ${s.fields.map(f => {
-          const esc = escHtml(data[f.key] ?? "");
-          const full = (f.full || f.type !== "input") ? " full" : "";
-          const tall = f.type === "textarea-tall" ? " tall" : "";
-          const control = f.type === "input"
-            ? `<input id="ce_${f.key}" type="${f.mode==="email"?"email":"text"}" value="${esc.replace(/"/g,"&quot;")}" />`
-            : `<textarea id="ce_${f.key}" class="${tall.trim()}">${esc}</textarea>`;
-          const hint = f.hint ? richHint : (f.paraHint ? paraHint : "");
-          const note = f.note ? `<div class="ce-note">${f.note}</div>` : "";
-          return `<div class="ce-field${full}"><label>${f.label}</label>${control}${hint}${note}</div>`;
-        }).join("")}
+        ${s.fields.map(f => renderField(f, data)).join("")}
       </div>
-    </div>
+    </details>
   `).join("");
   setContentStatus("");
 }
@@ -2425,6 +2646,16 @@ async function saveSiteContent() {
   const btn = document.getElementById("contentSaveBtn");
   const data = {};
   allContentFields().forEach(f => {
+    if(f.mode === "artists") {
+      data.artists = [...document.querySelectorAll("#ce_artists .ce-artist-row")].map(row => ({
+        name: row.querySelector(".ce-a-name").value.trim(),
+        country: row.querySelector(".ce-a-country").value.trim() || "🇨🇦",
+        role: row.querySelector(".ce-a-role").value.trim() || "Artist",
+        bio: row.querySelector(".ce-a-bio").value.trim(),
+        hue: [row.querySelector(".ce-a-hue1").value, row.querySelector(".ce-a-hue2").value]
+      })).filter(a => a.name);
+      return;
+    }
     const el = document.getElementById("ce_" + f.key);
     if(el) data[f.key] = el.value;
   });
