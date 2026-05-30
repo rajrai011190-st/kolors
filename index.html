@@ -1692,12 +1692,14 @@ function renderStudioHeader() {
 function normalizeSocial(type, val) {
   val = String(val || "").trim();
   if(!val) return "";
-  if(/^https?:\/\//i.test(val)) return val;
-  if(val.includes(".") && !val.startsWith("@")) return "https://" + val.replace(/^\/+/, "");
-  const handle = val.replace(/^@/, "");
-  if(type === "instagram") return "https://instagram.com/" + handle;
-  if(type === "facebook")  return "https://facebook.com/" + handle;
-  return "https://" + handle;
+  if(/^https?:\/\//i.test(val)) return val;                         // already a full URL
+  const handle = val.replace(/^@/, "").replace(/^\/+/, "");
+  // For Instagram/Facebook, treat bare input as a handle (handles often contain dots).
+  if(type === "instagram")
+    return val.includes("instagram.com") ? "https://" + val.replace(/^\/+/, "") : "https://instagram.com/" + handle;
+  if(type === "facebook")
+    return (val.includes("facebook.com") || val.includes("fb.com")) ? "https://" + val.replace(/^\/+/, "") : "https://facebook.com/" + handle;
+  return "https://" + val.replace(/^\/+/, "");                      // website / other → ensure scheme
 }
 function socialLinksHtml(socials) {
   if(!socials) return "";
