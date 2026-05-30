@@ -2847,7 +2847,6 @@ function artistRowHtml(a) {
   return `<div class="ce-artist-row">
     <div class="ce-grid">
       <div class="ce-field"><label>Name</label><input class="ce-a-name" value="${escAttr(a.name||"")}" /></div>
-      <div class="ce-field"><label>Country (emoji)</label><input class="ce-a-country" value="${escAttr(a.country||"🇨🇦")}" /></div>
       <div class="ce-field"><label>Role</label><input class="ce-a-role" value="${escAttr(a.role||"Artist")}" /></div>
       <div class="ce-field"><label>Avatar colours</label><div class="ce-color-row"><input type="color" class="ce-a-hue1" value="${escAttr(hue[0]||"#d4a870")}"><input type="color" class="ce-a-hue2" value="${escAttr(hue[1]||"#8c6030")}"></div></div>
       <div class="ce-field full"><label>Bio</label><textarea class="ce-a-bio">${escHtml(a.bio||"")}</textarea></div>
@@ -2870,7 +2869,7 @@ window.addArtistRow = function() {
   const c = document.getElementById("ce_artists"); if(!c) return;
   const btn = c.querySelector(".ce-add-artist");
   const tmp = document.createElement("div");
-  tmp.innerHTML = artistRowHtml({ name:"", country:"🇨🇦", role:"Artist", bio:"", hue:["#d4a870","#8c6030"] });
+  tmp.innerHTML = artistRowHtml({ name:"", role:"Artist", bio:"", hue:["#d4a870","#8c6030"] });
   c.insertBefore(tmp.firstElementChild, btn);
 };
 window.removeArtistRow = function(b) { b.closest(".ce-artist-row")?.remove(); };
@@ -2909,7 +2908,6 @@ async function saveSiteContent() {
     if(f.mode === "artists") {
       data.artists = [...document.querySelectorAll("#ce_artists .ce-artist-row")].map(row => ({
         name: row.querySelector(".ce-a-name").value.trim(),
-        country: row.querySelector(".ce-a-country").value.trim() || "🇨🇦",
         role: row.querySelector(".ce-a-role").value.trim() || "Artist",
         bio: row.querySelector(".ce-a-bio").value.trim(),
         hue: [row.querySelector(".ce-a-hue1").value, row.querySelector(".ce-a-hue2").value]
