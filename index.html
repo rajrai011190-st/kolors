@@ -1684,7 +1684,7 @@ function renderStudioHeader() {
   const badge = currentUser.isAdmin ? `<span class="admin-badge"><i class="ti ti-shield-check" style="font-size:10px"></i> Admin</span>` : "";
   document.getElementById("studioName").innerHTML = currentUser.name + badge;
   const myCount = currentUser.isAdmin ? paintings.length : paintings.filter(p=>p.artistId===currentUser.uid||p.artistId===currentUser.artistId).length;
-  document.getElementById("studioMeta").textContent = `${currentUser.country||""}  ·  ${myCount} listing${myCount!==1?"s":""}`;
+  document.getElementById("studioMeta").textContent = `${myCount} listing${myCount!==1?"s":""}`;
 }
 
 // ─── ARTIST PROFILE: submit bio + photo for admin review ─────────────────────
@@ -1927,7 +1927,7 @@ function renderArtists() {
         <img src="${dataUrl}" alt="${a.name}" style="width:100%;height:100%;object-fit:cover;display:block" />
         ${ig ? `<a class="artist-follow-pill" href="${escAttr(instagramUrl(ig))}" target="_blank" rel="noopener" onclick="event.stopPropagation()"><i class="ti ti-brand-instagram"></i> Follow</a>` : ""}
       </div>
-      <div class="artist-card-name">${a.name} ${a.country}</div>
+      <div class="artist-card-name">${a.name}</div>
       <div class="artist-card-meta">${workCount} work${workCount!==1?"s":""} · Canada</div>
     </div>`;
   }).join("");
@@ -1976,7 +1976,7 @@ function renderAboutArtists() {
         <canvas style="display:none"></canvas>
         <img src="${escAttr(dataUrl)}" alt="${a.name}" style="width:100%;height:100%;object-fit:cover;display:block"/>
       </div>
-      <div class="about-artist-name">${a.name} ${a.country}</div>
+      <div class="about-artist-name">${a.name}</div>
       <div class="about-artist-role">${bio.role} · ${workCount} work${workCount!==1?"s":""}</div>
       <div class="about-artist-bio">${bioText}</div>
       ${prof ? socialLinksHtml(prof.socials) : ""}
