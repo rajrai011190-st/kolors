@@ -1701,11 +1701,21 @@ function normalizeSocial(type, val) {
     return (val.includes("facebook.com") || val.includes("fb.com")) ? "https://" + val.replace(/^\/+/, "") : "https://facebook.com/" + handle;
   return "https://" + val.replace(/^\/+/, "");                      // website / other → ensure scheme
 }
+// Repair any stored Instagram value into a working instagram.com URL at display time
+// (covers older records saved before handle-normalisation was fixed).
+function instagramUrl(raw) {
+  raw = String(raw || "").trim();
+  if(!raw) return "";
+  if(/instagram\.com/i.test(raw)) return /^https?:\/\//i.test(raw) ? raw : "https://" + raw.replace(/^\/+/, "");
+  const handle = raw.replace(/^https?:\/\//i, "").replace(/^@/, "").replace(/\/+$/, "").split("/").pop();
+  return handle ? "https://instagram.com/" + handle : "";
+}
+function socialUrl(key, val) { return key === "instagram" ? instagramUrl(val) : val; }
 function socialLinksHtml(socials) {
   if(!socials) return "";
   const items = [["instagram","ti-brand-instagram","Instagram"],["facebook","ti-brand-facebook","Facebook"],["website","ti-world","Website"]];
   const links = items.filter(([k]) => socials[k]).map(([k,icon,label]) =>
-    `<a class="about-artist-social" href="${escAttr(socials[k])}" target="_blank" rel="noopener" title="${label}" aria-label="${label}"><i class="ti ${icon}"></i></a>`
+    `<a class="about-artist-social" href="${escAttr(socialUrl(k, socials[k]))}" target="_blank" rel="noopener" title="${label}" aria-label="${label}"><i class="ti ${icon}"></i></a>`
   ).join("");
   return links ? `<div class="about-artist-socials">${links}</div>` : "";
 }
@@ -1915,7 +1925,7 @@ function renderArtists() {
     return `<div class="artist-card">
       <div class="artist-cover">
         <img src="${dataUrl}" alt="${a.name}" style="width:100%;height:100%;object-fit:cover;display:block" />
-        ${ig ? `<a class="artist-follow-pill" href="${escAttr(ig)}" target="_blank" rel="noopener" onclick="event.stopPropagation()"><i class="ti ti-brand-instagram"></i> Follow</a>` : ""}
+        ${ig ? `<a class="artist-follow-pill" href="${escAttr(instagramUrl(ig))}" target="_blank" rel="noopener" onclick="event.stopPropagation()"><i class="ti ti-brand-instagram"></i> Follow</a>` : ""}
       </div>
       <div class="artist-card-name">${a.name} ${a.country}</div>
       <div class="artist-card-meta">${workCount} work${workCount!==1?"s":""} · Canada</div>
