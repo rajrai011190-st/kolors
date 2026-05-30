@@ -256,7 +256,8 @@
       background: rgba(255,255,255,0.95); backdrop-filter: blur(6px);
       border: none; border-radius: 100px; padding: 6px 18px;
       font-family: var(--font-sans); font-size: 12px; font-weight: 500; color: #111;
-      cursor: pointer; white-space: nowrap;
+      cursor: pointer; white-space: nowrap; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 5px;
       opacity: 0; transition: opacity 0.2s, transform 0.2s;
     }
     .artist-card:hover .artist-follow-pill { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -1908,10 +1909,11 @@ function renderArtists() {
     const c = genCanvas(a.hue, 360, 360, a.name.length*7);
     const prof = getApprovedProfile(a.name);
     const dataUrl = (prof && prof.photo) ? prof.photo : c.toDataURL();
+    const ig = prof && prof.socials && prof.socials.instagram;
     return `<div class="artist-card">
       <div class="artist-cover">
         <img src="${dataUrl}" alt="${a.name}" style="width:100%;height:100%;object-fit:cover;display:block" />
-        <button class="artist-follow-pill" onclick="event.stopPropagation()">Follow</button>
+        ${ig ? `<a class="artist-follow-pill" href="${escAttr(ig)}" target="_blank" rel="noopener" onclick="event.stopPropagation()"><i class="ti ti-brand-instagram"></i> Follow</a>` : ""}
       </div>
       <div class="artist-card-name">${a.name} ${a.country}</div>
       <div class="artist-card-meta">${workCount} work${workCount!==1?"s":""} · Canada</div>
