@@ -1,0 +1,10 @@
+# Firebase Functions
+functions/node_modules/
+functions/.env
+functions/.env.*
+.firebase/
+firebase-debug.log
+ui-debug.log
+
+# OS
+.DS_Store

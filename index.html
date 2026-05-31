@@ -1312,9 +1312,9 @@
       </div>
       <div class="form-field full"><label>Description</label><textarea id="fDesc" placeholder="Tell the story of this work…"></textarea></div>
       <div class="form-field full">
-        <label>Payment Link — for card checkout <span style="font-size:10px;color:rgba(0,0,0,0.35);text-transform:none;letter-spacing:0">(optional)</span></label>
+        <label>Direct "Buy Now" link <span style="font-size:10px;color:rgba(0,0,0,0.35);text-transform:none;letter-spacing:0">(optional)</span></label>
         <input id="fStripeLink" type="url" placeholder="https://buy.stripe.com/…" />
-        <span style="font-size:11px;color:rgba(0,0,0,0.4);line-height:1.5;margin-top:4px;display:block">Paste a Stripe Payment Link so buyers can pay by credit/debit card. Create one free at <strong>dashboard.stripe.com</strong> → Payment Links → set the price to this painting's price. Without a link, the painting shows but can't be purchased online.</span>
+        <span style="font-size:11px;color:rgba(0,0,0,0.4);line-height:1.5;margin-top:4px;display:block">Optional shortcut. Leave blank — buyers pay by credit/debit card at checkout. Add a Stripe Payment Link here only if you want a separate one-click "Buy Now" button for this piece.</span>
       </div>
     </div>
     <button class="btn btn-primary submit-btn" id="submitBtn" onclick="submitPainting()"><i class="ti ti-check"></i> List Painting</button>
@@ -1361,7 +1361,7 @@
         <span class="cart-total-label" id="scCartTotalLabel">Total</span>
         <span class="cart-total-val" id="cartTotal">$0</span>
       </div>
-      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="cartCheckout()"><i class="ti ti-brand-stripe"></i><span id="scCartCheckout">Proceed to Checkout</span></button>
+      <button class="btn btn-primary" id="cartCheckoutBtn" style="width:100%;justify-content:center" onclick="cartCheckout()"><i class="ti ti-brand-stripe"></i><span id="scCartCheckout">Proceed to Checkout</span></button>
     </div>
   </div>
 </div>
@@ -1386,6 +1386,9 @@ const firebaseConfig = {
 const fbApp = initializeApp(firebaseConfig);
 const auth  = getAuth(fbApp);
 const db    = getFirestore(fbApp);
+
+// Deployed Stripe checkout Cloud Function (full URL from `firebase deploy`).
+const CHECKOUT_URL = "https://createcheckoutsession-o2gxkbvmya-uc.a.run.app";
 
 const CLOUDINARY_CLOUD  = "dxl6ntgrm";
 const CLOUDINARY_PRESET = "kolours_uploads";
@@ -2328,24 +2331,45 @@ async function deleteListing(id) {
 }
 
 // ─── CHECKOUT ────────────────────────────────────────────────────────────────
-// Each painting carries its own Stripe Payment Link (set by the seller in the
-// Studio). Checkout opens those secure Stripe card pages — buyers enter their
-// card details and pay on Stripe's hosted checkout.
-function cartCheckout() {
+// Sends the cart's painting IDs to the Stripe Cloud Function, which returns a
+// hosted Checkout URL (one combined card charge). Prices are re-verified
+// server-side, so the client only sends IDs.
+async function cartCheckout() {
   if(!cart.length) { toast(getMsg("msgCartEmpty")); return; }
-  const withLinks = cart.filter(p=>p.stripeLink);
-  const withoutLinks = cart.filter(p=>!p.stripeLink);
-  if(withLinks.length === 1 && !withoutLinks.length) {
-    window.open(withLinks[0].stripeLink, "_blank");
-    return;
+  const btn = document.getElementById("cartCheckoutBtn");
+  const label = document.getElementById("scCartCheckout");
+  const prevLabel = label ? label.textContent : "";
+  if(btn) btn.disabled = true;
+  if(label) label.textContent = "Redirecting to secure checkout…";
+  try {
+    const res = await fetch(CHECKOUT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items: cart.map(p => ({ id: String(p.id) })) }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if(!res.ok || !data.url) throw new Error(data.error || "Checkout failed");
+    window.location.href = data.url; // Stripe-hosted card page
+  } catch(e) {
+    toast(e.message || "Could not start checkout. Please try again.");
+    if(btn) btn.disabled = false;
+    if(label) label.textContent = prevLabel || "Proceed to Checkout";
   }
-  if(withLinks.length > 0) {
-    closeCart();
-    toast(`Opening secure checkout for ${withLinks.length} item${withLinks.length>1?"s":""}…`);
-    withLinks.forEach((p,i)=>setTimeout(()=>window.open(p.stripeLink,"_blank"),i*400));
-    if(withoutLinks.length) toast(`${withoutLinks.length} item${withoutLinks.length>1?"s":""} have no payment link yet.`);
-  } else {
-    toast("No payment link added yet — add one in My Studio.");
+}
+
+// After returning from Stripe: ?paid=<sessionId> (success) or ?canceled=1.
+function handleCheckoutReturn() {
+  const params = new URLSearchParams(window.location.search);
+  if(params.has("paid")) {
+    cart = [];
+    updateCartBadge();
+    toast("Payment received — thank you! A receipt has been emailed to you. ✓");
+  } else if(params.has("canceled")) {
+    toast("Checkout canceled — your cart is still saved.");
+  }
+  if(params.has("paid") || params.has("canceled")) {
+    // Clean the URL so a refresh doesn't re-trigger the toast.
+    history.replaceState(null, "", window.location.pathname);
   }
 }
 
@@ -2994,6 +3018,7 @@ onAuthStateChanged(auth, async fbUser => {
 renderTabs();
 applyFilters();
 initData();
+handleCheckoutReturn();
 
 // ─── WINDOW EXPORTS (required for type="module" inline handlers) ─────────────
 window.setCategory = setCategory;
