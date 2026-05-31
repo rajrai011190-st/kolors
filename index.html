@@ -1311,9 +1311,10 @@
         </select>
       </div>
       <div class="form-field full"><label>Description</label><textarea id="fDesc" placeholder="Tell the story of this work…"></textarea></div>
-      <div class="form-field">
-        <label>Stripe Payment Link <span style="font-size:10px;color:rgba(0,0,0,0.35);text-transform:none;letter-spacing:0">(optional)</span></label>
+      <div class="form-field full">
+        <label>Payment Link — for card checkout <span style="font-size:10px;color:rgba(0,0,0,0.35);text-transform:none;letter-spacing:0">(optional)</span></label>
         <input id="fStripeLink" type="url" placeholder="https://buy.stripe.com/…" />
+        <span style="font-size:11px;color:rgba(0,0,0,0.4);line-height:1.5;margin-top:4px;display:block">Paste a Stripe Payment Link so buyers can pay by credit/debit card. Create one free at <strong>dashboard.stripe.com</strong> → Payment Links → set the price to this painting's price. Without a link, the painting shows but can't be purchased online.</span>
       </div>
     </div>
     <button class="btn btn-primary submit-btn" id="submitBtn" onclick="submitPainting()"><i class="ti ti-check"></i> List Painting</button>
@@ -2327,21 +2328,24 @@ async function deleteListing(id) {
 }
 
 // ─── CHECKOUT ────────────────────────────────────────────────────────────────
+// Each painting carries its own Stripe Payment Link (set by the seller in the
+// Studio). Checkout opens those secure Stripe card pages — buyers enter their
+// card details and pay on Stripe's hosted checkout.
 function cartCheckout() {
+  if(!cart.length) { toast(getMsg("msgCartEmpty")); return; }
   const withLinks = cart.filter(p=>p.stripeLink);
   const withoutLinks = cart.filter(p=>!p.stripeLink);
-  if(!cart.length) { toast(getMsg("msgCartEmpty")); return; }
   if(withLinks.length === 1 && !withoutLinks.length) {
     window.open(withLinks[0].stripeLink, "_blank");
     return;
   }
   if(withLinks.length > 0) {
     closeCart();
-    toast(`Opening ${withLinks.length} Stripe checkout${withLinks.length>1?"s":""}…`);
+    toast(`Opening secure checkout for ${withLinks.length} item${withLinks.length>1?"s":""}…`);
     withLinks.forEach((p,i)=>setTimeout(()=>window.open(p.stripeLink,"_blank"),i*400));
     if(withoutLinks.length) toast(`${withoutLinks.length} item${withoutLinks.length>1?"s":""} have no payment link yet.`);
   } else {
-    toast("No Stripe links added yet — paste links in My Studio.");
+    toast("No payment link added yet — add one in My Studio.");
   }
 }
 
