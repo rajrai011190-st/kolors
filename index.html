@@ -784,6 +784,18 @@
     .admin-tab:hover { color: var(--black); }
     .admin-tab.active { color: var(--black); border-bottom-color: var(--terracotta); }
     .admin-tab i { font-size: 15px; }
+    /* ORDERS */
+    .order-card { border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; background: var(--bg); }
+    .order-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+    .order-items { font-family: var(--font-serif); font-size: 15px; font-weight: 600; color: var(--black); }
+    .order-amount { font-size: 14px; font-weight: 600; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
+    .order-pill { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 100px; letter-spacing: 0.02em; }
+    .order-pill.paid { background: rgba(45,106,79,0.1); color: var(--green); }
+    .order-pill.unpaid { background: rgba(180,83,9,0.1); color: #b45309; }
+    .order-meta { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 8px; font-size: 12px; color: rgba(0,0,0,0.5); }
+    .order-meta a { color: var(--terracotta); text-decoration: none; }
+    .order-meta i, .order-ship i { font-size: 13px; margin-right: 2px; }
+    .order-ship { margin-top: 8px; font-size: 12px; color: rgba(0,0,0,0.55); padding-top: 8px; border-top: 0.5px solid var(--border); }
 
     /* SITE CONTENT EDITOR */
     .ce-section { margin-bottom: 30px; border: 1px solid var(--border); border-radius: 12px; padding: 20px 22px; background: var(--bg); }
@@ -1185,6 +1197,7 @@
       </div>
       <div class="admin-tabs">
         <button class="admin-tab active" id="adminTabBtnListings" onclick="switchAdminTab('listings')"><i class="ti ti-photo"></i> Listings</button>
+        <button class="admin-tab" id="adminTabBtnOrders" onclick="switchAdminTab('orders')"><i class="ti ti-receipt"></i> Orders</button>
         <button class="admin-tab" id="adminTabBtnContent" onclick="switchAdminTab('content')"><i class="ti ti-edit"></i> Site Content</button>
       </div>
 
@@ -1201,6 +1214,16 @@
         <div id="adminPendingSection"></div>
         <div id="adminPendingProfiles"></div>
         <div id="adminDashList"></div>
+      </div>
+
+      <!-- TAB: ORDERS -->
+      <div id="adminTabOrders" style="display:none">
+        <div class="admin-local-note"><i class="ti ti-info-circle" style="font-size:13px"></i> Card payments received through the site. Each paid order also marks its artwork as sold automatically.</div>
+        <div class="listings-stats" id="ordersStats"></div>
+        <div class="admin-filter-bar" style="margin-top:20px">
+          <input class="admin-search" id="ordersSearch" type="text" placeholder="Search by item, email, or name…" oninput="renderOrders()" />
+        </div>
+        <div id="ordersList"></div>
       </div>
 
       <!-- TAB: SITE CONTENT -->
@@ -2487,6 +2510,7 @@ function showAdminPage() {
   if(currentUser && currentUser.isAdmin) {
     document.getElementById("adminLoginSection").style.display = "none";
     document.getElementById("adminDashSection").style.display = "";
+    subscribeOrders();
     renderAdminDashboard();
   } else {
     document.getElementById("adminLoginSection").style.display = "";
@@ -2514,6 +2538,7 @@ async function adminLogin() {
     err.classList.remove("show");
     document.getElementById("adminLoginSection").style.display = "none";
     document.getElementById("adminDashSection").style.display = "";
+    subscribeOrders();
     renderAdminDashboard();
   } catch(e) {
     err.textContent = "No admin account found with those credentials.";
@@ -2920,12 +2945,79 @@ function renderContentForm() {
 }
 
 function switchAdminTab(tab) {
-  const isContent = tab === "content";
-  document.getElementById("adminTabListings").style.display = isContent ? "none" : "";
-  document.getElementById("adminTabContent").style.display = isContent ? "" : "none";
-  document.getElementById("adminTabBtnListings").classList.toggle("active", !isContent);
-  document.getElementById("adminTabBtnContent").classList.toggle("active", isContent);
-  if(isContent) renderContentForm();
+  const tabs = ["listings", "orders", "content"];
+  if(!tabs.includes(tab)) tab = "listings";
+  tabs.forEach(t => {
+    const cap = t.charAt(0).toUpperCase() + t.slice(1);
+    const panel = document.getElementById("adminTab" + cap);
+    const btn = document.getElementById("adminTabBtn" + cap);
+    if(panel) panel.style.display = (t === tab) ? "" : "none";
+    if(btn) btn.classList.toggle("active", t === tab);
+  });
+  if(tab === "content") renderContentForm();
+  if(tab === "orders") renderOrders();
+}
+
+// ─── ADMIN: ORDERS ───────────────────────────────────────────────────────────
+let orders = [];
+
+function orderTitle(id) {
+  const p = paintings.find(x => String(x.id) === String(id));
+  return p ? p.title : `#${id}`;
+}
+
+function renderOrders() {
+  const statsEl = document.getElementById("ordersStats");
+  const listEl = document.getElementById("ordersList");
+  if(!listEl) return;
+
+  const paid = orders.filter(o => o.paymentStatus === "paid");
+  const revenue = paid.reduce((sum, o) => sum + (Number(o.amountTotal) || 0), 0) / 100;
+  if(statsEl) {
+    statsEl.innerHTML = `
+      <div class="stat-chip"><div class="stat-val">${orders.length}</div><div class="stat-label">Orders</div></div>
+      <div class="stat-chip"><div class="stat-val" style="color:var(--green)">${paid.length}</div><div class="stat-label">Paid</div></div>
+      <div class="stat-chip"><div class="stat-val" style="color:var(--green)">$${revenue.toLocaleString("en-CA",{minimumFractionDigits:2})}</div><div class="stat-label">Total Revenue</div></div>
+    `;
+  }
+
+  const q = (document.getElementById("ordersSearch")?.value || "").toLowerCase().trim();
+  let list = orders.slice().sort((a,b) => (b._ts || 0) - (a._ts || 0));
+  if(q) {
+    list = list.filter(o => {
+      const items = (o.paintingIds || []).map(orderTitle).join(" ").toLowerCase();
+      return items.includes(q) || (o.email||"").toLowerCase().includes(q) || (o.name||"").toLowerCase().includes(q);
+    });
+  }
+
+  if(!list.length) {
+    listEl.innerHTML = '<p style="color:rgba(0,0,0,0.35);padding:40px 0;font-size:14px">No orders yet. Card payments made on the site will appear here.</p>';
+    return;
+  }
+
+  listEl.innerHTML = list.map(o => {
+    const items = (o.paintingIds || []).map(orderTitle);
+    const amount = `$${((Number(o.amountTotal)||0)/100).toLocaleString("en-CA",{minimumFractionDigits:2})} ${(o.currency||"cad").toUpperCase()}`;
+    const when = o._ts ? new Date(o._ts).toLocaleString("en-CA", { dateStyle:"medium", timeStyle:"short" }) : "";
+    const ship = o.shipping && o.shipping.address ? o.shipping.address : null;
+    const shipLine = ship ? [ship.line1, ship.line2, ship.city, ship.state, ship.postal_code, ship.country].filter(Boolean).join(", ") : "";
+    const shipName = (o.shipping && o.shipping.name) || o.name || "";
+    const paidPill = o.paymentStatus === "paid"
+      ? '<span class="order-pill paid">● Paid</span>'
+      : `<span class="order-pill unpaid">${escHtml(o.paymentStatus||"pending")}</span>`;
+    return `<div class="order-card">
+      <div class="order-head">
+        <div class="order-items">${items.map(t=>escHtml(t)).join(" · ") || "—"}</div>
+        <div class="order-amount">${amount} ${paidPill}</div>
+      </div>
+      <div class="order-meta">
+        <span><i class="ti ti-calendar"></i> ${when}</span>
+        ${o.email ? `<span><i class="ti ti-mail"></i> <a href="mailto:${escAttr(o.email)}">${escHtml(o.email)}</a></span>` : ""}
+        ${o.phone ? `<span><i class="ti ti-phone"></i> ${escHtml(o.phone)}</span>` : ""}
+      </div>
+      ${shipLine || shipName ? `<div class="order-ship"><i class="ti ti-truck"></i> Ship to: ${escHtml(shipName)}${shipLine?` — ${escHtml(shipLine)}`:""}</div>` : ""}
+    </div>`;
+  }).join("");
 }
 
 async function saveSiteContent() {
@@ -2992,6 +3084,22 @@ async function initData() {
     if(document.getElementById("pageAbout")?.classList.contains("active")) renderAboutArtists();
     if(document.getElementById("pageStudio")?.classList.contains("active")) renderArtistProfilePanel();
     if(document.getElementById("pageAdmin")?.classList.contains("active") && currentUser?.isAdmin) renderAdminDashboard();
+  });
+}
+
+// Admin-only: live-sync orders (card payments). Started after an admin logs in.
+let ordersUnsub = null;
+function subscribeOrders() {
+  if(ordersUnsub) return; // already subscribed
+  ordersUnsub = onSnapshot(collection(db, "orders"), snap => {
+    orders = snap.docs.map(d => {
+      const data = d.data();
+      const ts = data.createdAt && typeof data.createdAt.toMillis === "function" ? data.createdAt.toMillis() : 0;
+      return { id: d.id, ...data, _ts: ts };
+    });
+    if(document.getElementById("adminTabOrders")?.style.display !== "none") renderOrders();
+  }, err => {
+    console.warn("Orders subscription error:", err.message);
   });
 }
 
@@ -3068,6 +3176,7 @@ window.rejectProfile = rejectProfile;
 window.renderArtistProfilePanel = renderArtistProfilePanel;
 window.rejectListingAdmin = rejectListingAdmin;
 window.switchAdminTab = switchAdminTab;
+window.renderOrders = renderOrders;
 window.renderContentForm = renderContentForm;
 window.saveSiteContent = saveSiteContent;
 </script>
