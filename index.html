@@ -8,6 +8,26 @@
   <meta name="theme-color" content="#ffffff" />
   <meta name="apple-mobile-web-app-title" content="Kolours" />
   <title>Kolours — Art Marketplace</title>
+  <meta name="description" content="Original paintings and prints by independent Canadian artists. Every piece is one of a kind — made by hand, shipped across Canada." />
+  <link rel="canonical" href="https://thekolours.com/" id="seoCanonical" />
+  <!-- Open Graph (social share previews). Defaults are updated per-painting in JS. -->
+  <meta property="og:site_name" content="The Kolours" />
+  <meta property="og:type" content="website" id="ogType" />
+  <meta property="og:url" content="https://thekolours.com/" id="ogUrl" />
+  <meta property="og:title" content="Kolours — Original Art by Canadian Artists" id="ogTitle" />
+  <meta property="og:description" content="One-of-a-kind original paintings by independent Canadian artists. Made by hand, shipped Canada-wide." id="ogDesc" />
+  <!-- Replace with a dedicated 1200×630 banner for the best share preview. -->
+  <meta property="og:image" content="https://thekolours.com/images/cherry-blossom.jpg" id="ogImage" />
+  <meta name="twitter:card" content="summary_large_image" id="twCard" />
+  <meta name="twitter:title" content="Kolours — Original Art by Canadian Artists" id="twTitle" />
+  <meta name="twitter:description" content="One-of-a-kind original paintings by independent Canadian artists." id="twDesc" />
+  <meta name="twitter:image" content="https://thekolours.com/images/cherry-blossom.jpg" id="twImage" />
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebSite","name":"The Kolours","url":"https://thekolours.com/"}
+  </script>
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"Organization","name":"The Kolours","url":"https://thekolours.com/","logo":"https://thekolours.com/images/logo.png"}
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
@@ -2307,7 +2327,55 @@ function renderCart() {
 }
 
 // ─── MODAL ───────────────────────────────────────────────────────────────────
-function openModal(id) {
+// ── SEO: per-painting share metadata + shareable ?p= URLs ────────────────────
+let pendingDeepLink = new URLSearchParams(location.search).get("p");
+let paintingLd = null;
+function _setMeta(elId, content) {
+  const el = document.getElementById(elId);
+  if(el) el.setAttribute(el.tagName === "LINK" ? "href" : "content", content);
+}
+function setPaintingSeo(p) {
+  const url = `https://thekolours.com/?p=${p.id}`;
+  const title = `${p.title} by ${p.artist} — The Kolours`;
+  const desc = String(p.desc || `Original ${p.medium} by ${p.artist}.`).slice(0,160);
+  const img = cldUrl(p.img, 1200) || "https://thekolours.com/images/cherry-blossom.jpg";
+  document.title = title;
+  _setMeta("seoCanonical", url); _setMeta("ogUrl", url); _setMeta("ogType", "product");
+  _setMeta("ogTitle", title); _setMeta("ogDesc", desc); _setMeta("ogImage", img);
+  _setMeta("twTitle", title); _setMeta("twDesc", desc); _setMeta("twImage", img);
+  if(!paintingLd) { paintingLd = document.createElement("script"); paintingLd.type = "application/ld+json"; document.head.appendChild(paintingLd); }
+  paintingLd.textContent = JSON.stringify({
+    "@context":"https://schema.org","@type":["Product","VisualArtwork"],
+    name:p.title, image:img, description:desc,
+    creator:{ "@type":"Person", name:p.artist }, artMedium:p.medium, artform:p.category, url,
+    offers:{ "@type":"Offer", price:Number(p.price)||0, priceCurrency:"CAD",
+      availability: p.available ? "https://schema.org/InStock" : "https://schema.org/SoldOut" }
+  });
+}
+function clearPaintingSeo() {
+  document.title = "Kolours — Art Marketplace";
+  const base = "https://thekolours.com/", img = "https://thekolours.com/images/cherry-blossom.jpg";
+  const t = "Kolours — Original Art by Canadian Artists";
+  const d = "One-of-a-kind original paintings by independent Canadian artists. Made by hand, shipped Canada-wide.";
+  _setMeta("seoCanonical", base); _setMeta("ogUrl", base); _setMeta("ogType", "website");
+  _setMeta("ogTitle", t); _setMeta("ogDesc", d); _setMeta("ogImage", img);
+  _setMeta("twTitle", t); _setMeta("twDesc", d); _setMeta("twImage", img);
+  if(paintingLd) { paintingLd.remove(); paintingLd = null; }
+}
+// Open a deep-linked painting once paintings have loaded (called from the snapshot).
+function openDeepLinkIfReady() {
+  if(!pendingDeepLink || !paintings.length) return;
+  const target = paintings.find(x => String(x.id) === String(pendingDeepLink));
+  pendingDeepLink = null;
+  if(target) openModal(target.id, true);
+}
+window.addEventListener("popstate", () => {
+  const id = new URLSearchParams(location.search).get("p");
+  if(id) { const t = paintings.find(x => String(x.id) === String(id)); if(t) openModal(t.id, true); }
+  else if(document.getElementById("modalOverlay").classList.contains("open")) closeModal(null, true);
+});
+
+function openModal(id, fromUrl) {
   const p = paintings.find(x=>x.id===id);
   if(!p) return;
   currentPainting = p;
@@ -2347,6 +2415,9 @@ function openModal(id) {
   wrap.appendChild(paintingMediaEl(p,680,510));
   document.getElementById("modalOverlay").classList.add("open");
   document.body.style.overflow = "hidden";
+  setPaintingSeo(p);
+  if(!fromUrl) history.pushState({ p: id }, "", "?p=" + id);
+  track("view_item", { currency:"CAD", value:Number(p.price)||0, items:[{ item_id:String(p.id), item_name:p.title, price:Number(p.price)||0 }] });
 }
 
 function modalAddCart() {
@@ -2359,11 +2430,13 @@ function modalAddCart() {
   document.getElementById("modalAddBtn").textContent = "In cart ✓";
 }
 
-function closeModal(e) {
+function closeModal(e, fromUrl) {
   if(e && e.target !== document.getElementById("modalOverlay") && !e.target.closest(".modal-close")) return;
   document.getElementById("modalOverlay").classList.remove("open");
   document.body.style.overflow = "";
   currentPainting = null;
+  clearPaintingSeo();
+  if(!fromUrl && location.search.indexOf("p=") !== -1) history.pushState({}, "", location.pathname);
 }
 
 // ─── UPLOAD ──────────────────────────────────────────────────────────────────
@@ -3445,6 +3518,7 @@ async function initData() {
     applyFilters();
     renderArtists();
     renderTabs();
+    openDeepLinkIfReady();
     if(document.getElementById("pageStudio")?.classList.contains("active")) renderListings();
     if(document.getElementById("pageAdmin")?.classList.contains("active") && currentUser?.isAdmin) renderAdminDashboard();
   });
