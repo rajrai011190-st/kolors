@@ -8,6 +8,26 @@
   <meta name="theme-color" content="#ffffff" />
   <meta name="apple-mobile-web-app-title" content="Kolours" />
   <title>Kolours — Art Marketplace</title>
+  <meta name="description" content="Original paintings and prints by independent Canadian artists. Every piece is one of a kind — made by hand, shipped across Canada." />
+  <link rel="canonical" href="https://thekolours.com/" id="seoCanonical" />
+  <!-- Open Graph (social share previews). Defaults are updated per-painting in JS. -->
+  <meta property="og:site_name" content="The Kolours" />
+  <meta property="og:type" content="website" id="ogType" />
+  <meta property="og:url" content="https://thekolours.com/" id="ogUrl" />
+  <meta property="og:title" content="Kolours — Original Art by Canadian Artists" id="ogTitle" />
+  <meta property="og:description" content="One-of-a-kind original paintings by independent Canadian artists. Made by hand, shipped Canada-wide." id="ogDesc" />
+  <!-- Replace with a dedicated 1200×630 banner for the best share preview. -->
+  <meta property="og:image" content="https://thekolours.com/images/cherry-blossom.jpg" id="ogImage" />
+  <meta name="twitter:card" content="summary_large_image" id="twCard" />
+  <meta name="twitter:title" content="Kolours — Original Art by Canadian Artists" id="twTitle" />
+  <meta name="twitter:description" content="One-of-a-kind original paintings by independent Canadian artists." id="twDesc" />
+  <meta name="twitter:image" content="https://thekolours.com/images/cherry-blossom.jpg" id="twImage" />
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebSite","name":"The Kolours","url":"https://thekolours.com/"}
+  </script>
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"Organization","name":"The Kolours","url":"https://thekolours.com/","logo":"https://thekolours.com/images/logo.png"}
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
@@ -356,6 +376,8 @@
     .cart-item-price { font-size: 14px; font-weight: 500; }
     .cart-item-remove { background: none; border: none; cursor: pointer; color: rgba(0,0,0,0.3); font-size: 16px; padding: 4px; align-self: flex-start; }
     .cart-footer { padding: 16px 24px; border-top: 0.5px solid var(--border); }
+    .cart-trust { margin-top: 12px; font-size: 11.5px; color: rgba(0,0,0,0.45); text-align: center; line-height: 1.5; }
+    .cart-trust i { font-size: 13px; vertical-align: -1px; color: var(--green); }
     .cart-total { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
     .cart-total-label { font-size: 13px; color: rgba(0,0,0,0.5); }
     .cart-total-val { font-size: 20px; font-weight: 500; }
@@ -720,6 +742,12 @@
     .about-contact-link.primary:hover { background: #e5e5e5; }
     .about-contact-link.outline { background: transparent; color: rgba(255,255,255,0.8); border: 1px solid rgba(255,255,255,0.3); }
     .about-contact-link.outline:hover { border-color: #fff; color: #fff; }
+    .newsletter { margin-top: 28px; }
+    .newsletter-label { font-size: 13px; color: rgba(255,255,255,0.55); margin-bottom: 12px; }
+    .newsletter-form { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+    .newsletter-form input { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 100px; padding: 10px 18px; font-family: var(--font-sans); font-size: 13px; min-width: 220px; }
+    .newsletter-form input::placeholder { color: rgba(255,255,255,0.4); }
+    .newsletter-form input:focus { outline: none; border-color: rgba(255,255,255,0.5); }
 
     @media (max-width: 768px) {
       .about-page { padding: 48px 16px calc(var(--bottom-nav-h) + var(--safe-b) + 40px); }
@@ -1061,6 +1089,13 @@
       <div class="about-contact-links">
         <button class="about-contact-link primary" onclick="studioOrLogin()"><i class="ti ti-palette"></i><span id="scContactBtn">Join as an Artist</span></button>
         <a class="about-contact-link outline" id="scContactEmailLink" href="mailto:hello@thekolours.com"><i class="ti ti-mail"></i><span id="scContactEmail">hello@thekolours.com</span></a>
+      </div>
+      <div class="newsletter">
+        <p class="newsletter-label">Or join our list — be first to see new originals.</p>
+        <form class="newsletter-form" onsubmit="subscribeNewsletter(event)">
+          <input id="newsletterEmail" type="email" placeholder="you@email.com" autocomplete="email" required />
+          <button class="about-contact-link primary" type="submit"><i class="ti ti-send"></i> Subscribe</button>
+        </form>
       </div>
     </div>
 
@@ -1464,6 +1499,7 @@
         <span class="cart-total-val" id="cartTotal">$0</span>
       </div>
       <button class="btn btn-primary" id="cartCheckoutBtn" style="width:100%;justify-content:center" onclick="cartCheckout()"><i class="ti ti-brand-stripe"></i><span id="scCartCheckout">Proceed to Checkout</span></button>
+      <div class="cart-trust"><i class="ti ti-lock"></i> Secure checkout · Ships Canada-wide · Every piece an original, sold once</div>
     </div>
   </div>
 </div>
@@ -1500,6 +1536,24 @@ const PAYOUTS_ENABLED = false;
 
 const CLOUDINARY_CLOUD  = "dxl6ntgrm";
 const CLOUDINARY_PRESET = "kolours_uploads";
+
+// ── Analytics (Google Analytics 4) ──────────────────────────────────────────
+// Paste your GA4 Measurement ID (looks like "G-XXXXXXXXXX") to switch it on.
+// Leaving it blank keeps analytics fully off — no script loads, no cookies.
+// Prefer privacy-first? Swap the loader below for Plausible (one <script> tag).
+const GA_ID = "";
+function initAnalytics() {
+  if(!GA_ID) return;
+  const s = document.createElement("script");
+  s.async = true; s.src = "https://www.googletagmanager.com/gtag/js?id=" + GA_ID;
+  document.head.appendChild(s);
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function(){ window.dataLayer.push(arguments); };
+  window.gtag("js", new Date());
+  window.gtag("config", GA_ID, { send_page_view: false }); // SPA: we send views ourselves
+}
+// Safe no-op until GA_ID is set.
+function track(event, params) { if(GA_ID && window.gtag) window.gtag("event", event, params || {}); }
 
 async function uploadToCloudinary(file) {
   const fd = new FormData();
@@ -1562,10 +1616,27 @@ function genCanvas(colors, w, h, seed) {
   return c;
 }
 
+// Rewrite a Cloudinary delivery URL to auto-format/quality at the needed width.
+// Non-Cloudinary URLs (local seed images, external CDNs) are returned untouched.
+function cldUrl(url, w) {
+  if(typeof url !== "string") return url;
+  const marker = "/image/upload/";
+  const i = url.indexOf("res.cloudinary.com") === -1 ? -1 : url.indexOf(marker);
+  if(i === -1 || url.indexOf(marker + "f_auto") !== -1) return url; // not Cloudinary / already transformed
+  const tx = `f_auto,q_auto,c_limit,w_${Math.round(w)}`;
+  return url.slice(0, i + marker.length) + tx + "/" + url.slice(i + marker.length);
+}
+
 function paintingMediaEl(p, w, h) {
   if(p.img) {
     const img = document.createElement("img");
-    img.src = p.img; img.alt = p.title;
+    const tw = w || 400;
+    const a = cldUrl(p.img, tw), b = cldUrl(p.img, tw * 2);
+    img.src = a;
+    if(b !== a) img.srcset = `${a} 1x, ${b} 2x`;   // serve a sharper file on retina only
+    img.loading = "lazy";
+    img.decoding = "async";
+    img.alt = p.title ? (p.artist ? `${p.title} by ${p.artist}` : p.title) : "Painting";
     return img;
   }
   return genCanvas(p.colors||["#e0e0e0","#c0c0c0"], w||400, h||500, p.id);
@@ -1583,6 +1654,7 @@ function showPage(name) {
   if(name==="studio") { renderStudioHeader(); renderListings(); renderArtistProfilePanel(); renderPayoutPanel(); }
   if(name==="login") { clearLoginForms(); }
   if(name==="about") { renderAboutArtists(); }
+  track("page_view", { page_title: name, page_path: "/" + name });
   window.scrollTo(0,0);
 }
 
@@ -2199,10 +2271,33 @@ function renderAboutArtists() {
 }
 
 // ─── WISHLIST ────────────────────────────────────────────────────────────────
+// Cart + wishlist survive reloads via localStorage (stored as id lists,
+// rehydrated against live painting data so prices/availability stay current).
+const LS_CART = "kolours_cart", LS_WISH = "kolours_wish";
+function persistState() {
+  try {
+    localStorage.setItem(LS_CART, JSON.stringify(cart.map(p => p.id)));
+    localStorage.setItem(LS_WISH, JSON.stringify([...wishlist]));
+  } catch(e) { /* storage unavailable (private mode) — ignore */ }
+}
+let stateHydrated = false;
+function hydrateState() {
+  if(stateHydrated || !paintings.length) return;
+  stateHydrated = true;
+  try {
+    wishlist = new Set(JSON.parse(localStorage.getItem(LS_WISH) || "[]"));
+    const ids = JSON.parse(localStorage.getItem(LS_CART) || "[]");
+    cart = ids.map(id => paintings.find(p => p.id === id)).filter(p => p && p.available);
+    updateCartBadge();
+    persistState(); // prune anything no longer available
+  } catch(e) { /* ignore corrupt state */ }
+}
+
 function toggleWish(e, id) {
   e.stopPropagation();
   if(wishlist.has(id)) { wishlist.delete(id); toast(getMsg("msgWishRemove")); }
   else { wishlist.add(id); toast(getMsg("msgWishAdd")); }
+  persistState();
   applyFilters();
 }
 
@@ -2214,13 +2309,16 @@ function addToCart(e, id) {
   if(cart.find(c=>c.id===id)) { openCart(); return; }
   cart.push(p);
   updateCartBadge();
+  persistState();
   applyFilters();
+  track("add_to_cart", { currency: "CAD", value: Number(p.price)||0, items: [{ item_id: String(p.id), item_name: p.title, price: Number(p.price)||0 }] });
   toast(getMsg("msgAddedToCart").replace("{title}", p.title));
 }
 
 function removeFromCart(id) {
   cart = cart.filter(c=>c.id!==id);
   updateCartBadge();
+  persistState();
   renderCart();
   applyFilters();
 }
@@ -2243,6 +2341,22 @@ function closeCart() {
 }
 
 function closeCartEvent(e) { if(e.target===document.getElementById("cartOverlay")) closeCart(); }
+
+// Newsletter signup → Firestore `subscribers` (keyed by email, deduped).
+async function subscribeNewsletter(e) {
+  e.preventDefault();
+  const input = document.getElementById("newsletterEmail");
+  const email = (input.value || "").trim().toLowerCase();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { toast("Please enter a valid email."); return; }
+  try {
+    await setDoc(doc(db, "subscribers", email), { email, createdAt: Date.now(), source: "about" }, { merge: true });
+    input.value = "";
+    track("newsletter_signup");
+    toast("You're on the list — thank you! ♥");
+  } catch(err) {
+    toast("Could not subscribe right now — please try again later.");
+  }
+}
 
 function renderCart() {
   const el = document.getElementById("cartItems");
@@ -2270,7 +2384,55 @@ function renderCart() {
 }
 
 // ─── MODAL ───────────────────────────────────────────────────────────────────
-function openModal(id) {
+// ── SEO: per-painting share metadata + shareable ?p= URLs ────────────────────
+let pendingDeepLink = new URLSearchParams(location.search).get("p");
+let paintingLd = null;
+function _setMeta(elId, content) {
+  const el = document.getElementById(elId);
+  if(el) el.setAttribute(el.tagName === "LINK" ? "href" : "content", content);
+}
+function setPaintingSeo(p) {
+  const url = `https://thekolours.com/?p=${p.id}`;
+  const title = `${p.title} by ${p.artist} — The Kolours`;
+  const desc = String(p.desc || `Original ${p.medium} by ${p.artist}.`).slice(0,160);
+  const img = cldUrl(p.img, 1200) || "https://thekolours.com/images/cherry-blossom.jpg";
+  document.title = title;
+  _setMeta("seoCanonical", url); _setMeta("ogUrl", url); _setMeta("ogType", "product");
+  _setMeta("ogTitle", title); _setMeta("ogDesc", desc); _setMeta("ogImage", img);
+  _setMeta("twTitle", title); _setMeta("twDesc", desc); _setMeta("twImage", img);
+  if(!paintingLd) { paintingLd = document.createElement("script"); paintingLd.type = "application/ld+json"; document.head.appendChild(paintingLd); }
+  paintingLd.textContent = JSON.stringify({
+    "@context":"https://schema.org","@type":["Product","VisualArtwork"],
+    name:p.title, image:img, description:desc,
+    creator:{ "@type":"Person", name:p.artist }, artMedium:p.medium, artform:p.category, url,
+    offers:{ "@type":"Offer", price:Number(p.price)||0, priceCurrency:"CAD",
+      availability: p.available ? "https://schema.org/InStock" : "https://schema.org/SoldOut" }
+  });
+}
+function clearPaintingSeo() {
+  document.title = "Kolours — Art Marketplace";
+  const base = "https://thekolours.com/", img = "https://thekolours.com/images/cherry-blossom.jpg";
+  const t = "Kolours — Original Art by Canadian Artists";
+  const d = "One-of-a-kind original paintings by independent Canadian artists. Made by hand, shipped Canada-wide.";
+  _setMeta("seoCanonical", base); _setMeta("ogUrl", base); _setMeta("ogType", "website");
+  _setMeta("ogTitle", t); _setMeta("ogDesc", d); _setMeta("ogImage", img);
+  _setMeta("twTitle", t); _setMeta("twDesc", d); _setMeta("twImage", img);
+  if(paintingLd) { paintingLd.remove(); paintingLd = null; }
+}
+// Open a deep-linked painting once paintings have loaded (called from the snapshot).
+function openDeepLinkIfReady() {
+  if(!pendingDeepLink || !paintings.length) return;
+  const target = paintings.find(x => String(x.id) === String(pendingDeepLink));
+  pendingDeepLink = null;
+  if(target) openModal(target.id, true);
+}
+window.addEventListener("popstate", () => {
+  const id = new URLSearchParams(location.search).get("p");
+  if(id) { const t = paintings.find(x => String(x.id) === String(id)); if(t) openModal(t.id, true); }
+  else if(document.getElementById("modalOverlay").classList.contains("open")) closeModal(null, true);
+});
+
+function openModal(id, fromUrl) {
   const p = paintings.find(x=>x.id===id);
   if(!p) return;
   currentPainting = p;
@@ -2310,6 +2472,9 @@ function openModal(id) {
   wrap.appendChild(paintingMediaEl(p,680,510));
   document.getElementById("modalOverlay").classList.add("open");
   document.body.style.overflow = "hidden";
+  setPaintingSeo(p);
+  if(!fromUrl) history.pushState({ p: id }, "", "?p=" + id);
+  track("view_item", { currency:"CAD", value:Number(p.price)||0, items:[{ item_id:String(p.id), item_name:p.title, price:Number(p.price)||0 }] });
 }
 
 function modalAddCart() {
@@ -2317,16 +2482,19 @@ function modalAddCart() {
   if(cart.find(c=>c.id===currentPainting.id)) { openCart(); return; }
   cart.push(currentPainting);
   updateCartBadge();
+  persistState();
   applyFilters();
   toast(getMsg("msgAddedToCart").replace("{title}", currentPainting.title));
   document.getElementById("modalAddBtn").textContent = "In cart ✓";
 }
 
-function closeModal(e) {
+function closeModal(e, fromUrl) {
   if(e && e.target !== document.getElementById("modalOverlay") && !e.target.closest(".modal-close")) return;
   document.getElementById("modalOverlay").classList.remove("open");
   document.body.style.overflow = "";
   currentPainting = null;
+  clearPaintingSeo();
+  if(!fromUrl && location.search.indexOf("p=") !== -1) history.pushState({}, "", location.pathname);
 }
 
 // ─── UPLOAD ──────────────────────────────────────────────────────────────────
@@ -2612,6 +2780,7 @@ async function deleteListing(id) {
 // server-side, so the client only sends IDs.
 async function cartCheckout() {
   if(!cart.length) { toast(getMsg("msgCartEmpty")); return; }
+  track("begin_checkout", { currency: "CAD", value: cart.reduce((s,p)=>s+(Number(p.price)||0),0), items: cart.map(p=>({ item_id:String(p.id), item_name:p.title, price:Number(p.price)||0 })) });
   const btn = document.getElementById("cartCheckoutBtn");
   const label = document.getElementById("scCartCheckout");
   const prevLabel = label ? label.textContent : "";
@@ -2637,8 +2806,10 @@ async function cartCheckout() {
 function handleCheckoutReturn() {
   const params = new URLSearchParams(window.location.search);
   if(params.has("paid")) {
+    track("purchase", { transaction_id: params.get("paid") || undefined });
     cart = [];
     updateCartBadge();
+    persistState();
     toast("Payment received — thank you! A receipt has been emailed to you. ✓");
   } else if(params.has("canceled")) {
     toast("Checkout canceled — your cart is still saved.");
@@ -3403,9 +3574,11 @@ async function initData() {
   await seedFirestoreIfEmpty();
   onSnapshot(collection(db, "paintings"), snap => {
     paintings = snap.docs.map(d => ({ ...d.data(), id: d.data().id ?? Number(d.id) }));
+    hydrateState();
     applyFilters();
     renderArtists();
     renderTabs();
+    openDeepLinkIfReady();
     if(document.getElementById("pageStudio")?.classList.contains("active")) renderListings();
     if(document.getElementById("pageAdmin")?.classList.contains("active") && currentUser?.isAdmin) renderAdminDashboard();
   });
@@ -3502,6 +3675,7 @@ function handleConnectReturn() {
   }
 }
 
+initAnalytics();
 renderTabs();
 applyFilters();
 initData();
@@ -3517,6 +3691,7 @@ window.removeFromCart = removeFromCart;
 window.openCart = openCart;
 window.closeCart = closeCart;
 window.closeCartEvent = closeCartEvent;
+window.subscribeNewsletter = subscribeNewsletter;
 window.openModal = openModal;
 window.closeModal = closeModal;
 window.modalAddCart = modalAddCart;
