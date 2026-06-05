@@ -12,6 +12,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     :root {
@@ -283,6 +285,33 @@
     .drag-handle { width: 36px; height: 4px; background: rgba(0,0,0,0.12); border-radius: 2px; margin: 12px auto 0; }
     .modal-img-wrap { aspect-ratio: 4/3; overflow: hidden; background: var(--bg2); margin-top: 8px; }
     .modal-img-wrap canvas, .modal-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* CROP MODAL */
+    .crop-modal {
+      position: fixed; inset: 0; z-index: 240;
+      background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center; padding: 16px;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    .crop-modal.open { opacity: 1; pointer-events: all; }
+    .crop-dialog {
+      background: var(--bg); width: 100%; max-width: 560px;
+      border-radius: 14px; overflow: hidden; display: flex; flex-direction: column;
+      max-height: 94dvh; box-shadow: 0 24px 60px rgba(0,0,0,0.3);
+    }
+    .crop-head { padding: 16px 20px; border-bottom: 0.5px solid var(--border); }
+    .crop-head h3 { font-family: var(--font-serif); font-size: 16px; font-weight: 600; }
+    .crop-head p { font-size: 12px; color: rgba(0,0,0,0.45); margin-top: 2px; }
+    .crop-stage { background: var(--bg2); height: min(56vh, 440px); overflow: hidden; display: flex; align-items: center; justify-content: center; }
+    .crop-stage img { display: block; max-width: 100%; max-height: 100%; }
+    .crop-toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px 20px; border-top: 0.5px solid var(--border); }
+    .crop-ratios { display: flex; gap: 6px; flex-wrap: wrap; }
+    .crop-ratios.hidden { display: none; }
+    .crop-btn { font-family: var(--font-sans); font-size: 12px; padding: 7px 12px; border: 0.5px solid var(--border-dark); background: var(--bg); border-radius: 999px; cursor: pointer; color: rgba(0,0,0,0.6); }
+    .crop-btn.active { background: var(--black); color: #fff; border-color: var(--black); }
+    .crop-tool-spacer { flex: 1; }
+    .crop-icon-btn { width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; border: 0.5px solid var(--border-dark); background: var(--bg); border-radius: 8px; cursor: pointer; font-size: 16px; color: rgba(0,0,0,0.6); }
+    .crop-foot { display: flex; gap: 10px; justify-content: flex-end; padding: 14px 20px; border-top: 0.5px solid var(--border); padding-bottom: calc(14px + var(--safe-b)); }
     .modal-content { padding: 20px 24px 32px; }
     .modal-eyebrow { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(0,0,0,0.4); margin-bottom: 6px; }
     .modal-title { font-family: var(--font-display); font-size: 28px; font-weight: 400; margin-bottom: 4px; letter-spacing: -0.01em; }
@@ -1198,6 +1227,7 @@
       <div class="admin-tabs">
         <button class="admin-tab active" id="adminTabBtnListings" onclick="switchAdminTab('listings')"><i class="ti ti-photo"></i> Listings</button>
         <button class="admin-tab" id="adminTabBtnOrders" onclick="switchAdminTab('orders')"><i class="ti ti-receipt"></i> Orders</button>
+        <button class="admin-tab" id="adminTabBtnPayouts" onclick="switchAdminTab('payouts')"><i class="ti ti-cash"></i> Payouts</button>
         <button class="admin-tab" id="adminTabBtnContent" onclick="switchAdminTab('content')"><i class="ti ti-edit"></i> Site Content</button>
       </div>
 
@@ -1224,6 +1254,17 @@
           <input class="admin-search" id="ordersSearch" type="text" placeholder="Search by item, email, or name…" oninput="renderOrders()" />
         </div>
         <div id="ordersList"></div>
+      </div>
+
+      <!-- TAB: PAYOUTS -->
+      <div id="adminTabPayouts" style="display:none">
+        <div class="admin-local-note"><i class="ti ti-info-circle" style="font-size:13px"></i> Artist earnings from sold work. Each artist's share (sale price minus the platform commission) is transferred to their connected Stripe account automatically. Set the commission rate under Site Content → Payouts &amp; Commission.</div>
+        <div class="listings-stats" id="payoutsStats"></div>
+        <div class="admin-filter-bar" style="margin-top:20px">
+          <input class="admin-search" id="payoutsSearch" type="text" placeholder="Search by artist or item…" oninput="renderPayouts()" />
+        </div>
+        <div id="payoutsArtistRollup" style="margin-bottom:24px"></div>
+        <div id="payoutsList"></div>
       </div>
 
       <!-- TAB: SITE CONTENT -->
@@ -1279,6 +1320,17 @@
         <button class="btn btn-primary profile-submit" id="profileSubmitBtn" onclick="submitArtistProfile()"><i class="ti ti-send"></i> Submit for Review</button>
       </div>
     </div>
+  </div>
+
+  <div class="profile-panel" id="payoutPanel" style="display:none">
+    <div class="profile-panel-head">
+      <h2>Get <em>Paid</em></h2>
+      <span class="profile-status" id="payoutStatus"></span>
+    </div>
+    <p class="profile-panel-sub">Connect your bank account through Stripe to receive your earnings automatically whenever your work sells. The Kolours keeps a <span id="payoutCommissionLabel">20</span>% commission — you receive the rest, paid straight to your bank.</p>
+    <div class="listings-stats" id="payoutEarnings" style="margin:4px 0 18px"></div>
+    <button class="btn btn-primary" id="payoutBtn" onclick="startPayoutSetup()"><i class="ti ti-building-bank"></i> Set up payouts</button>
+    <p id="payoutHint" style="font-size:11px;color:rgba(0,0,0,0.4);line-height:1.5;margin-top:10px"></p>
   </div>
 
   <div class="upload-page">
@@ -1370,6 +1422,33 @@
   </div>
 </div>
 
+<!-- CROP MODAL -->
+<div class="crop-modal" id="cropModal">
+  <div class="crop-dialog">
+    <div class="crop-head">
+      <h3>Crop your image</h3>
+      <p>Drag to reposition, pinch or use zoom to resize.</p>
+    </div>
+    <div class="crop-stage"><img id="cropImage" alt="" /></div>
+    <div class="crop-toolbar">
+      <div class="crop-ratios" id="cropRatios">
+        <button class="crop-btn active" data-ratio="nan" onclick="cropSetRatio(this, NaN)">Free</button>
+        <button class="crop-btn" data-ratio="0.8" onclick="cropSetRatio(this, 0.8)">4:5</button>
+        <button class="crop-btn" data-ratio="1" onclick="cropSetRatio(this, 1)">1:1</button>
+        <button class="crop-btn" data-ratio="1.3333" onclick="cropSetRatio(this, 4/3)">4:3</button>
+      </div>
+      <span class="crop-tool-spacer"></span>
+      <button class="crop-icon-btn" title="Zoom out" onclick="cropZoom(-0.1)"><i class="ti ti-zoom-out"></i></button>
+      <button class="crop-icon-btn" title="Zoom in" onclick="cropZoom(0.1)"><i class="ti ti-zoom-in"></i></button>
+      <button class="crop-icon-btn" title="Rotate" onclick="cropRotate()"><i class="ti ti-rotate-clockwise"></i></button>
+    </div>
+    <div class="crop-foot">
+      <button class="btn btn-outline" onclick="cancelCrop()">Cancel</button>
+      <button class="btn btn-primary" id="cropApplyBtn" onclick="applyCrop()"><i class="ti ti-crop"></i> Apply crop</button>
+    </div>
+  </div>
+</div>
+
 <!-- CART SHEET -->
 <div class="cart-overlay" id="cartOverlay" onclick="closeCartEvent(event)">
   <div class="cart-sheet">
@@ -1396,7 +1475,7 @@
 // ─── FIREBASE + CLOUDINARY ────────────────────────────────────────────────────
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAyMKOqGKBK9Sb4jEkNxKuaMpGOqUQlP6g",
@@ -1412,13 +1491,19 @@ const db    = getFirestore(fbApp);
 
 // Deployed Stripe checkout Cloud Function (full URL from `firebase deploy`).
 const CHECKOUT_URL = "https://createcheckoutsession-o2gxkbvmya-uc.a.run.app";
+// Stripe Connect payout functions (URLs from `firebase deploy`).
+const CONNECT_LINK_URL   = "https://us-central1-the-kolours.cloudfunctions.net/createConnectAccountLink";
+const CONNECT_STATUS_URL = "https://us-central1-the-kolours.cloudfunctions.net/getConnectStatus";
+// Payout UI is hidden until Stripe Connect is enabled in the dashboard.
+// Flip to true (and finish the Connect dashboard setup) to expose payouts.
+const PAYOUTS_ENABLED = false;
 
 const CLOUDINARY_CLOUD  = "dxl6ntgrm";
 const CLOUDINARY_PRESET = "kolours_uploads";
 
 async function uploadToCloudinary(file) {
   const fd = new FormData();
-  fd.append("file", file);
+  fd.append("file", file, file.name || "upload.jpg");
   fd.append("upload_preset", CLOUDINARY_PRESET);
   const res  = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method:"POST", body:fd });
   const data = await res.json();
@@ -1495,7 +1580,7 @@ function showPage(name) {
   document.getElementById("bnAbout").classList.toggle("active", name==="about");
   document.getElementById("bnStudio").classList.toggle("active", name==="studio");
   document.getElementById("navAboutLink").classList.toggle("active", name==="about");
-  if(name==="studio") { renderStudioHeader(); renderListings(); renderArtistProfilePanel(); }
+  if(name==="studio") { renderStudioHeader(); renderListings(); renderArtistProfilePanel(); renderPayoutPanel(); }
   if(name==="login") { clearLoginForms(); }
   if(name==="about") { renderAboutArtists(); }
   window.scrollTo(0,0);
@@ -1783,14 +1868,12 @@ function renderArtistProfilePanel() {
 function handleProfilePhoto(input) {
   const file = input.files && input.files[0];
   if(!file) return;
-  profilePhotoFile = file;
-  const reader = new FileReader();
-  reader.onload = e => {
+  openCropper(file, { aspectRatio: 1, locked: true }, (blob, url) => {
+    profilePhotoFile = blob;
     const img = document.getElementById("profilePhotoImg");
-    img.src = e.target.result; img.style.display = "";
+    img.src = url; img.style.display = "";
     document.getElementById("profilePhotoEmpty").style.display = "none";
-  };
-  reader.readAsDataURL(file);
+  }, document.getElementById("profilePhotoInput"));
 }
 
 async function submitArtistProfile() {
@@ -1822,6 +1905,107 @@ async function submitArtistProfile() {
   } finally {
     btn.disabled = false; btn.innerHTML = '<i class="ti ti-send"></i> Submit for Review';
   }
+}
+
+// ─── ARTIST PAYOUTS: connect a Stripe account to get paid ────────────────────
+let payouts = [];
+
+function myArtistIds() {
+  if(!currentUser) return [];
+  return [currentUser.artistId, currentUser.uid].filter(Boolean);
+}
+
+// POST to a Cloud Function with the signed-in artist's Firebase ID token.
+async function authedFetch(url, body) {
+  const u = auth.currentUser;
+  if(!u) throw new Error("Please sign in first.");
+  const token = await u.getIdToken();
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+    body: JSON.stringify(body || {})
+  });
+  const data = await res.json().catch(() => ({}));
+  if(!res.ok) throw new Error(data.error || "Request failed.");
+  return data;
+}
+
+function renderPayoutPanel() {
+  const panel = document.getElementById("payoutPanel");
+  if(!panel) return;
+  // Hidden until payouts go live (Stripe Connect enabled).
+  if(!PAYOUTS_ENABLED) { panel.style.display = "none"; return; }
+  // Admins manage payouts from the dashboard, not their own studio panel.
+  if(!currentUser || currentUser.isAdmin) { panel.style.display = "none"; return; }
+  panel.style.display = "";
+
+  const commissionPct = Number(siteContent?.commissionPct) || 20;
+  document.getElementById("payoutCommissionLabel").textContent = commissionPct;
+
+  const enabled   = !!currentUser.payoutsEnabled;
+  const submitted = !!currentUser.detailsSubmitted;
+  const hasAccount = !!currentUser.stripeAccountId;
+
+  const st = document.getElementById("payoutStatus");
+  const btn = document.getElementById("payoutBtn");
+  const hint = document.getElementById("payoutHint");
+  let cls, label, btnLabel, hintText;
+  if(enabled) {
+    cls = "is-approved"; label = "Active";
+    btnLabel = '<i class="ti ti-external-link"></i> Manage payout account';
+    hintText = "Payouts are active. Your share of each sale is sent to your bank automatically.";
+  } else if(submitted || hasAccount) {
+    cls = "is-pending"; label = "Pending verification";
+    btnLabel = '<i class="ti ti-building-bank"></i> Finish payout setup';
+    hintText = "Stripe is verifying your details. Finish any remaining steps to start receiving payouts — sales until then are held and paid once you're verified.";
+  } else {
+    cls = "is-none"; label = "Not set up";
+    btnLabel = '<i class="ti ti-building-bank"></i> Set up payouts';
+    hintText = "You won't receive sale proceeds until you connect a bank account through Stripe.";
+  }
+  st.className = "profile-status " + cls;
+  st.textContent = label;
+  btn.disabled = false;
+  btn.innerHTML = btnLabel;
+  hint.textContent = hintText;
+
+  // Earnings summary from this artist's payout records.
+  const ids = myArtistIds();
+  const mine = payouts.filter(p => ids.includes(p.artistId));
+  const paid    = mine.filter(p => p.status === "paid").reduce((s,p)=>s+(Number(p.netAmount)||0),0)/100;
+  const pending = mine.filter(p => p.status !== "paid").reduce((s,p)=>s+(Number(p.netAmount)||0),0)/100;
+  const fmt = n => "$" + n.toLocaleString("en-CA",{minimumFractionDigits:2});
+  document.getElementById("payoutEarnings").innerHTML = `
+    <div class="stat-chip"><div class="stat-val" style="color:var(--green)">${fmt(paid)}</div><div class="stat-label">Paid out</div></div>
+    <div class="stat-chip"><div class="stat-val">${fmt(pending)}</div><div class="stat-label">Pending</div></div>
+    <div class="stat-chip"><div class="stat-val">${mine.length}</div><div class="stat-label">Sales</div></div>`;
+}
+
+async function startPayoutSetup() {
+  const btn = document.getElementById("payoutBtn");
+  const original = btn.innerHTML;
+  btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader"></i> Opening Stripe…';
+  try {
+    const { url } = await authedFetch(CONNECT_LINK_URL);
+    if(url) { window.location.href = url; return; }
+    throw new Error("No onboarding link returned.");
+  } catch(e) {
+    toast("Could not start payout setup: " + (e?.message || e));
+    btn.disabled = false; btn.innerHTML = original;
+  }
+}
+
+// Pull fresh status from Stripe (used after the artist returns from onboarding).
+async function refreshPayoutStatus() {
+  try {
+    const s = await authedFetch(CONNECT_STATUS_URL);
+    if(currentUser) {
+      currentUser.payoutsEnabled  = !!s.payoutsEnabled;
+      currentUser.detailsSubmitted = !!s.detailsSubmitted;
+    }
+    renderPayoutPanel();
+    if(s.payoutsEnabled) toast("Payouts are active — you're all set to get paid ✓");
+  } catch(e) { /* keep last-known state */ }
 }
 
 // ─── CATEGORY TABS ───────────────────────────────────────────────────────────
@@ -2146,16 +2330,85 @@ function closeModal(e) {
 }
 
 // ─── UPLOAD ──────────────────────────────────────────────────────────────────
+// ─── IMAGE CROPPER (shared by painting upload + profile photo) ───────────────
+let cropper = null;
+let cropDone = null;         // callback(blob, dataUrl) run on Apply
+let cropSourceInput = null;  // <input type=file> to reset when the modal closes
+
+// opts: { aspectRatio: Number|NaN, locked: Bool }
+function openCropper(file, opts, onDone, sourceInput) {
+  if(!file) return;
+  // Graceful fallback if the cropper library didn't load — upload uncropped.
+  if(typeof window.Cropper === "undefined") {
+    const r = new FileReader();
+    r.onload = e => onDone(file, e.target.result);
+    r.readAsDataURL(file);
+    return;
+  }
+  cropDone = onDone;
+  cropSourceInput = sourceInput || null;
+  const img = document.getElementById("cropImage");
+  const ratios = document.getElementById("cropRatios");
+  ratios.classList.toggle("hidden", !!opts.locked);
+  const reader = new FileReader();
+  reader.onload = e => {
+    img.src = e.target.result;
+    document.getElementById("cropModal").classList.add("open");
+    if(cropper) { cropper.destroy(); cropper = null; }
+    cropper = new Cropper(img, {
+      viewMode: 1, autoCropArea: 1, background: false, responsive: true,
+      aspectRatio: (opts.aspectRatio === undefined ? NaN : opts.aspectRatio),
+    });
+    ratios.querySelectorAll(".crop-btn").forEach(b => b.classList.remove("active"));
+    const match = ratios.querySelector(`.crop-btn[data-ratio="${opts.locked ? "1" : "nan"}"]`);
+    if(match) match.classList.add("active");
+  };
+  reader.readAsDataURL(file);
+}
+
+function cropSetRatio(btn, ratio) {
+  if(!cropper) return;
+  cropper.setAspectRatio(ratio);
+  document.querySelectorAll("#cropRatios .crop-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+}
+function cropRotate() { if(cropper) cropper.rotate(90); }
+function cropZoom(delta) { if(cropper) cropper.zoom(delta); }
+
+function closeCropper() {
+  document.getElementById("cropModal").classList.remove("open");
+  if(cropper) { cropper.destroy(); cropper = null; }
+  document.getElementById("cropImage").removeAttribute("src");
+  // Reset the source input so re-picking the same file fires onchange again.
+  if(cropSourceInput) { cropSourceInput.value = ""; cropSourceInput = null; }
+  cropDone = null;
+}
+function cancelCrop() { closeCropper(); }
+
+function applyCrop() {
+  if(!cropper || !cropDone) { closeCropper(); return; }
+  const btn = document.getElementById("cropApplyBtn");
+  btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader"></i> Applying…';
+  const reset = () => { btn.disabled = false; btn.innerHTML = '<i class="ti ti-crop"></i> Apply crop'; };
+  const canvas = cropper.getCroppedCanvas({ maxWidth: 2000, maxHeight: 2000, imageSmoothingQuality: "high" });
+  if(!canvas) { toast("Could not crop that image — try another."); reset(); closeCropper(); return; }
+  const done = cropDone;
+  const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
+  canvas.toBlob(blob => {
+    if(blob) done(blob, dataUrl);
+    reset();
+    closeCropper();
+  }, "image/jpeg", 0.92);
+}
+
 function handleFile(input) {
   const file = input.files[0];
   if(!file) return;
-  uploadedFile = file;
-  const reader = new FileReader();
-  reader.onload = e => {
-    document.getElementById("previewImg").src = e.target.result;
+  openCropper(file, { aspectRatio: NaN }, (blob, url) => {
+    uploadedFile = blob;
+    document.getElementById("previewImg").src = url;
     document.getElementById("previewWrap").style.display = "block";
-  };
-  reader.readAsDataURL(file);
+  }, document.getElementById("fileInput"));
 }
 
 const dz = document.getElementById("dropzone");
@@ -2511,6 +2764,7 @@ function showAdminPage() {
     document.getElementById("adminLoginSection").style.display = "none";
     document.getElementById("adminDashSection").style.display = "";
     subscribeOrders();
+    subscribePayouts();
     renderAdminDashboard();
   } else {
     document.getElementById("adminLoginSection").style.display = "";
@@ -2539,6 +2793,7 @@ async function adminLogin() {
     document.getElementById("adminLoginSection").style.display = "none";
     document.getElementById("adminDashSection").style.display = "";
     subscribeOrders();
+    subscribePayouts();
     renderAdminDashboard();
   } catch(e) {
     err.textContent = "No admin account found with those credentials.";
@@ -2734,6 +2989,12 @@ const CONTENT_SECTIONS = [
     title: "About — Artist Roster", icon:"ti-users", sub:"Artists shown in 'Meet the Artists' and the gallery strip. Add, remove, or edit each one.",
     fields: [
       { key:"artists", label:"Artists", mode:"artists", def:DEFAULT_ARTISTS_DATA }
+    ]
+  },
+  {
+    title: "Payouts & Commission", icon:"ti-cash", sub:"What The Kolours keeps on each sale. Artists receive the rest via their connected Stripe account.",
+    fields: [
+      { key:"commissionPct", label:"Platform commission (%)", mode:"text", type:"input", def:"20", note:"The Kolours keeps this percentage of every sale; the artist receives the remainder, paid to their bank automatically. Applies to sales made after saving." }
     ]
   },
   {
@@ -2945,7 +3206,7 @@ function renderContentForm() {
 }
 
 function switchAdminTab(tab) {
-  const tabs = ["listings", "orders", "content"];
+  const tabs = ["listings", "orders", "payouts", "content"];
   if(!tabs.includes(tab)) tab = "listings";
   tabs.forEach(t => {
     const cap = t.charAt(0).toUpperCase() + t.slice(1);
@@ -2956,6 +3217,7 @@ function switchAdminTab(tab) {
   });
   if(tab === "content") renderContentForm();
   if(tab === "orders") renderOrders();
+  if(tab === "payouts") renderPayouts();
 }
 
 // ─── ADMIN: ORDERS ───────────────────────────────────────────────────────────
@@ -3020,6 +3282,81 @@ function renderOrders() {
   }).join("");
 }
 
+// ─── ADMIN: PAYOUTS ──────────────────────────────────────────────────────────
+function payoutPaintingTitle(id) {
+  const p = paintings.find(x => String(x.id) === String(id));
+  return p ? p.title : `#${id}`;
+}
+
+function renderPayouts() {
+  const statsEl = document.getElementById("payoutsStats");
+  const rollupEl = document.getElementById("payoutsArtistRollup");
+  const listEl = document.getElementById("payoutsList");
+  if(!listEl) return;
+
+  const fmt = c => "$" + ((Number(c)||0)/100).toLocaleString("en-CA",{minimumFractionDigits:2});
+  const paidTotal      = payouts.filter(p=>p.status==="paid").reduce((s,p)=>s+(Number(p.netAmount)||0),0);
+  const pendingTotal   = payouts.filter(p=>p.status!=="paid").reduce((s,p)=>s+(Number(p.netAmount)||0),0);
+  const commissionTotal = payouts.reduce((s,p)=>s+(Number(p.commissionAmount)||0),0);
+
+  if(statsEl) {
+    statsEl.innerHTML = `
+      <div class="stat-chip"><div class="stat-val" style="color:var(--green)">${fmt(paidTotal)}</div><div class="stat-label">Paid to artists</div></div>
+      <div class="stat-chip"><div class="stat-val">${fmt(pendingTotal)}</div><div class="stat-label">Pending</div></div>
+      <div class="stat-chip"><div class="stat-val" style="color:var(--terracotta)">${fmt(commissionTotal)}</div><div class="stat-label">Commission earned</div></div>`;
+  }
+
+  // Per-artist roll-up.
+  const byArtist = {};
+  payouts.forEach(p => {
+    const key = p.artistName || p.artistId || "—";
+    const a = (byArtist[key] = byArtist[key] || { paid:0, pending:0, count:0 });
+    a.count++;
+    if(p.status === "paid") a.paid += Number(p.netAmount)||0; else a.pending += Number(p.netAmount)||0;
+  });
+  const artistRows = Object.entries(byArtist).sort((a,b)=>(b[1].paid+b[1].pending)-(a[1].paid+a[1].pending));
+  if(rollupEl) {
+    rollupEl.innerHTML = artistRows.length ? `
+      <div class="section-heading" style="margin-bottom:10px">By <em style="font-style:normal;font-weight:700;color:var(--terracotta)">Artist</em></div>
+      ${artistRows.map(([name,v]) => `
+        <div class="order-card">
+          <div class="order-head">
+            <div class="order-items">${escHtml(name)}</div>
+            <div class="order-amount">${fmt(v.paid)} paid${v.pending?` · <span style="color:rgba(0,0,0,0.55)">${fmt(v.pending)} pending</span>`:""}</div>
+          </div>
+          <div class="order-meta"><span><i class="ti ti-palette"></i> ${v.count} sale${v.count!==1?"s":""}</span>${v.pending?`<span style="color:var(--terracotta)"><i class="ti ti-alert-circle"></i> Pending — artist hasn't finished connecting payouts</span>`:""}</div>
+        </div>`).join("")}` : "";
+  }
+
+  // Recent transfers (searchable).
+  const q = (document.getElementById("payoutsSearch")?.value || "").toLowerCase().trim();
+  let list = payouts.slice().sort((a,b)=>(b._ts||0)-(a._ts||0));
+  if(q) list = list.filter(p => (p.artistName||"").toLowerCase().includes(q) || payoutPaintingTitle(p.paintingId).toLowerCase().includes(q));
+
+  if(!list.length) {
+    listEl.innerHTML = '<p style="color:rgba(0,0,0,0.35);padding:40px 0;font-size:14px">No payouts yet. When a painting sells, the artist\'s share appears here.</p>';
+    return;
+  }
+
+  listEl.innerHTML = list.map(p => {
+    const when = p._ts ? new Date(p._ts).toLocaleString("en-CA",{dateStyle:"medium",timeStyle:"short"}) : "";
+    const pill = p.status === "paid" ? '<span class="order-pill paid">● Paid</span>'
+      : p.status === "failed" ? '<span class="order-pill unpaid">Failed</span>'
+      : '<span class="order-pill unpaid">Pending</span>';
+    return `<div class="order-card">
+      <div class="order-head">
+        <div class="order-items">${escHtml(payoutPaintingTitle(p.paintingId))} <span style="color:rgba(0,0,0,0.4)">· ${escHtml(p.artistName||"—")}</span></div>
+        <div class="order-amount">${fmt(p.netAmount)} ${pill}</div>
+      </div>
+      <div class="order-meta">
+        <span><i class="ti ti-calendar"></i> ${when}</span>
+        <span><i class="ti ti-receipt"></i> Sale ${fmt(p.grossAmount)} · commission ${fmt(p.commissionAmount)}${p.commissionPct!=null?` (${p.commissionPct}%)`:""}</span>
+        ${p.transferId ? `<span><i class="ti ti-arrow-right"></i> ${escHtml(p.transferId)}</span>` : ""}
+      </div>
+    </div>`;
+  }).join("");
+}
+
 async function saveSiteContent() {
   if(!currentUser || !currentUser.isAdmin) { setContentStatus("Admin access required.", true); return; }
   const btn = document.getElementById("contentSaveBtn");
@@ -3076,6 +3413,7 @@ async function initData() {
   onSnapshot(doc(db, "siteContent", "main"), snap => {
     siteContent = snap.exists() ? snap.data() : {};
     applySiteContent(siteContent);
+    if(document.getElementById("pageStudio")?.classList.contains("active")) renderPayoutPanel();
   });
   // Live-sync artist-submitted profiles (bio + photo). Only approved ones show publicly.
   onSnapshot(collection(db, "artistProfiles"), snap => {
@@ -3103,6 +3441,28 @@ function subscribeOrders() {
   });
 }
 
+// Live-sync payout records. Admins see all; artists are scoped to their own.
+let payoutsUnsub = null;
+function subscribePayouts() {
+  if(payoutsUnsub || !currentUser) return;
+  let qref = collection(db, "payouts");
+  if(!currentUser.isAdmin) {
+    const id = currentUser.artistId || currentUser.uid;
+    qref = query(qref, where("artistId", "==", id));
+  }
+  payoutsUnsub = onSnapshot(qref, snap => {
+    payouts = snap.docs.map(d => {
+      const data = d.data();
+      const ts = data.createdAt && typeof data.createdAt.toMillis === "function" ? data.createdAt.toMillis() : 0;
+      return { id: d.id, ...data, _ts: ts };
+    });
+    if(document.getElementById("pageStudio")?.classList.contains("active")) renderPayoutPanel();
+    if(currentUser?.isAdmin && document.getElementById("adminTabPayouts")?.style.display !== "none") renderPayouts();
+  }, err => {
+    console.warn("Payouts subscription error:", err.message);
+  });
+}
+
 onAuthStateChanged(auth, async fbUser => {
   if(fbUser) {
     const profileDoc = await getDoc(doc(db, "users", fbUser.uid));
@@ -3117,16 +3477,37 @@ onAuthStateChanged(auth, async fbUser => {
     }
   } else {
     currentUser = null;
+    if(payoutsUnsub) { payoutsUnsub(); payoutsUnsub = null; }
+    payouts = [];
   }
   updateNavAuth();
-  if(document.getElementById("pageStudio")?.classList.contains("active")) { renderStudioHeader(); renderListings(); }
+  if(currentUser) subscribePayouts();
+  if(document.getElementById("pageStudio")?.classList.contains("active")) { renderStudioHeader(); renderListings(); renderPayoutPanel(); }
   if(document.getElementById("pageAdmin")?.classList.contains("active")) showAdminPage();
+  handleConnectReturn();
 });
+
+// Artist returning from Stripe Connect onboarding (?connect=done / =refresh).
+let connectReturnHandled = false;
+function handleConnectReturn() {
+  if(connectReturnHandled || !currentUser) return;
+  const params = new URLSearchParams(window.location.search);
+  if(params.has("connect")) {
+    connectReturnHandled = true;
+    const mode = params.get("connect");
+    history.replaceState(null, "", window.location.pathname);
+    showPage("studio");
+    if(mode === "done") refreshPayoutStatus();
+    else toast("Payout setup wasn't finished — you can resume any time.");
+  }
+}
 
 renderTabs();
 applyFilters();
 initData();
 handleCheckoutReturn();
+// Keep the admin Payouts tab hidden until payouts go live.
+if(!PAYOUTS_ENABLED) { const _pb = document.getElementById("adminTabBtnPayouts"); if(_pb) _pb.style.display = "none"; }
 
 // ─── WINDOW EXPORTS (required for type="module" inline handlers) ─────────────
 window.setCategory = setCategory;
@@ -3141,6 +3522,11 @@ window.closeModal = closeModal;
 window.modalAddCart = modalAddCart;
 window.cartCheckout = cartCheckout;
 window.handleFile = handleFile;
+window.applyCrop = applyCrop;
+window.cancelCrop = cancelCrop;
+window.cropSetRatio = cropSetRatio;
+window.cropRotate = cropRotate;
+window.cropZoom = cropZoom;
 window.submitPainting = submitPainting;
 window.cancelEdit = cancelEdit;
 window.editListing = editListing;
@@ -3174,9 +3560,11 @@ window.submitArtistProfile = submitArtistProfile;
 window.approveProfile = approveProfile;
 window.rejectProfile = rejectProfile;
 window.renderArtistProfilePanel = renderArtistProfilePanel;
+window.startPayoutSetup = startPayoutSetup;
 window.rejectListingAdmin = rejectListingAdmin;
 window.switchAdminTab = switchAdminTab;
 window.renderOrders = renderOrders;
+window.renderPayouts = renderPayouts;
 window.renderContentForm = renderContentForm;
 window.saveSiteContent = saveSiteContent;
 </script>
