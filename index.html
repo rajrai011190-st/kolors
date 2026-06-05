@@ -1494,6 +1494,9 @@ const CHECKOUT_URL = "https://createcheckoutsession-o2gxkbvmya-uc.a.run.app";
 // Stripe Connect payout functions (URLs from `firebase deploy`).
 const CONNECT_LINK_URL   = "https://us-central1-the-kolours.cloudfunctions.net/createConnectAccountLink";
 const CONNECT_STATUS_URL = "https://us-central1-the-kolours.cloudfunctions.net/getConnectStatus";
+// Payout UI is hidden until Stripe Connect is enabled in the dashboard.
+// Flip to true (and finish the Connect dashboard setup) to expose payouts.
+const PAYOUTS_ENABLED = false;
 
 const CLOUDINARY_CLOUD  = "dxl6ntgrm";
 const CLOUDINARY_PRESET = "kolours_uploads";
@@ -1930,6 +1933,8 @@ async function authedFetch(url, body) {
 function renderPayoutPanel() {
   const panel = document.getElementById("payoutPanel");
   if(!panel) return;
+  // Hidden until payouts go live (Stripe Connect enabled).
+  if(!PAYOUTS_ENABLED) { panel.style.display = "none"; return; }
   // Admins manage payouts from the dashboard, not their own studio panel.
   if(!currentUser || currentUser.isAdmin) { panel.style.display = "none"; return; }
   panel.style.display = "";
@@ -3501,6 +3506,8 @@ renderTabs();
 applyFilters();
 initData();
 handleCheckoutReturn();
+// Keep the admin Payouts tab hidden until payouts go live.
+if(!PAYOUTS_ENABLED) { const _pb = document.getElementById("adminTabBtnPayouts"); if(_pb) _pb.style.display = "none"; }
 
 // ─── WINDOW EXPORTS (required for type="module" inline handlers) ─────────────
 window.setCategory = setCategory;
