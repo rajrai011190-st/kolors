@@ -1501,6 +1501,24 @@ const PAYOUTS_ENABLED = false;
 const CLOUDINARY_CLOUD  = "dxl6ntgrm";
 const CLOUDINARY_PRESET = "kolours_uploads";
 
+// ── Analytics (Google Analytics 4) ──────────────────────────────────────────
+// Paste your GA4 Measurement ID (looks like "G-XXXXXXXXXX") to switch it on.
+// Leaving it blank keeps analytics fully off — no script loads, no cookies.
+// Prefer privacy-first? Swap the loader below for Plausible (one <script> tag).
+const GA_ID = "";
+function initAnalytics() {
+  if(!GA_ID) return;
+  const s = document.createElement("script");
+  s.async = true; s.src = "https://www.googletagmanager.com/gtag/js?id=" + GA_ID;
+  document.head.appendChild(s);
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function(){ window.dataLayer.push(arguments); };
+  window.gtag("js", new Date());
+  window.gtag("config", GA_ID, { send_page_view: false }); // SPA: we send views ourselves
+}
+// Safe no-op until GA_ID is set.
+function track(event, params) { if(GA_ID && window.gtag) window.gtag("event", event, params || {}); }
+
 async function uploadToCloudinary(file) {
   const fd = new FormData();
   fd.append("file", file, file.name || "upload.jpg");
@@ -1562,10 +1580,27 @@ function genCanvas(colors, w, h, seed) {
   return c;
 }
 
+// Rewrite a Cloudinary delivery URL to auto-format/quality at the needed width.
+// Non-Cloudinary URLs (local seed images, external CDNs) are returned untouched.
+function cldUrl(url, w) {
+  if(typeof url !== "string") return url;
+  const marker = "/image/upload/";
+  const i = url.indexOf("res.cloudinary.com") === -1 ? -1 : url.indexOf(marker);
+  if(i === -1 || url.indexOf(marker + "f_auto") !== -1) return url; // not Cloudinary / already transformed
+  const tx = `f_auto,q_auto,c_limit,w_${Math.round(w)}`;
+  return url.slice(0, i + marker.length) + tx + "/" + url.slice(i + marker.length);
+}
+
 function paintingMediaEl(p, w, h) {
   if(p.img) {
     const img = document.createElement("img");
-    img.src = p.img; img.alt = p.title;
+    const tw = w || 400;
+    const a = cldUrl(p.img, tw), b = cldUrl(p.img, tw * 2);
+    img.src = a;
+    if(b !== a) img.srcset = `${a} 1x, ${b} 2x`;   // serve a sharper file on retina only
+    img.loading = "lazy";
+    img.decoding = "async";
+    img.alt = p.title ? (p.artist ? `${p.title} by ${p.artist}` : p.title) : "Painting";
     return img;
   }
   return genCanvas(p.colors||["#e0e0e0","#c0c0c0"], w||400, h||500, p.id);
@@ -1583,6 +1618,7 @@ function showPage(name) {
   if(name==="studio") { renderStudioHeader(); renderListings(); renderArtistProfilePanel(); renderPayoutPanel(); }
   if(name==="login") { clearLoginForms(); }
   if(name==="about") { renderAboutArtists(); }
+  track("page_view", { page_title: name, page_path: "/" + name });
   window.scrollTo(0,0);
 }
 
@@ -2215,6 +2251,7 @@ function addToCart(e, id) {
   cart.push(p);
   updateCartBadge();
   applyFilters();
+  track("add_to_cart", { currency: "CAD", value: Number(p.price)||0, items: [{ item_id: String(p.id), item_name: p.title, price: Number(p.price)||0 }] });
   toast(getMsg("msgAddedToCart").replace("{title}", p.title));
 }
 
@@ -2612,6 +2649,7 @@ async function deleteListing(id) {
 // server-side, so the client only sends IDs.
 async function cartCheckout() {
   if(!cart.length) { toast(getMsg("msgCartEmpty")); return; }
+  track("begin_checkout", { currency: "CAD", value: cart.reduce((s,p)=>s+(Number(p.price)||0),0), items: cart.map(p=>({ item_id:String(p.id), item_name:p.title, price:Number(p.price)||0 })) });
   const btn = document.getElementById("cartCheckoutBtn");
   const label = document.getElementById("scCartCheckout");
   const prevLabel = label ? label.textContent : "";
@@ -2637,6 +2675,7 @@ async function cartCheckout() {
 function handleCheckoutReturn() {
   const params = new URLSearchParams(window.location.search);
   if(params.has("paid")) {
+    track("purchase", { transaction_id: params.get("paid") || undefined });
     cart = [];
     updateCartBadge();
     toast("Payment received — thank you! A receipt has been emailed to you. ✓");
@@ -3502,6 +3541,7 @@ function handleConnectReturn() {
   }
 }
 
+initAnalytics();
 renderTabs();
 applyFilters();
 initData();
