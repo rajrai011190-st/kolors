@@ -854,6 +854,12 @@
     .pending-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 0.5px solid rgba(0,0,0,0.06); }
     .pending-row:last-child { border-bottom: none; padding-bottom: 0; }
     .pending-actions { display: flex; gap: 8px; margin-left: auto; flex-shrink: 0; }
+    /* Clickable preview thumbnail in the pending-review rows. */
+    .pending-thumb { width: 64px; height: 64px; cursor: pointer; position: relative; }
+    .pending-thumb-zoom { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.32); color: #fff; font-size: 18px; opacity: 0; transition: opacity 0.15s; pointer-events: none; }
+    .pending-thumb:hover .pending-thumb-zoom, .pending-thumb:focus-visible .pending-thumb-zoom { opacity: 1; }
+    .btn-preview { background: var(--bg2); color: var(--black); border: 1px solid var(--border-dark); border-radius: 4px; padding: 5px 12px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font-sans); transition: background 0.15s; display: inline-flex; align-items: center; gap: 4px; }
+    .btn-preview:hover { background: #e9e9e4; }
     .btn-approve { background: #edf7f1; color: #2D6A4F; border: 1px solid rgba(45,106,79,0.3); border-radius: 4px; padding: 5px 12px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font-sans); transition: background 0.15s, color 0.15s; }
     .btn-approve:hover { background: #2D6A4F; color: #fff; }
     .btn-reject  { background: #fdecea; color: #c0392b; border: 1px solid rgba(192,57,43,0.3); border-radius: 4px; padding: 5px 12px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font-sans); transition: background 0.15s, color 0.15s; }
@@ -2971,18 +2977,24 @@ function renderPendingSection() {
   pending.forEach(p=>{
     const row = document.createElement("div"); row.className="pending-row";
     row.innerHTML=`
-      <div class="listing-thumb" id="pthumb-${p.id}"></div>
+      <div class="listing-thumb pending-thumb" id="pthumb-${p.id}" role="button" tabindex="0" title="Click to preview" aria-label="Preview ${escAttr(p.title)}"><span class="pending-thumb-zoom"><i class="ti ti-zoom-in"></i></span></div>
       <div class="listing-info" style="flex:1;min-width:0">
         <div class="listing-title">${p.title}</div>
         <div class="listing-meta">${p.artist} · ${p.category} · $${p.price.toLocaleString("en-CA",{minimumFractionDigits:2})}</div>
       </div>
       <div class="pending-actions">
+        <button class="btn-preview" onclick="openModal(${p.id})"><i class="ti ti-eye"></i> Preview</button>
         <button class="btn-approve" onclick="approveListingAdmin(${p.id})"><i class="ti ti-check"></i> Approve</button>
         <button class="btn-reject"  onclick="rejectListingAdmin(${p.id})"><i class="ti ti-x"></i> Reject</button>
       </div>`;
     rows.appendChild(row);
     const wrap = document.getElementById("pthumb-"+p.id);
-    if(wrap) wrap.appendChild(paintingMediaEl(p,48,48));
+    if(wrap) {
+      wrap.insertBefore(paintingMediaEl(p,72,72), wrap.firstChild);
+      const preview = () => openModal(p.id);
+      wrap.addEventListener("click", preview);
+      wrap.addEventListener("keydown", e => { if(e.key==="Enter"||e.key===" "){ e.preventDefault(); preview(); } });
+    }
   });
 }
 
