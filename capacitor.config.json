@@ -1,0 +1,12 @@
+{
+  "appId": "com.thekolours.app",
+  "appName": "The Kolours",
+  "webDir": "www",
+  "backgroundColor": "#ffffff",
+  "ios": {
+    "contentInset": "always"
+  },
+  "android": {
+    "backgroundColor": "#ffffff"
+  }
+}

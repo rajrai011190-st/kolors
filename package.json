@@ -1,0 +1,22 @@
+{
+  "name": "thekolours-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "The Kolours — native app (Capacitor wrapper around the web app)",
+  "scripts": {
+    "build:www": "node scripts/build-www.mjs",
+    "sync": "npm run build:www && cap sync",
+    "icons": "capacitor-assets generate --iconBackgroundColor '#f5f5f0' --splashBackgroundColor '#ffffff'",
+    "open:ios": "cap open ios",
+    "open:android": "cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.4.0",
+    "@capacitor/core": "^8.4.0",
+    "@capacitor/ios": "^8.4.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.4.0"
+  }
+}

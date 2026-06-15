@@ -31,6 +31,9 @@ const ALLOWED_ORIGINS = [
   "https://thekolours.com",
   "https://www.thekolours.com",
   "https://rajrai011190-st.github.io",
+  // Capacitor native app webview origins (iOS uses capacitor://, Android https://localhost).
+  "capacitor://localhost",
+  "https://localhost",
 ];
 const SITE_URL = "https://thekolours.com";
 

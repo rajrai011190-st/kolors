@@ -6,5 +6,27 @@ functions/.env.*
 firebase-debug.log
 ui-debug.log
 
+# Node / Capacitor app
+node_modules/
+www/
+.capacitor/
+/icons/
+
+# iOS build artifacts
+ios/App/Pods/
+ios/App/build/
+ios/App/App/public/
+DerivedData/
+*.xcuserstate
+
+# Android build artifacts
+android/.gradle/
+android/build/
+android/app/build/
+android/app/src/main/assets/public/
+android/local.properties
+android/.idea/
+*.iml
+
 # OS
 .DS_Store
