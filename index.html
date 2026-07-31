@@ -3709,7 +3709,10 @@ async function seedFirestoreIfEmpty() {
 }
 
 async function initData() {
-  await seedFirestoreIfEmpty();
+  // Seeding is best-effort — a failed read here must NEVER block the live
+  // subscriptions below (a blocked read is exactly how expired rules blanked the site).
+  try { await seedFirestoreIfEmpty(); }
+  catch(e) { console.warn("Seed check skipped:", e.message); }
   onSnapshot(collection(db, "paintings"), snap => {
     paintings = snap.docs.map(d => ({ ...d.data(), id: d.data().id ?? Number(d.id) }));
     hydrateState();
@@ -3720,13 +3723,13 @@ async function initData() {
     openDeepLinkIfReady();
     if(document.getElementById("pageStudio")?.classList.contains("active")) renderListings();
     if(document.getElementById("pageAdmin")?.classList.contains("active") && currentUser?.isAdmin) renderAdminDashboard();
-  });
+  }, err => console.error("Paintings subscription failed:", err.message));
   // Live-sync editable site content (hero, banner, About copy) for all visitors.
   onSnapshot(doc(db, "siteContent", "main"), snap => {
     siteContent = snap.exists() ? snap.data() : {};
     applySiteContent(siteContent);
     if(document.getElementById("pageStudio")?.classList.contains("active")) renderPayoutPanel();
-  });
+  }, err => console.error("Site content subscription failed:", err.message));
   // Live-sync artist-submitted profiles (bio + photo). Only approved ones show publicly.
   onSnapshot(collection(db, "artistProfiles"), snap => {
     artistProfiles = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -3734,7 +3737,7 @@ async function initData() {
     if(document.getElementById("pageAbout")?.classList.contains("active")) renderAboutArtists();
     if(document.getElementById("pageStudio")?.classList.contains("active")) renderArtistProfilePanel();
     if(document.getElementById("pageAdmin")?.classList.contains("active") && currentUser?.isAdmin) renderAdminDashboard();
-  });
+  }, err => console.error("Artist profiles subscription failed:", err.message));
 }
 
 // Admin-only: live-sync orders (card payments). Started after an admin logs in.

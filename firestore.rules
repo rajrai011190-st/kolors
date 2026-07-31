@@ -1,0 +1,64 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    // Admin identity mirrors ADMIN_EMAILS in index.html.
+    function isAdmin() {
+      return isSignedIn()
+        && request.auth.token.email in ['raj@thekolours.com', 'rajrai90210@gmail.com'];
+    }
+
+    // Gallery listings — public read; artists manage their own; admin manages all.
+    match /paintings/{id} {
+      allow read: if true;
+      allow create: if isAdmin()
+        || (isSignedIn() && request.resource.data.artistId == request.auth.uid);
+      allow update, delete: if isAdmin()
+        || (isSignedIn() && resource.data.artistId == request.auth.uid);
+    }
+
+    // Editable site copy (hero, banner, About) — public read, admin write.
+    match /siteContent/{doc} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Artist profiles — public read (approved ones filtered client-side).
+    match /artistProfiles/{id} {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        || (isSignedIn() && request.resource.data.uid == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+
+    // Per-user profile doc — owner read/write; admin may read.
+    match /users/{uid} {
+      allow read: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
+      allow write: if isSignedIn() && request.auth.uid == uid;
+    }
+
+    // Orders — written only by Cloud Functions (admin SDK); admin reads.
+    match /orders/{id} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // Payouts — written only by Cloud Functions; admin reads all, artist reads own.
+    match /payouts/{id} {
+      allow read: if isAdmin()
+        || (isSignedIn() && resource.data.artistId == request.auth.uid);
+      allow write: if false;
+    }
+
+    // Newsletter signups — anyone may subscribe; only admin can read/manage.
+    match /subscribers/{email} {
+      allow read: if isAdmin();
+      allow create: if true;
+      allow update, delete: if isAdmin();
+    }
+  }
+}
